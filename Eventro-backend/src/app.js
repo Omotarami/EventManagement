@@ -7,9 +7,6 @@ const HandleErrors = require("./middlewares/error.js");
 const {isAuthenticated} = require("./middlewares/auth.js");
 const logger = require("./config/logger.js");
 const ENV = require("./config/env.js");
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yaml');
-const swaggerFile = require("./documentation/swagger.js")
 
 const swaggerDocument = YAML.parse(swaggerFile, 'utf8');
 class App {
@@ -34,8 +31,7 @@ class App {
       })
     );
     this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
-    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));  }
+    this.app.use(bodyParser.urlencoded({ extended: false }));  }
 
   listen() {
     // initialize database
