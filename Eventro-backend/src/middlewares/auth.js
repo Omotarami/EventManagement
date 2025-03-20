@@ -353,7 +353,6 @@ class AuthController extends BaseController {
       });
 
       // TODO: Send email with reset token
-      // In a real application, you would send an email with a link containing the token
       // For now, we're just returning success
 
       this.success(res, "If your email exists in our system, you will receive a password reset link", 200);
