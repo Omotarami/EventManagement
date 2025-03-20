@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: "./.env" });
 
-const LOCAL_POSTGRESQL = "mysql://root:@localhost:3306/free-lunch";
+const LOCAL_POSTGRESQL = "postgresql://postgres:@localhost:5432/event_management";
 
 const ENV = {
   jwtSecret: process.env.JWT_SECRET,
