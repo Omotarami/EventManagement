@@ -19,7 +19,7 @@ const Sidebar = ({ onNavigate }) => {
   // Handle navigation item click
   const handleNavClick = (index, id) => {
     setActiveIndex(index);
-    // Call the navigation callback if provided
+    // Call the navigation callback 
     if (onNavigate) {
       onNavigate(id);
     }
