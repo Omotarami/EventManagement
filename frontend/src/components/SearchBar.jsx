@@ -13,7 +13,7 @@ const SearchBar = ({ onSearch, placeholder = "Search", className = "" }) => {
 
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
-    // Optional: Add debounce logic here for real-time search
+    //Add debounce logic here for real-time search
   };
 
   const handleKeyPress = (e) => {
