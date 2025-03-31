@@ -10,8 +10,8 @@ const App = () => {
           <Router>
             {/* <Navbar /> */}
             <Routes>
-              <Route path="/attendee-signup" element={<AttendeeSignupForm />} />
-              <Route path="/organizer-signup" element={<OrganizerSignupForm />} />
+              <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
+              <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
             </Routes>
           </Router>

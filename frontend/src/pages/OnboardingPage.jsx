@@ -59,7 +59,7 @@ const OnboardingPage = () => {
         >
           {/* Logo */}
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-            Even<span style={{ color: '#F4A261' }}>tro</span>!
+           Welcome to Even<span style={{ color: '#F4A261' }}>tro</span>!
           </h1>
           
           {/* Clap Image */}
@@ -77,7 +77,7 @@ const OnboardingPage = () => {
             }}
           >
             <img 
-              src="/clap.svg" 
+              src="../public/icons/clap.svg" 
               alt="Clap" 
               className="w-20 h-20"
             />
