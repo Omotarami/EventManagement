@@ -1,20 +1,12 @@
-// SignupForm.jsx
 import React, { useState } from 'react';
-import { FaEye, FaEyeSlash, FaUser, FaEnvelope, FaLock, FaBuilding, FaPhone, FaGlobe } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 
-const SignupForm = () => {
-  // State for form type toggle
-  const [userType, setUserType] = useState('attendee');
-  
-  // State for form data with conditional fields
+const AttendeeSignupForm = () => {
+  // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    // Organizer-specific fields
-    companyName: '',
-    phoneNumber: '',
-    website: ''
+    password: ''
   });
   
   // Password visibility toggle
@@ -32,54 +24,12 @@ const SignupForm = () => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Create payload based on user type
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      userType: userType
-    };
-    
-    // Add organizer-specific fields if applicable
-    if (userType === 'organizer') {
-      payload.organizerProfile = {
-        companyName: formData.companyName,
-        phoneNumber: formData.phoneNumber,
-        website: formData.website
-      };
-    }
-    
-    console.log('Form submitted:', payload);
+    console.log('Attendee signup:', formData);
     // API call would go here
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8 bg-gray-50">
-      {/* Form Type Toggle */}
-      <div className="flex mb-6 overflow-hidden rounded-md shadow-sm">
-        <button 
-          className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
-            userType === 'attendee' 
-              ? 'bg-teal-600 text-white' 
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-          onClick={() => setUserType('attendee')}
-        >
-          Sign up as Attendee
-        </button>
-        <button 
-          className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
-            userType === 'organizer' 
-              ? 'bg-teal-600 text-white' 
-              : 'bg-white text-gray-700 hover:bg-gray-100'
-          }`}
-          onClick={() => setUserType('organizer')}
-        >
-          Sign up as Organizer
-        </button>
-      </div>
-      
       {/* Main Form Container */}
       <div className="w-full max-w-md p-8 rounded-lg shadow-md" style={{ backgroundColor: '#F1EDED' }}>
         <div className="text-center">
@@ -88,7 +38,7 @@ const SignupForm = () => {
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Common Fields */}
+          {/* Name Field */}
           <div>
             <label 
               htmlFor="name" 
@@ -113,6 +63,7 @@ const SignupForm = () => {
             </div>
           </div>
           
+          {/* Email Field */}
           <div>
             <label 
               htmlFor="email" 
@@ -136,82 +87,6 @@ const SignupForm = () => {
               />
             </div>
           </div>
-          
-          {/* Conditional Fields for Organizer */}
-          {userType === 'organizer' && (
-            <>
-              <div>
-                <label 
-                  htmlFor="companyName" 
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Company Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaBuilding className="text-gray-500" />
-                  </div>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    placeholder="Enter your company name"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label 
-                  htmlFor="phoneNumber" 
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaPhone className="text-gray-500" />
-                  </div>
-                  <input
-                    type="tel"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter your phone number"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label 
-                  htmlFor="website" 
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Website (Optional)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaGlobe className="text-gray-500" />
-                  </div>
-                  <input
-                    type="url"
-                    id="website"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleChange}
-                    placeholder="Enter your website URL"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </>
-          )}
           
           {/* Password Field with Toggle */}
           <div>
@@ -276,4 +151,4 @@ const SignupForm = () => {
   );
 };
 
-export default SignupForm;
+export default AttendeeSignupForm;
