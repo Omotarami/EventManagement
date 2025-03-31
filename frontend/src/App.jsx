@@ -6,6 +6,7 @@ import OrganizerSignupForm from './pages/OrganizerSignupForm';
 import OnboardingPage from './pages/OnboardingPage';
 import LoginPage from './pages/LoginPage';
 import CategorySelectionPage from './pages/CategorySelectionPage';
+import Dashboard from './pages/admin/dashboard';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
               <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/categories" element={<CategorySelectionPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
           </Router>
   )
