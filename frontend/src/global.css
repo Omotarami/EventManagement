@@ -9,7 +9,6 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -39,5 +38,24 @@
   --color-info: #3b82f6;
 }
 
+
+@layer base {
+  body {
+    @apply  font-normal  leading-relaxed ;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply  font-bold leading-tight ;
+  }
+
+  h1 {
+    @apply text-[60px] ;
+  }
+
+  a {
+    @apply no-underline transition-colors duration-200 ;
+  }
+
+}
 
 
