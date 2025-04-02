@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 // eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion";
+import {motion} from "framer-motion";
 import {
   FaEye,
   FaEyeSlash,
@@ -11,7 +11,7 @@ import {
   FaPhone,
   FaGlobe,
   FaCalendarAlt,
-  FaUsers
+  FaUsers,
 } from "react-icons/fa";
 
 const OrganizerSignupForm = () => {
@@ -30,7 +30,7 @@ const OrganizerSignupForm = () => {
 
   // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -46,32 +46,32 @@ const OrganizerSignupForm = () => {
 
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
+    hidden: {opacity: 0},
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      } 
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
-  
+
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    hidden: {y: 20, opacity: 0},
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { type: 'spring', stiffness: 100 }
-    }
+      transition: {type: "spring", stiffness: 100},
+    },
   };
 
   const buttonVariants = {
-    hover: { 
+    hover: {
       scale: 1.05,
-      backgroundColor: "#248277", 
-      transition: { type: 'spring', stiffness: 300, damping: 10 }
+      backgroundColor: "#248277",
+      transition: {type: "spring", stiffness: 300, damping: 10},
     },
-    tap: { scale: 0.98 }
+    tap: {scale: 0.98},
   };
 
   return (
@@ -108,160 +108,194 @@ const OrganizerSignupForm = () => {
 
         {/* Main animated content */}
         <div className="relative z-10 w-full max-w-lg">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+          <motion.div
+            initial={{opacity: 0, y: 20}}
+            animate={{opacity: 1, y: 0}}
+            transition={{delay: 0.5, duration: 0.8}}
             className="text-white text-center"
           >
-            <motion.h1 
+            <motion.h1
               className="text-4xl font-bold mb-6"
-              animate={{ 
+              animate={{
                 y: [0, -8, 0],
               }}
-              transition={{ 
-                duration: 6, 
+              transition={{
+                duration: 6,
                 repeat: Infinity,
                 repeatType: "reverse",
               }}
             >
-              Create Events on Even<span style={{ color: '#F4A261' }}>tro</span>
+              Create Events on Even<span style={{color: "#F4A261"}}>tro</span>
             </motion.h1>
-            
+
             {/* Event organizer illustration */}
             <motion.div
               className="w-full h-64 my-8 relative"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              transition={{delay: 0.8}}
             >
               {/* Calendar with icon */}
               <motion.div
                 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                animate={{ 
+                animate={{
                   rotate: [-2, 2, -2],
-                  y: [0, -5, 0]
+                  y: [0, -5, 0],
                 }}
-                transition={{ 
-                  duration: 8, 
+                transition={{
+                  duration: 8,
                   repeat: Infinity,
                   repeatType: "reverse",
                 }}
               >
-                <svg width="240" height="200" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="240"
+                  height="200"
+                  viewBox="0 0 240 200"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   {/* Calendar base */}
-                  <motion.rect 
-                    x="40" y="40" width="160" height="140" rx="8" 
-                    stroke="white" strokeWidth="4" fill="rgba(255,255,255,0.1)"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 2, ease: "easeInOut" }}
+                  <motion.rect
+                    x="40"
+                    y="40"
+                    width="160"
+                    height="140"
+                    rx="8"
+                    stroke="white"
+                    strokeWidth="4"
+                    fill="rgba(255,255,255,0.1)"
+                    initial={{pathLength: 0}}
+                    animate={{pathLength: 1}}
+                    transition={{duration: 2, ease: "easeInOut"}}
                   />
-                  
+
                   {/* Calendar header */}
-                  <motion.rect 
-                    x="40" y="40" width="160" height="30" 
-                    fill="#F4A261" 
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 1, ease: "easeInOut" }}
+                  <motion.rect
+                    x="40"
+                    y="40"
+                    width="160"
+                    height="30"
+                    fill="#F4A261"
+                    initial={{scaleX: 0}}
+                    animate={{scaleX: 1}}
+                    transition={{duration: 1, ease: "easeInOut"}}
                   />
-                  
+
                   {/* Calendar grid lines */}
-                  <motion.path 
+                  <motion.path
                     d="M70 70 L70 180 M110 70 L110 180 M150 70 L150 180 M190 70 L190 180 M40 100 L200 100 M40 140 L200 140"
-                    stroke="white" strokeWidth="2" strokeOpacity="0.5"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 2, delay: 1 }}
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeOpacity="0.5"
+                    initial={{pathLength: 0}}
+                    animate={{pathLength: 1}}
+                    transition={{duration: 2, delay: 1}}
                   />
-                  
+
                   {/* Event highlights */}
-                  <motion.rect 
-                    x="110" y="100" width="40" height="40" 
-                    fill="#F4A261" fillOpacity="0.6" rx="4"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 2 }}
+                  <motion.rect
+                    x="110"
+                    y="100"
+                    width="40"
+                    height="40"
+                    fill="#F4A261"
+                    fillOpacity="0.6"
+                    rx="4"
+                    initial={{scale: 0}}
+                    animate={{scale: 1}}
+                    transition={{duration: 0.5, delay: 2}}
                   />
-                  
-                  <motion.rect 
-                    x="70" y="140" width="40" height="40" 
-                    fill="#F4A261" fillOpacity="0.6" rx="4"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 2.2 }}
+
+                  <motion.rect
+                    x="70"
+                    y="140"
+                    width="40"
+                    height="40"
+                    fill="#F4A261"
+                    fillOpacity="0.6"
+                    rx="4"
+                    initial={{scale: 0}}
+                    animate={{scale: 1}}
+                    transition={{duration: 0.5, delay: 2.2}}
                   />
                 </svg>
               </motion.div>
-              
+
               {/* Floating icons */}
               <motion.div
                 className="absolute top-0 right-12"
                 animate={{
                   y: [0, -15, 0],
-                  rotate: [-5, 5, -5]
+                  rotate: [-5, 5, -5],
                 }}
                 transition={{
                   duration: 5,
                   repeat: Infinity,
-                  repeatType: "reverse"
+                  repeatType: "reverse",
                 }}
               >
                 <FaUsers size={48} color="#F4A261" />
               </motion.div>
-              
+
               <motion.div
                 className="absolute bottom-0 left-12"
                 animate={{
                   y: [0, 10, 0],
-                  rotate: [5, -5, 5]
+                  rotate: [5, -5, 5],
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  delay: 1
+                  delay: 1,
                 }}
               >
                 <FaCalendarAlt size={42} color="white" />
               </motion.div>
             </motion.div>
-            
-            <motion.p 
+
+            <motion.p
               className="text-lg mt-4 opacity-90"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              transition={{delay: 1.5}}
             >
               Start planning amazing experiences today
             </motion.p>
           </motion.div>
         </div>
       </div>
-      
+
       {/* Right side - Signup Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <motion.div 
+        <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Logo for mobile view */}
-          <motion.div variants={itemVariants} className="lg:hidden text-center mb-8">
+          <motion.div
+            variants={itemVariants}
+            className="lg:hidden text-center mb-8"
+          >
             <h1 className="text-3xl font-bold">
-              Even<span style={{ color: '#F4A261' }}>tro</span>
+              Even<span style={{color: "#F4A261"}}>tro</span>
             </h1>
             <p className="text-gray-600 mt-2">Where experiences come to life</p>
           </motion.div>
-          
+
           <motion.div variants={itemVariants} className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Create an account</h2>
-            <p className="text-gray-600 mt-2">Start organizing amazing events</p>
+            <h2 className="text-3xl font-bold text-gray-800">
+              Create an account
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Start organizing amazing events
+            </p>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             variants={itemVariants}
             className="bg-white p-8 rounded-lg shadow-md border border-gray-200"
           >
@@ -316,31 +350,6 @@ const OrganizerSignupForm = () => {
                 </div>
               </motion.div>
 
-              {/* Company Name Field */}
-              <motion.div variants={itemVariants}>
-                <label
-                  htmlFor="companyName"
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Company Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaBuilding className="text-gray-500" />
-                  </div>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    placeholder="Enter your company name"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
-                    required
-                  />
-                </div>
-              </motion.div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Phone Number Field */}
                 <motion.div variants={itemVariants}>
@@ -367,29 +376,6 @@ const OrganizerSignupForm = () => {
                   </div>
                 </motion.div>
 
-                {/* Website Field */}
-                <motion.div variants={itemVariants}>
-                  <label
-                    htmlFor="website"
-                    className="block mb-1 text-sm font-medium text-gray-700"
-                  >
-                    Website (Optional)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <FaGlobe className="text-gray-500" />
-                    </div>
-                    <input
-                      type="url"
-                      id="website"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleChange}
-                      placeholder="Your website"
-                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
-                    />
-                  </div>
-                </motion.div>
               </div>
 
               {/* Password Field with Toggle */}
@@ -435,8 +421,24 @@ const OrganizerSignupForm = () => {
                   className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
                   required
                 />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                  I agree to the <a href="/terms" className="text-teal-600 hover:text-teal-700">Terms of Service</a> and <a href="/privacy" className="text-teal-600 hover:text-teal-700">Privacy Policy</a>
+                <label
+                  htmlFor="terms"
+                  className="ml-2 block text-sm text-gray-700"
+                >
+                  I agree to the{" "}
+                  <a
+                    href="/terms"
+                    className="text-teal-600 hover:text-teal-700"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy"
+                    className="text-teal-600 hover:text-teal-700"
+                  >
+                    Privacy Policy
+                  </a>
                 </label>
               </motion.div>
 
@@ -445,7 +447,7 @@ const OrganizerSignupForm = () => {
                 <motion.button
                   type="submit"
                   className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                  style={{ backgroundColor: "#2A9D8F" }}
+                  style={{backgroundColor: "#2A9D8F"}}
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
