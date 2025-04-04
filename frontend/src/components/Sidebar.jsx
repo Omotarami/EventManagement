@@ -9,7 +9,7 @@ const Sidebar = ({ onNavigate }) => {
   // Navigation items 
   const navItems = [
     { name: 'Home', icon: '../public/icons/home.svg', id: 'dashboard' },
-    { name: 'Calendar', icon: '../public/icons/calendar.svg', id: 'calendar' },
+    { name: 'Events', icon: '../public/icons/calendar.svg', id: 'events' },
     { name: 'Messages', icon: '../public/icons/messages.svg', id: 'messages' },
     { name: 'Revenue', icon: '../public/icons/currency.svg', id: 'revenue' },
     { name: 'Tickets', icon: '../public/icons/tickets.svg', id: 'tickets' },
@@ -55,7 +55,7 @@ const Sidebar = ({ onNavigate }) => {
               <div 
                 className={`relative p-2 rounded-lg transition-all duration-300 transform cursor-pointer ${
                   activeIndex === index 
-                    ? 'bg-teal-500 text-white'
+                    ? 'bg-orange-300 text-white'
                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                 }`}
                 onClick={() => handleNavClick(index, item.id)}
@@ -63,13 +63,13 @@ const Sidebar = ({ onNavigate }) => {
                 <img 
                   src={item.icon} 
                   alt={item.name} 
-                  className="w-6 h-6" 
+                  className="w-4 h-4" 
                 />
                 
                 {/* Indicator for active item */}
                 {activeIndex === index && (
                   <motion.div 
-                    className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-teal-500 rounded-l"
+                    className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-0.5 h-4 bg-orange-200 "
                     layoutId="activeIndicator"
                   />
                 )}

@@ -80,11 +80,8 @@ const DashboardNavbar = ({ userName = "Sarah Johnson" }) => {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
         >
-          {/* User name */}
-          <span className="text-gray-700 font-medium">{userName}</span>
-          
-          {/* Notification dot */}
-          <div className="relative">
+            {/* Notification dot */}
+            <div className="relative">
             <motion.div
               animate={{ 
                 scale: [1, 1.1, 1],
@@ -95,28 +92,32 @@ const DashboardNavbar = ({ userName = "Sarah Johnson" }) => {
                 duration: 1
               }}
             >
-              <Bell size={18} className="text-gray-600 mr-1" />
+              <Bell size={16} className="text-gray-600 mr-1" />
               <span className="absolute top-0 right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
             </motion.div>
           </div>
+          {/* User name */}
+          <span className="text-gray-700 font-small">{userName}</span>
           
+        
           {/* Avatar */}
           <div className="relative">
             <img 
-              src="https://api.dicebear.com/6.x/adventurer/svg?seed=Felix" 
+              src="https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight2&accessoriesType=Kurt&hairColor=BrownDark&facialHairType=Blank&clotheType=ShirtCrewNeck&clotheColor=Blue03&eyeType=Side&eyebrowType=AngryNatural&mouthType=Default&skinColor=Tanned" 
               alt="User Avatar"
-              className="w-9 h-9 rounded-full border-2 border-gray-200"
+              className="w-10 h-10 rounded-full border-2 border-gray-200"
             />
             {/* Online indicator */}
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
           </div>
+          
           
           {/* Dropdown arrow */}
           <motion.div
             animate={{ rotate: isDropdownOpen ? 180 : 0 }}
             transition={{ duration: 0.3 }}
           >
-            <ChevronDown size={18} className="text-gray-600" />
+            <ChevronDown size={16} className="text-gray-600" />
           </motion.div>
         </motion.div>
         
@@ -163,9 +164,10 @@ const DashboardNavbar = ({ userName = "Sarah Johnson" }) => {
                 <LogOut size={16} />
                 <span>Logout</span>
               </motion.a>
-            </motion.div>
-          )}
+            </motion.div>)}
+           
         </AnimatePresence>
+          
       </div>
     </nav>
   );

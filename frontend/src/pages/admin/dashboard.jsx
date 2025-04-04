@@ -154,7 +154,7 @@ const Dashboard = () => {
                 style={{ backgroundColor: '#F4A261' }}
                 onClick={handleCreateEvent}
               >
-                <Plus size={18} />
+                <Plus size={25} />
                 <span>Create Event</span>
               </button>
             </div>
