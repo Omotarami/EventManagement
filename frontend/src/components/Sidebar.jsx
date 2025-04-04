@@ -26,23 +26,15 @@ const Sidebar = ({ onNavigate }) => {
   };
 
   return (
-    <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-10">
+    <div className="fixed left-2 top-1/2 transform -translate-y-1/2 z-10">
       <motion.div
         className="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center justify-between"
-        style={{ height: '462px' }}
+        style={{ height: '400px', marginTop:'50px',paddingTop:'30px', width:'60px'}}
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        {/* Logo section */}
-        <div className="mb-8 mt-2">
-          <img 
-            src="/icons/eventro-logo.svg" 
-            alt="Eventro Logo" 
-            className="w-10 h-10"
-          />
-        </div>
-        
+                
         {/* Navigation items */}
         <div className="flex flex-col space-y-8 flex-grow justify-center">
           {navItems.map((item, index) => (
@@ -53,7 +45,7 @@ const Sidebar = ({ onNavigate }) => {
               onMouseLeave={() => setHoveredIndex(null)}
             >
               <div 
-                className={`relative p-2 rounded-lg transition-all duration-300 transform cursor-pointer ${
+                className={`relative p-1 rounded-lg transition-all duration-300 transform cursor-pointer ${
                   activeIndex === index 
                     ? 'bg-orange-300 text-white'
                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
@@ -63,7 +55,7 @@ const Sidebar = ({ onNavigate }) => {
                 <img 
                   src={item.icon} 
                   alt={item.name} 
-                  className="w-4 h-4" 
+                  className="w-5 h-5" 
                 />
                 
                 {/* Indicator for active item */}
@@ -96,7 +88,7 @@ const Sidebar = ({ onNavigate }) => {
         {/* User profile/avatar at bottom */}
         <div className="mt-auto mb-2 relative">
           <div 
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+            className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer "
             onMouseEnter={() => setHoveredIndex('profile')}
             onMouseLeave={() => setHoveredIndex(null)}
             onClick={() => onNavigate && onNavigate('profile')}
@@ -114,7 +106,7 @@ const Sidebar = ({ onNavigate }) => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className="absolute left-full ml-2 px-3 py-1 bg-gray-800 text-white text-sm rounded whitespace-nowrap"
-              style={{ top: '50%', transform: 'translateY(-50%)' }}
+              style={{ top: '50%', transform: 'translateY(-50%)'}}
             >
               My Profile
               <div 
