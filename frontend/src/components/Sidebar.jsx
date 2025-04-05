@@ -47,7 +47,7 @@ const Sidebar = ({ onNavigate }) => {
               <div 
                 className={`relative p-1 rounded-lg transition-all duration-300 transform cursor-pointer ${
                   activeIndex === index 
-                    ? 'bg-orange-300 text-white'
+                    ? 'bg-orange-100 text-white'
                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                 }`}
                 onClick={() => handleNavClick(index, item.id)}
@@ -85,20 +85,6 @@ const Sidebar = ({ onNavigate }) => {
           ))}
         </div>
         
-        {/* User profile/avatar at bottom */}
-        <div className="mt-auto mb-2 relative">
-          <div 
-            className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer "
-            onMouseEnter={() => setHoveredIndex('profile')}
-            onMouseLeave={() => setHoveredIndex(null)}
-            onClick={() => onNavigate && onNavigate('profile')}
-          >
-            <img 
-              src="/icons/user-avatar.svg" 
-              alt="User Profile" 
-              className="w-6 h-6"
-            />
-          </div>
           
           {/* Profile tooltip */}
           {hoveredIndex === 'profile' && (
@@ -114,7 +100,6 @@ const Sidebar = ({ onNavigate }) => {
               />
             </motion.div>
           )}
-        </div>
       </motion.div>
     </div>
   );
