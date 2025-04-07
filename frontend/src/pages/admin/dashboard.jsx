@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { Grid, List, Calendar, ChevronDown, Plus } from "lucide-react";
+import { Grid, List, Calendar, ChevronDown, Plus, Star, Clock, Users } from "lucide-react";
 
 import DashboardNavbar from "../../components/DashboardNavbar";
 import Sidebar from "../../components/Sidebar";
@@ -46,6 +46,13 @@ const Dashboard = () => {
     console.log("Create new event");
     // Navigate to event creation page
   };
+
+  // Mock data for upcoming events
+  const upcomingEvents = [
+    { id: 1, title: "Team Building Workshop", date: "Apr 12", attendees: 18 },
+    { id: 2, title: "Product Launch Party", date: "Apr 15", attendees: 45 },
+    { id: 3, title: "Design Thinking Session", date: "Apr 20", attendees: 12 }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -180,21 +187,115 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Content Area - would be populated with events based on selected tab and view */}
-          <div className="bg-white rounded-lg shadow p-6 min-h-[600px]">
-            {/* This section would be populated with event cards, a list, or a calendar based on viewType */}
-            <div className="text-center text-gray-500 py-12">
-              {activeTab === "planned" ? (
-                <p>Your planned events will appear here</p>
-              ) : (
-                <p>Your attended events will appear here</p>
-              )}
+          {/* Content Area */}
+          <div className="bg-white rounded-lg shadow p-6">
+            {/* Stat Cards in a row using flex */}
+            <div className="grid grid-cols-3 gap-4 mb-8 w-full">
+              <DashboardStatCard
+                title="Total Revenue"
+                value="$48,000"
+                accentColor="#F4A261" 
+                icon={
+                  <div className="p-2 rounded-full bg-orange-100">
+                    <Calendar size={28} color="#F4A261" />
+                  </div>
+                }
+                customStyles={{
+                  card: {
+                    width: '100%', 
+                  }
+                }}
+              />
+              
+              <DashboardStatCard
+                title="Total Attendees"
+                value="248"
+                accentColor="#2A9D8F" 
+                icon={
+                  <div className="p-2 rounded-full bg-teal-100">
+                    <Users size={28} color="#2A9D8F" />
+                  </div>
+                }
+                customStyles={{
+                  card: {
+                    width: '100%',
+                  }
+                }}
+              />
+              
+              <DashboardStatCard
+                title="Total Events"
+                value="10"
+                accentColor="#9B5DE5" 
+                icon={
+                  <div className="p-2 rounded-full bg-purple-100">
+                    <Star size={28} color="#9B5DE5" />
+                  </div>
+                }
+                customStyles={{
+                  card: {
+                    width: '100%', 
+                  }
+                }}
+              />
             </div>
-            <DashboardStatCard
-              title="Monthly Revenue"
-              value="$24,819"
-              accentColor="#E76F51"
-            />
+            
+            {/* Additional Content Section */}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h2>
+              
+              {/* Upcoming Events List */}
+              <div className="space-y-3">
+                {upcomingEvents.map(event => (
+                  <motion.div 
+                    key={event.id}
+                    className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-all"
+                    whileHover={{ scale: 1.02, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-medium text-gray-800">{event.title}</h3>
+                        <div className="flex items-center mt-1 text-gray-500 text-sm">
+                          <Clock size={14} className="mr-1" />
+                          <span>{event.date}</span>
+                          <span className="mx-2">•</span>
+                          <Users size={14} className="mr-1" />
+                          <span>{event.attendees} attendees</span>
+                        </div>
+                      </div>
+                      <button 
+                        className="text-orange-500 hover:text-orange-600"
+                        style={{ color: "#F4A261" }}
+                      >
+                        View details
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.button
+                    className="p-4 bg-orange-50 rounded-lg text-left hover:bg-orange-100 transition-colors"
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <h3 className="font-medium text-orange-500" style={{ color: "#F4A261" }}>Send Event Invitations</h3>
+                    <p className="text-sm text-gray-500 mt-1">Quickly invite attendees to your next event</p>
+                  </motion.button>
+                  
+                  <motion.button
+                    className="p-4 bg-teal-50 rounded-lg text-left hover:bg-teal-100 transition-colors"
+                    whileHover={{ scale: 1.03 }}
+                  >
+                    <h3 className="font-medium text-teal-500" style={{ color: "#2A9D8F" }}>Generate Event Report</h3>
+                    <p className="text-sm text-gray-500 mt-1">Create an analytics report of past events</p>
+                  </motion.button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
