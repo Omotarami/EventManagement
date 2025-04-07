@@ -7,6 +7,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import LoginPage from './pages/LoginPage';
 import CategorySelectionPage from './pages/CategorySelectionPage';
 import Dashboard from './pages/admin/dashboard';
+import Calendar from './pages/admin/Calendar';
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
               <Route path="/categories" element={<CategorySelectionPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/calendar" element={<Calendar />} />
             </Routes>
           </Router>
   )

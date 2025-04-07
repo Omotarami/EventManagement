@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+import { Grid, List, Calendar, ChevronDown, Plus, Star, Clock, Users } from "lucide-react";
 
 import DashboardNavbar from "../../components/DashboardNavbar";
 import Sidebar from "../../components/Sidebar";
 import SearchBar from "../../components/SearchBar";
+import EventCalendar from "../../components/EventCalendar";
 
-const Calendar = () => {
+const Dashboard = () => {
   // State for active tab
   const [activeTab, setActiveTab] = useState("planned");
 
@@ -44,6 +46,30 @@ const Calendar = () => {
     console.log("Create new event");
     // Navigate to event creation page
   };
+
+  const eventsArray = [
+    {
+      title: "Team Meeting",
+      date: new Date(2025, 3, 15), 
+      time: "10:00 AM",
+      description: "Weekly team sync-up",
+      color: "#2A9D8F" 
+    },
+    {
+      title: "Client Presentation",
+      date: new Date(2025, 3, 20),
+      time: "2:30 PM",
+      description: "Quarterly project review",
+      color: "#E76F51"
+    },
+    {
+      title: "Product Launch",
+      date: new Date(2025, 4, 5), 
+      time: "9:00 AM",
+      description: "New product release event",
+      color: "#264653"
+    }
+  ];
 
   
 
@@ -182,10 +208,7 @@ const Calendar = () => {
 
           {/* Content Area */}
           <div className="bg-white rounded-lg shadow p-6">
-         
-            
-     
-         
+          <EventCalendar events={eventsArray} />
           </div>
         </div>
       </div>
@@ -193,4 +216,4 @@ const Calendar = () => {
   );
 };
 
-export default Calendar;
+export default Dashboard;
