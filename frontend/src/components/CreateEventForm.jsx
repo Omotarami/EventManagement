@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, MapPin, Tag, FileImage, Type, 
@@ -138,7 +139,7 @@ const CreateEventForm = () => {
     e.preventDefault();
     
     if (validateCurrentSection()) {
-      // Here you would typically send the form data to your backend
+
       console.log("Form submitted:", formData);
       console.log("Images:", images);
       
