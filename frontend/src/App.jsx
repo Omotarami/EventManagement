@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import CategorySelectionPage from './pages/CategorySelectionPage';
 import Dashboard from './pages/admin/dashboard';
 import Calendar from './pages/admin/Calendar';
+import CreateEvent from './pages/admin/CreateEvent';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/calendar" element={<Calendar />} />
+              <Route path="/create-event" element={<CreateEvent />} />
             </Routes>
           </Router>
   )
