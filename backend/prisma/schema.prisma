@@ -31,8 +31,8 @@ model User {
   notifications       Notification[]
   favorites           UserFavorite[]
   attendedEvents      EventAttendee[]
-  refunds             Refund[]
-  twoFactorAuth       TwoFactorAuth?
+  // refunds             Refund[]
+  // twoFactorAuth       TwoFactorAuth?
   sessions            Session[]
 }
 
@@ -204,7 +204,7 @@ model Order {
   user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   orderItems        OrderItem[]
   tickets           Ticket[]
-  refunds           Refund[]
+  // refunds           Refund[]
 }
 
 model OrderItem {
