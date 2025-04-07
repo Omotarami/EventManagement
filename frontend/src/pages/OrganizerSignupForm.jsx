@@ -20,9 +20,9 @@ const OrganizerSignupForm = () => {
     name: "",
     email: "",
     password: "",
-    companyName: "",
     phoneNumber: "",
-    website: "",
+    // companyName: "",
+    // website: "",
   });
 
   // Password visibility toggle
@@ -350,7 +350,7 @@ const OrganizerSignupForm = () => {
                 </div>
               </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-5"> */}
                 {/* Phone Number Field */}
                 <motion.div variants={itemVariants}>
                   <label
@@ -376,7 +376,7 @@ const OrganizerSignupForm = () => {
                   </div>
                 </motion.div>
 
-              </div>
+              {/* </div> */}
 
               {/* Password Field with Toggle */}
               <motion.div variants={itemVariants}>

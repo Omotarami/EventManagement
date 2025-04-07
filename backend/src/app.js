@@ -8,7 +8,7 @@ const {isAuthenticated} = require("./middlewares/auth.js");
 const logger = require("./config/logger.js");
 const ENV = require("./config/env.js");
 
-const swaggerDocument = YAML.parse(swaggerFile, 'utf8');
+// const swaggerDocument = YAML.parse(swaggerFile, 'utf8');
 class App {
   constructor() {
     this.app = express();

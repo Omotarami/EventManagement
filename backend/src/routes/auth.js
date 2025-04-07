@@ -21,6 +21,13 @@ class AuthRoute {
       `${this.path}/login`,
       useCatchErrors(this.authController.login.bind(this.authController))
     );
+    // Organizer signup
+    this.router.post(
+      `${this.path}/organizer/signup`,
+      useCatchErrors(
+        this.authController.organizerRegister.bind(this.authController)
+      )
+    );
   }
 }
 
