@@ -4,7 +4,7 @@ const AuthRoute = require("./routes/auth");
 
 const server = new App();
 server.initializedRoutes([
-  new UserRoute(),
+  // new UserRoute(),
   new AuthRoute(),
 ]);
 server.listen();

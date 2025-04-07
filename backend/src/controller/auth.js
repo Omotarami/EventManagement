@@ -7,14 +7,14 @@ const prisma = new PrismaClient();
 class AuthController {
 
   async organizerRegister(req, res) {
-    const { name, email, password, phoneNumber } = req.body;
+    const { fullName, email, passwordHash, phone } = req.body;
 
-    if (!name || !email || !password || !phoneNumber) {
+    if (!fullName || !email || !passwordHash || !phone) {
       return res
         .status(400)
         .json({
           message:
-            "All fields are required: name, email, password, and phone number.",
+            "All fields are required: fullName, email, password, and phone number.",
         });
     }
 
@@ -29,27 +29,27 @@ class AuthController {
           .json({ message: "User with this email already exists." });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(passwordHash, 10);
 
       await prisma.user.create({
         data: {
-          name,
+          fullName,
           email,
-          password: hashedPassword,
-          phoneNumber,
+          passwordHash: hashedPassword,
+          phone,
         },
       });
 
       res.status(201).json({ message: "User registered successfully." });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Internal server error." });
+      res.status(500).json({ message: error });
     }
   }
   async login(req, res) {
-    const { email, password } = req.body;
+    const { email, passwordHash } = req.body;
 
-    if (!email || !password) {
+    if (!email || !passwordHash) {
       return res
         .status(400)
         .json({ message: "Email and password are required." });
@@ -64,7 +64,7 @@ class AuthController {
         return res.status(400).json({ message: "Invalid credentials." });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcrypt.compare(passwordHash, user.passwordHash);
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Invalid credentials." });
       }

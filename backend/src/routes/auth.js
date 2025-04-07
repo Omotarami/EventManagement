@@ -15,18 +15,16 @@ class AuthRoute {
     // test endpoint
     this.router.post(
       `${this.path}/user/signup`,
-      useCatchErrors(this.authController.userSignup.bind(this.authController))
+      useCatchErrors(this.authController.organizerRegister)
     );
     this.router.post(
       `${this.path}/login`,
-      useCatchErrors(this.authController.login.bind(this.authController))
+      useCatchErrors(this.authController.login)
     );
     // Organizer signup
     this.router.post(
-      `${this.path}/organizer/signup`,
-      useCatchErrors(
-        this.authController.organizerRegister.bind(this.authController)
-      )
+      `${this.path}/user/signin`,
+      useCatchErrors(this.authController.login)
     );
   }
 }

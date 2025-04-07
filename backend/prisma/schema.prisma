@@ -13,8 +13,8 @@ model User {
   email               String             @unique
   passwordHash        String
   fullName            String
-  profileImage        String?
   phone               String?
+  profileImage        String?
   bio                 String?
   isVerified          Boolean            @default(false)
   verificationToken   String?
