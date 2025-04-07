@@ -1,79 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
-import { Grid, List, Calendar, ChevronDown, Plus } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Grid, List, Calendar, ChevronDown, Plus } from "lucide-react";
 
-
-import DashboardNavbar from '../../components/DashboardNavbar';
-import Sidebar from '../../components/Sidebar';
-import SearchBar from '../../components/SearchBar';
+import DashboardNavbar from "../../components/DashboardNavbar";
+import Sidebar from "../../components/Sidebar";
+import SearchBar from "../../components/SearchBar";
+import DashboardStatCard from "../../components/DashboardStatCard";
 
 const Dashboard = () => {
   // State for active tab
-  const [activeTab, setActiveTab] = useState('planned');
-  
+  const [activeTab, setActiveTab] = useState("planned");
+
   // State for view type
-  const [viewType, setViewType] = useState('grid');
-  
+  const [viewType, setViewType] = useState("grid");
+
   // State for event filter
   // eslint-disable-next-line no-unused-vars
-  const [eventFilter, setEventFilter] = useState('all');
-  
+  const [eventFilter, setEventFilter] = useState("all");
+
   // Handle search
   const handleSearch = (searchTerm) => {
-    console.log('Searching for:', searchTerm);
+    console.log("Searching for:", searchTerm);
     // Implement search logic
   };
-  
+
   // Handle tab change with animation
   const changeTab = (tab) => {
     setActiveTab(tab);
   };
-  
+
   // Toggle view type
   const changeViewType = (type) => {
     setViewType(type);
   };
-  
+
   // Toggle event filter
   const toggleEventFilter = () => {
     // Toggle logic
-    console.log('Toggle event filter');
+    console.log("Toggle event filter");
   };
-  
+
   // Handle create event
   const handleCreateEvent = () => {
-    console.log('Create new event');
+    console.log("Create new event");
     // Navigate to event creation page
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
       <DashboardNavbar />
-      
+
       {/* Sidebar */}
       <Sidebar />
-      
+
       {/* Main Content */}
       <div className="pl-24 pr-6 pt-6 pb-12">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Overview</h1>
-          
+
           {/* Tabs and Toolbar */}
           <div className="flex flex-col mb-6">
             {/* Tabs */}
             <div className="flex border-b border-gray-200">
               <div className="relative mr-8">
                 <button
-                  className={`pb-4 font-medium text-base ${activeTab === 'planned' ? 'text-orange-400' : 'text-gray-500 hover:text-gray-700'}`}
-                  onClick={() => changeTab('planned')}
+                  className={`pb-4 font-medium text-base ${
+                    activeTab === "planned"
+                      ? "text-orange-400"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  onClick={() => changeTab("planned")}
                 >
                   Planned
                 </button>
-                {activeTab === 'planned' && (
-                  <motion.div 
+                {activeTab === "planned" && (
+                  <motion.div
                     layoutId="activeTabIndicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-400"
                     initial={{ opacity: 0 }}
@@ -82,16 +86,20 @@ const Dashboard = () => {
                   />
                 )}
               </div>
-              
+
               <div className="relative">
                 <button
-                  className={`pb-4 font-medium text-base ${activeTab === 'attended' ? 'text-orange-400' : 'text-gray-500 hover:text-gray-700'}`}
-                  onClick={() => changeTab('attended')}
+                  className={`pb-4 font-medium text-base ${
+                    activeTab === "attended"
+                      ? "text-orange-400"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  onClick={() => changeTab("attended")}
                 >
                   Attended
                 </button>
-                {activeTab === 'attended' && (
-                  <motion.div 
+                {activeTab === "attended" && (
+                  <motion.div
                     layoutId="activeTabIndicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-400"
                     initial={{ opacity: 0 }}
@@ -101,40 +109,52 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Toolbar */}
             <div className="flex items-center justify-between mt-6">
               <div className="flex items-center space-x-4">
                 {/* Search Bar */}
                 <SearchBar onSearch={handleSearch} />
-                
+
                 {/* View Type Toggle */}
                 <div className="flex items-center bg-white border border-gray-200 rounded-lg p-1">
                   <button
-                    className={`p-1.5 rounded ${viewType === 'grid' ? 'bg-gray-100 text-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => changeViewType('grid')}
+                    className={`p-1.5 rounded ${
+                      viewType === "grid"
+                        ? "bg-gray-100 text-teal-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => changeViewType("grid")}
                     aria-label="Grid View"
                   >
                     <Grid size={18} />
                   </button>
-                  
+
                   <button
-                    className={`p-1.5 rounded ${viewType === 'list' ? 'bg-gray-100 text-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => changeViewType('list')}
+                    className={`p-1.5 rounded ${
+                      viewType === "list"
+                        ? "bg-gray-100 text-teal-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => changeViewType("list")}
                     aria-label="List View"
                   >
                     <List size={18} />
                   </button>
-                  
+
                   <button
-                    className={`p-1.5 rounded ${viewType === 'calendar' ? 'bg-gray-100 text-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => changeViewType('calendar')}
+                    className={`p-1.5 rounded ${
+                      viewType === "calendar"
+                        ? "bg-gray-100 text-teal-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => changeViewType("calendar")}
                     aria-label="Calendar View"
                   >
                     <Calendar size={18} />
                   </button>
                 </div>
-                
+
                 {/* Event Filter */}
                 <div className="relative">
                   <button
@@ -147,11 +167,11 @@ const Dashboard = () => {
                   {/* Dropdown menu would go here */}
                 </div>
               </div>
-              
+
               {/* Create Event Button */}
               <button
                 className="flex items-center space-x-2 bg-orange-400 hover:bg-orange-500 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                style={{ backgroundColor: '#F4A261' }}
+                style={{ backgroundColor: "#F4A261" }}
                 onClick={handleCreateEvent}
               >
                 <Plus size={25} />
@@ -159,17 +179,22 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Content Area - would be populated with events based on selected tab and view */}
           <div className="bg-white rounded-lg shadow p-6 min-h-[600px]">
             {/* This section would be populated with event cards, a list, or a calendar based on viewType */}
             <div className="text-center text-gray-500 py-12">
-              {activeTab === 'planned' ? (
+              {activeTab === "planned" ? (
                 <p>Your planned events will appear here</p>
               ) : (
                 <p>Your attended events will appear here</p>
               )}
             </div>
+            <DashboardStatCard
+              title="Monthly Revenue"
+              value="$24,819"
+              accentColor="#E76F51"
+            />
           </div>
         </div>
       </div>
