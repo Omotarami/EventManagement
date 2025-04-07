@@ -5,12 +5,12 @@ import PropTypes from 'prop-types';
  * DashboardStatCard -
  * 
  * @param {Object} props
- * @param {string} props.title - The title text to display
- * @param {string|number} props.value - The main value to display
- * @param {React.ReactNode} props.icon - Icon component to display
- * @param {string} props.accentColor - Color for the left border accent (hex or CSS color name)
- * @param {Object} props.customStyles - Optional custom styles object for different elements
- * @param {string} props.className - Optional additional class names
+ * @param {string} props.title 
+ * @param {string|number} props.value 
+ * @param {React.ReactNode} props.icon 
+ * @param {string} props.accentColor 
+ * @param {Object} props.customStyles 
+ * @param {string} props.className  
  */
 const DashboardStatCard = ({
   title,
@@ -23,6 +23,8 @@ const DashboardStatCard = ({
   // Default styles 
   const defaultStyles = {
     card: {
+      width: '357px', // Explicit fixed width
+      maxWidth: '100%', // Ensures responsiveness
       backgroundColor: '#f2f2f2',
       borderRadius: '8px',
       padding: '20px',
