@@ -282,7 +282,7 @@ const CreateEventForm = () => {
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span className="text-amber-500">One-time Event</span>
+                <span className="">One-time Event</span>
               </label>
               
               <label className={`
