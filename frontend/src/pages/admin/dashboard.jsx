@@ -1,28 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { Grid, List, Calendar, ChevronDown, Plus, Star, Clock, Users } from "lucide-react";
+import { Toaster } from "react-hot-toast";
 
 import DashboardNavbar from "../../components/DashboardNavbar";
 import Sidebar from "../../components/Sidebar";
 import SearchBar from "../../components/SearchBar";
 import DashboardStatCard from "../../components/DashboardStatCard";
+import EventCard from "../../components/EventCard";
+import { EventContext } from "../../context/EventContext";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { events, deleteEvent } = useContext(EventContext);
+  
   // State for active tab
   const [activeTab, setActiveTab] = useState("planned");
 
   // State for view type
   const [viewType, setViewType] = useState("grid");
 
-  // State for event filter
-  // eslint-disable-next-line no-unused-vars
-  const [eventFilter, setEventFilter] = useState("all");
+  // State for search term
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Handle search
-  const handleSearch = (searchTerm) => {
-    console.log("Searching for:", searchTerm);
-    // Implement search logic
+  const handleSearch = (term) => {
+    setSearchTerm(term);
   };
 
   // Handle tab change with animation
@@ -35,27 +40,46 @@ const Dashboard = () => {
     setViewType(type);
   };
 
-  // Toggle event filter
-  const toggleEventFilter = () => {
-    // Toggle logic
-    console.log("Toggle event filter");
-  };
-
   // Handle create event
   const handleCreateEvent = () => {
-    console.log("Create new event");
-    // Navigate to event creation page
+    navigate("/create-event");
   };
 
-  // Mock data for upcoming events
-  const upcomingEvents = [
-    { id: 1, title: "Team Building Workshop", date: "Apr 12", attendees: 18 },
-    { id: 2, title: "Product Launch Party", date: "Apr 15", attendees: 45 },
-    { id: 3, title: "Design Thinking Session", date: "Apr 20", attendees: 12 }
-  ];
+  // Handle edit event
+  const handleEditEvent = (eventId) => {
+    navigate(`/edit-event/${eventId}`);
+  };
+
+  // Handle delete event
+  const handleDeleteEvent = (eventId) => {
+    deleteEvent(eventId);
+  };
+
+  // Handle view event details
+  const handleViewEventDetails = (eventId) => {
+    navigate(`/events/${eventId}`);
+  };
+
+  // Filter events based on search term
+  const filteredEvents = events.filter(event => 
+    event.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Calculate totals for stat cards
+  const totalRevenue = events.reduce((sum, event) => sum + event.grossAmount, 0);
+  const totalAttendees = events.reduce((sum, event) => sum + event.soldTickets, 0);
+  const totalEvents = events.length;
+
+  // Upcoming events (sort by start date)
+  const upcomingEvents = [...events]
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast Notifications */}
+      <Toaster position="top-center" />
+      
       {/* Top Navigation */}
       <DashboardNavbar />
 
@@ -161,18 +185,6 @@ const Dashboard = () => {
                     <Calendar size={18} />
                   </button>
                 </div>
-
-                {/* Event Filter */}
-                <div className="relative">
-                  <button
-                    className="flex items-center space-x-1 bg-white border border-gray-200 rounded-lg py-1.5 px-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    onClick={toggleEventFilter}
-                  >
-                    <span>All Events</span>
-                    <ChevronDown size={16} />
-                  </button>
-                  {/* Dropdown menu would go here */}
-                </div>
               </div>
 
               {/* Create Event Button */}
@@ -181,7 +193,7 @@ const Dashboard = () => {
                 style={{ backgroundColor: "#F4A261" }}
                 onClick={handleCreateEvent}
               >
-                <Plus size={25} />
+                <Plus size={20} />
                 <span>Create Event</span>
               </button>
             </div>
@@ -190,10 +202,10 @@ const Dashboard = () => {
           {/* Content Area */}
           <div className="bg-white rounded-lg shadow p-6">
             {/* Stat Cards in a row using flex */}
-            <div className="grid grid-cols-3 gap-4 mb-8 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 w-full">
               <DashboardStatCard
                 title="Total Revenue"
-                value="$48,000"
+                value={`$${totalRevenue.toLocaleString()}`}
                 accentColor="#F4A261" 
                 icon={
                   <div className="p-2 rounded-full bg-orange-100">
@@ -209,7 +221,7 @@ const Dashboard = () => {
               
               <DashboardStatCard
                 title="Total Attendees"
-                value="248"
+                value={totalAttendees.toLocaleString()}
                 accentColor="#2A9D8F" 
                 icon={
                   <div className="p-2 rounded-full bg-teal-100">
@@ -225,7 +237,7 @@ const Dashboard = () => {
               
               <DashboardStatCard
                 title="Total Events"
-                value="10"
+                value={totalEvents.toString()}
                 accentColor="#9B5DE5" 
                 icon={
                   <div className="p-2 rounded-full bg-purple-100">
@@ -240,60 +252,128 @@ const Dashboard = () => {
               />
             </div>
             
-            {/* Additional Content Section */}
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h2>
-              
-              {/* Upcoming Events List */}
-              <div className="space-y-3">
-                {upcomingEvents.map(event => (
-                  <motion.div 
-                    key={event.id}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-all"
-                    whileHover={{ scale: 1.02, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium text-gray-800">{event.title}</h3>
-                        <div className="flex items-center mt-1 text-gray-500 text-sm">
-                          <Clock size={14} className="mr-1" />
-                          <span>{event.date}</span>
-                          <span className="mx-2">•</span>
-                          <Users size={14} className="mr-1" />
-                          <span>{event.attendees} attendees</span>
-                        </div>
-                      </div>
-                      <button 
-                        className="text-orange-500 hover:text-orange-600"
-                        style={{ color: "#F4A261" }}
-                      >
-                        View details
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              
-              {/* Quick Actions */}
+            {/* Events Grid */}
+            {events.length > 0 ? (
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <motion.button
-                    className="p-4 bg-orange-50 rounded-lg text-left hover:bg-orange-100 transition-colors"
-                    whileHover={{ scale: 1.03 }}
-                  >
-                    <h3 className="font-medium text-orange-500" style={{ color: "#F4A261" }}>Send Event Invitations</h3>
-                    <p className="text-sm text-gray-500 mt-1">Quickly invite attendees to your next event</p>
-                  </motion.button>
-                  
-                  <motion.button
-                    className="p-4 bg-teal-50 rounded-lg text-left hover:bg-teal-100 transition-colors"
-                    whileHover={{ scale: 1.03 }}
-                  >
-                    <h3 className="font-medium text-teal-500" style={{ color: "#2A9D8F" }}>Generate Event Report</h3>
-                    <p className="text-sm text-gray-500 mt-1">Create an analytics report of past events</p>
-                  </motion.button>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Events</h2>
+                
+                <div className={`grid ${viewType === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"} gap-6`}>
+                  {filteredEvents.map(event => (
+                    <motion.div
+                      key={event.id}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                      onClick={() => handleViewEventDetails(event.id)}
+                      className="cursor-pointer"
+                    >
+                      <EventCard
+                        eventName={event.title}
+                        soldTickets={event.soldTickets}
+                        totalTickets={event.totalTickets}
+                        grossAmount={event.grossAmount}
+                        status={event.status}
+                        imageSrc={event.imageSrc}
+                        onEdit={() => handleEditEvent(event.id)}
+                        onDelete={() => handleDeleteEvent(event.id)}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
+              </div>
+            ) : (
+              <div className="mt-8 text-center p-10 border-2 border-dashed border-gray-200 rounded-lg">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Calendar size={48} className="text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-medium text-gray-600 mb-2">No Events Yet</h3>
+                  <p className="text-gray-500 mb-4">Create your first event to get started!</p>
+                  <button
+                    onClick={handleCreateEvent}
+                    className="px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors"
+                    style={{ backgroundColor: "#F4A261" }}
+                  >
+                    Create Event
+                  </button>
+                </motion.div>
+              </div>
+            )}
+            
+            {/* Upcoming Events List (if we have any events) */}
+            {events.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Events</h2>
+                
+                <div className="space-y-3">
+                  {upcomingEvents.map(event => {
+                    // Format the date
+                    const eventDate = new Date(event.startDate);
+                    const formattedDate = eventDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    });
+                    
+                    return (
+                      <motion.div 
+                        key={event.id}
+                        className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 transition-all cursor-pointer"
+                        whileHover={{ scale: 1.02, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+                        onClick={() => handleViewEventDetails(event.id)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium text-gray-800">{event.title}</h3>
+                            <div className="flex items-center mt-1 text-gray-500 text-sm">
+                              <Clock size={14} className="mr-1" />
+                              <span>{formattedDate}</span>
+                              <span className="mx-2">•</span>
+                              <Users size={14} className="mr-1" />
+                              <span>{event.soldTickets} attendees</span>
+                            </div>
+                          </div>
+                          <button 
+                            className="text-orange-500 hover:text-orange-600"
+                            style={{ color: "#F4A261" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewEventDetails(event.id);
+                            }}
+                          >
+                            View details
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Quick Actions */}
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <motion.button
+                  className="p-4 bg-orange-50 rounded-lg text-left hover:bg-orange-100 transition-colors"
+                  whileHover={{ scale: 1.03 }}
+                  onClick={handleCreateEvent}
+                >
+                  <h3 className="font-medium text-orange-500" style={{ color: "#F4A261" }}>Create New Event</h3>
+                  <p className="text-sm text-gray-500 mt-1">Start setting up your next amazing event</p>
+                </motion.button>
+                
+                <motion.button
+                  className="p-4 bg-teal-50 rounded-lg text-left hover:bg-teal-100 transition-colors"
+                  whileHover={{ scale: 1.03 }}
+                >
+                  <h3 className="font-medium text-teal-500" style={{ color: "#2A9D8F" }}>Generate Event Report</h3>
+                  <p className="text-sm text-gray-500 mt-1">Create an analytics report of past events</p>
+                </motion.button>
               </div>
             </div>
           </div>

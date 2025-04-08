@@ -1,12 +1,27 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, MapPin, Tag, FileImage, Type, 
   Repeat, Info, ChevronRight, ChevronLeft, Upload, X, Check
 } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { EventContext } from '../context/EventContext'; 
 
 const CreateEventForm = () => {
+  const navigate = useNavigate();
+  
+
+  const eventContext = useContext(EventContext) || {};
+  const addEvent = eventContext.addEvent || (newEvent => {
+    console.warn('EventContext not available, using fallback storage');
+    
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    events.push(newEvent);
+    localStorage.setItem('events', JSON.stringify(events));
+  });
+  
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -20,7 +35,7 @@ const CreateEventForm = () => {
     category: "",
     description: "",
   });
-  
+
   // Image upload state
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
@@ -55,7 +70,7 @@ const CreateEventForm = () => {
     const files = Array.from(e.target.files);
     
     if (files.length + images.length > 5) {
-      alert("You can upload a maximum of 5 images");
+      toast.error("You can upload a maximum of 5 images");
       return;
     }
     
@@ -139,25 +154,50 @@ const CreateEventForm = () => {
     e.preventDefault();
     
     if (validateCurrentSection()) {
-
-      console.log("Form submitted:", formData);
-      console.log("Images:", images);
+      // Show loading toast
+      const loadingToast = toast.loading("Creating your event...");
       
-      // Example of form data preparation for backend
-      const eventFormData = new FormData();
+      // Create event object with formatted date and time
+      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+      const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
       
-      // Add form fields
-      Object.keys(formData).forEach(key => {
-        eventFormData.append(key, formData[key]);
-      });
+      // Generate a unique ID
+      const eventId = Date.now().toString();
       
-      // Add images
-      images.forEach((image, index) => {
-        eventFormData.append(`image${index}`, image);
-      });
+      // Create new event object
+      const newEvent = {
+        id: eventId,
+        title: formData.title,
+        description: formData.description,
+        startDate: startDateTime,
+        endDate: endDateTime,
+        location: formData.location,
+        category: formData.category,
+        schedule: formData.schedule,
+        eventType: formData.eventType,
+        // For demo purposes, we'll use the first preview image or a placeholder
+        imageSrc: previewImages.length > 0 ? previewImages[0] : "https://via.placeholder.com/400x200",
+        // Mock data for EventCard
+        soldTickets: 0,
+        totalTickets: 100,
+        grossAmount: 0,
+        status: 'OnSale'
+      };
       
-      // TODO: Send eventFormData to your API
-      alert("Event created successfully!");
+      // Simulate API call delay
+      setTimeout(() => {
+        // Add the event to context
+        addEvent(newEvent);
+        
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToast);
+        toast.success("Event created successfully!");
+        
+        // Navigate to the event details page
+        setTimeout(() => {
+          navigate(`/events/${eventId}`);
+        }, 1500);
+      }, 1000);
     }
   };
   
@@ -282,7 +322,7 @@ const CreateEventForm = () => {
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span className="text-amber-500">One-time Event</span>
+                <span className="">One-time Event</span>
               </label>
               
               <label className={`
@@ -308,7 +348,7 @@ const CreateEventForm = () => {
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span className="text-amber-500">Recurring Event</span>
+                <span>Recurring Event</span>
               </label>
             </div>
           </div>
@@ -316,6 +356,7 @@ const CreateEventForm = () => {
       ),
     },
     
+    // Other sections remain the same...
     // Section 1: Date and Time
     {
       title: "Date & Time",
@@ -702,9 +743,12 @@ const CreateEventForm = () => {
   
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Form Header */}
-        <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-6 text-white">
+      {/* Toast Container */}
+      <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+      
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden"></div>
+      {/* Form Header */}
+      <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-6 text-white">
           <h2 className="text-2xl font-bold">Create New Event</h2>
           <p className="text-orange-100 mt-1">Fill in the details to create your awesome event</p>
         </div>
@@ -740,7 +784,7 @@ const CreateEventForm = () => {
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8">
             <motion.button
-              type="button"
+              type="button" // Important: explicitly set to button type
               className={`px-6 py-2 rounded-lg flex items-center ${
                 currentSection > 0 
                   ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
@@ -757,7 +801,7 @@ const CreateEventForm = () => {
             
             {currentSection < totalSections - 1 ? (
               <motion.button
-                type="button"
+                type="button" // Important: explicitly set to button type
                 className="px-6 py-2 bg-orange-400 text-white rounded-lg flex items-center hover:bg-orange-500"
                 onClick={goToNextSection}
                 whileHover={{ scale: 1.05 }}
@@ -768,7 +812,7 @@ const CreateEventForm = () => {
               </motion.button>
             ) : (
               <motion.button
-                type="submit"
+                type="submit" // This button should submit the form
                 className="px-6 py-2 bg-teal-500 text-white rounded-lg flex items-center hover:bg-teal-600"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -780,7 +824,6 @@ const CreateEventForm = () => {
           </div>
         </form>
       </div>
-    </div>
   );
 };
 
