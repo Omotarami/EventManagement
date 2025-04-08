@@ -169,33 +169,8 @@ const CreateEventForm = () => {
       icon: <Info size={24} />,
       content: (
         <div className="space-y-6">
-          {/* Title Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Event Title <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Type size={18} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className={`pl-10 w-full px-4 py-2 border ${
-                  errors.title ? 'border-red-300' : 'border-gray-300'
-                } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
-                placeholder="Give your event a catchy title"
-              />
-            </div>
-            {errors.title && (
-              <p className="mt-1 text-sm text-red-500">{errors.title}</p>
-            )}
-          </div>
-          
-          {/* Image Upload */}
-          <div>
+             {/* Image Upload */}
+             <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Event Images (Max 5)
             </label>
@@ -252,6 +227,31 @@ const CreateEventForm = () => {
               )}
             </div>
           </div>
+          {/* Title Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Event Title <span className="text-slate-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Type size={18} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className={`pl-10 w-full px-4 py-2 text-slate-500 border ${
+                  errors.title ? 'border-red-300' : 'border-gray-300'
+                } rounded-lg focus:ring-grey-500 focus:border-grey-500`}
+                placeholder="Give your event a catchy title"
+              />
+            </div>
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+            )}
+          </div>
+          
           
           {/* Event Schedule */}
           <div>
@@ -263,7 +263,7 @@ const CreateEventForm = () => {
                 flex items-center p-3 border rounded-lg cursor-pointer
                 ${formData.schedule === 'one-time' 
                   ? 'bg-orange-50 border-orange-300' 
-                  : 'bg-white border-gray-300 hover:border-orange-300'
+                  : 'bg-white border-gray-300 hover:border-black-300'
                 }
                 transition-colors
               `}>
@@ -276,7 +276,7 @@ const CreateEventForm = () => {
                   className="hidden"
                 />
                 <span className={`
-                  inline-block w-5 h-5 rounded-full mr-2
+                  inline-block w-3 h-3 rounded-full mr-2
                   ${formData.schedule === 'one-time' 
                     ? 'bg-orange-400 ring-2 ring-orange-200' 
                     : 'bg-gray-200'
@@ -302,7 +302,7 @@ const CreateEventForm = () => {
                   className="hidden"
                 />
                 <span className={`
-                  inline-block w-5 h-5 rounded-full mr-2
+                  inline-block w-3 h-3 rounded-full mr-2
                   ${formData.schedule === 'recurring' 
                     ? 'bg-orange-400 ring-2 ring-orange-200' 
                     : 'bg-gray-200'
@@ -337,7 +337,7 @@ const CreateEventForm = () => {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
-                  className={`pl-10 w-full px-4 py-2 border ${
+                  className={`pl-10 w-full px-4 py-2 text-gray-500 border ${
                     errors.startDate ? 'border-red-300' : 'border-gray-300'
                   } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
                 />
@@ -361,7 +361,7 @@ const CreateEventForm = () => {
                   name="startTime"
                   value={formData.startTime}
                   onChange={handleChange}
-                  className={`pl-10 w-full px-4 py-2 border ${
+                  className={`pl-10 w-full text-gray-500 px-4 py-2 border ${
                     errors.startTime ? 'border-red-300' : 'border-gray-300'
                   } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
                 />
@@ -385,7 +385,7 @@ const CreateEventForm = () => {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
-                  className={`pl-10 w-full px-4 py-2 border ${
+                  className={`pl-10 w-full px-4 text-gray-500 py-2 border ${
                     errors.endDate ? 'border-red-300' : 'border-gray-300'
                   } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
                 />
@@ -409,7 +409,7 @@ const CreateEventForm = () => {
                   name="endTime"
                   value={formData.endTime}
                   onChange={handleChange}
-                  className={`pl-10 w-full px-4 py-2 border ${
+                  className={`pl-10 w-full px-4 text-gray-500 py-2 border ${
                     errors.endTime ? 'border-red-300' : 'border-gray-300'
                   } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
                 />
@@ -426,25 +426,25 @@ const CreateEventForm = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-orange-50 p-4 rounded-lg border border-orange-200"
+              className=" p-4 rounded-lg border border-slate-200"
             >
-              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <h4 className="text-sm font-medium text-slate-700 mb-2 flex items-center">
                 <Repeat size={16} className="mr-1" />
                 Recurring Options
               </h4>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-700">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     Repeats
                   </label>
                   <select
                     name="recurringType"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-gray-500"
                   >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
+                    <option value="daily" className="text-slate-500">Daily</option>
+                    <option value="weekly" className="text-slate-500">Weekly</option>
+                    <option value="monthly" className="text-slate-500">Monthly</option>
                   </select>
                 </div>
                 
@@ -455,7 +455,7 @@ const CreateEventForm = () => {
                   <input
                     type="date"
                     name="recurringUntil"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-4 py-2 border text-slate-500 border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
               </div>
@@ -480,7 +480,7 @@ const CreateEventForm = () => {
               <label className={`
                 flex items-center p-3 border rounded-lg cursor-pointer
                 ${formData.eventType === 'physical' 
-                  ? 'bg-orange-50 border-orange-300' 
+                  ? 'border-orange-300' 
                   : 'bg-white border-gray-300 hover:border-orange-300'
                 }
                 transition-colors
@@ -492,22 +492,22 @@ const CreateEventForm = () => {
                   checked={formData.eventType === 'physical'}
                   onChange={handleChange}
                   className="hidden"
-                />
+                /> 
                 <span className={`
-                  inline-block w-5 h-5 rounded-full mr-2
+                  inline-block w-3 h-3 rounded-full mr-2
                   ${formData.eventType === 'physical' 
                     ? 'bg-orange-400 ring-2 ring-orange-200' 
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span>Physical Event</span>
+                <span className="text-slate-500">Physical Event</span>
               </label>
               
               <label className={`
                 flex items-center p-3 border rounded-lg cursor-pointer
                 ${formData.eventType === 'virtual' 
-                  ? 'bg-orange-50 border-orange-300' 
-                  : 'bg-white border-gray-300 hover:border-orange-300'
+                  ? 'border-orange-300' 
+                  : 'bg-white border-gray-300'
                 }
                 transition-colors
               `}>
@@ -520,13 +520,13 @@ const CreateEventForm = () => {
                   className="hidden"
                 />
                 <span className={`
-                  inline-block w-5 h-5 rounded-full mr-2
+                  inline-block w-3 h-3 rounded-full mr-2
                   ${formData.eventType === 'virtual' 
                     ? 'bg-orange-400 ring-2 ring-orange-200' 
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span>Virtual Event</span>
+                <span className="text-slate-500">Virtual Event</span>
               </label>
             </div>
           </div>
@@ -551,7 +551,7 @@ const CreateEventForm = () => {
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`pl-10 w-full px-4 py-2 border ${
+                    className={`pl-10 w-full px-4 py-2 border text-slate-500 ${
                       errors.location ? 'border-red-300' : 'border-gray-300'
                     } rounded-lg focus:ring-orange-500 focus:border-orange-500`}
                     placeholder="Enter event venue address"
@@ -579,7 +579,7 @@ const CreateEventForm = () => {
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+                    className="pl-10 w-full px-4 py-2 text-slate-500 border rounded-lg focus:ring-orange-500 focus:border-orange-500"
                     placeholder="Enter virtual meeting link"
                   />
                 </div>
@@ -602,17 +602,17 @@ const CreateEventForm = () => {
                 onChange={handleChange}
                 className={`pl-10 w-full px-4 py-2 border ${
                   errors.category ? 'border-red-300' : 'border-gray-300'
-                } rounded-lg focus:ring-orange-500 focus:border-orange-500 appearance-none`}
+                } rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-400`}
               >
                 <option value="">Select a category</option>
-                <option value="business">Business</option>
+                <option value="business" >Business</option>
                 <option value="educational">Educational</option>
-                <option value="fashion">Fashion</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="fitness">Fitness</option>
+                <option value="fashion" >Fashion</option>
+                <option value="entertainment" >Entertainment</option>
+                <option value="fitness" >Fitness</option>
                 <option value="health">Health</option>
-                <option value="technology">Technology</option>
-                <option value="travel">Travel</option>
+                <option value="technology" >Technology</option>
+                <option value="travel" >Travel</option>
               </select>
             </div>
             {errors.category && (
@@ -638,7 +638,7 @@ const CreateEventForm = () => {
               value={formData.description}
               onChange={handleChange}
               rows="6"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-gray-500"
               placeholder="Describe your event in detail. What can attendees expect?"
             ></textarea>
           </div>
