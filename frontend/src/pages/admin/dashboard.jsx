@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { Grid, List, Calendar, ChevronDown, Plus, Star, Clock, Users } from "lucide-react";
 import { Toaster } from "react-hot-toast";

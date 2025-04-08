@@ -1,9 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-
+// Create the context
 export const EventContext = createContext();
 
-export const EventProvider = ({ children }) => {
+const EventProvider = ({ children }) => {
   // Initialize state from localStorage if available
   const [events, setEvents] = useState(() => {
     const savedEvents = localStorage.getItem('events');

@@ -11,7 +11,16 @@ import { EventContext } from '../context/EventContext';
 
 const CreateEventForm = () => {
   const navigate = useNavigate();
-  const { addEvent } = useContext(EventContext);
+  
+
+  const eventContext = useContext(EventContext) || {};
+  const addEvent = eventContext.addEvent || (newEvent => {
+    console.warn('EventContext not available, using fallback storage');
+    
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    events.push(newEvent);
+    localStorage.setItem('events', JSON.stringify(events));
+  });
   
   // Form state
   const [formData, setFormData] = useState({
