@@ -19,9 +19,6 @@ const CreateEvent = () => {
       <div className="pl-24 pr-6 pt-6 pb-12">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">
-            Create an Event
-          </h1>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
