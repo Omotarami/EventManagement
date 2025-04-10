@@ -12,6 +12,7 @@ import { Toaster } from 'react-hot-toast';
 import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
 import EventDetails from "./pages/EventDetails"
+import HomePage from "./pages/HomePage";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         {/* <Navbar /> */}
         <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
         <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
           <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
