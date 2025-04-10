@@ -322,7 +322,7 @@ const CreateEventForm = () => {
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span className="">One-time Event</span>
+                <span className="text-black">One-time Event</span>
               </label>
               
               <label className={`
@@ -348,7 +348,7 @@ const CreateEventForm = () => {
                     : 'bg-gray-200'
                   }
                 `}></span>
-                <span>Recurring Event</span>
+                <span className="text-black">Recurring Event</span>
               </label>
             </div>
           </div>

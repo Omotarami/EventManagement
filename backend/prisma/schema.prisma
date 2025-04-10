@@ -254,28 +254,6 @@ model EventAttendee {
   @@unique([eventId, userId])
 }
 
-// Tagging system
-model Tag {
-  id         Int        @id @default(autoincrement())
-  name       String     @unique
-  createdAt  DateTime   @default(now())
-
-  // Relations
-  eventTags  EventTag[]
-}
-
-model EventTag {
-  id        Int      @id @default(autoincrement())
-  eventId   Int
-  tagId     Int
-  
-  // Relations
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, tagId])
-}
-
 model UserFavorite {
   id        Int      @id @default(autoincrement())
   userId    Int

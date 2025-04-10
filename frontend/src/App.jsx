@@ -11,6 +11,7 @@ import Calendar from "./pages/admin/Calendar";
 import { Toaster } from 'react-hot-toast';
 import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
+import EventDetails from "./pages/EventDetails"
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/event-details" element={<EventDetails/>} />
         </Routes>
       </Router>
     </EventProvider>
