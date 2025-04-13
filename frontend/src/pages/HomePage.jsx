@@ -11,7 +11,7 @@ const HomePage = () => {
           />
           <div className="absolute inset-0 opacity-60 bg-black "></div>
           <header className="absolute top-10 left-0 w-full">
-            <div className="flex justify-between px-5 max-w-5xl mx-auto">
+            <div className="flex justify-between px-3 max-w-6xl mx-auto">
               <h1 className="text-xl font-bold">
                 <span className=" text-teal-600">EVEN</span>
                 <span className="text-orange-300">TRO</span>
@@ -32,7 +32,7 @@ const HomePage = () => {
               </nav>
             </div>
           </header>
-          <section className="absolute inset-0 flex justify-between max-w-5xl mx-auto px-5">
+          <section className="absolute inset-0 flex justify-between max-w-6xl mx-auto px-3">
             <div className="py-50 ">
               <h2 className="text-4xl font-normal">
                 Discover{" "}
@@ -75,11 +75,25 @@ const HomePage = () => {
           </section>
         </div>
       </div>
-      <div className="">
+      <div className=" relative px-3 max-w-6xl mx-auto py-10 ">
+        <div>
+        <p className="text-sm text-black"> Explore Categories</p>
+        <div className=" underline w-7 h-0.5 bg-black mt-1"></div>
+        <div className="  flex my-10 gap-5"> 
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        </div>
+        <span></span>
+      </div>
+  
+       
 
       </div>
-
-      <div></div>
     </>
   );
 };
