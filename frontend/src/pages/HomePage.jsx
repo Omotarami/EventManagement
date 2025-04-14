@@ -1,4 +1,5 @@
 import {MapPin} from "lucide-react";
+import {BriefcaseBusiness, Factory} from "lucide-react";
 const HomePage = () => {
   return (
     <>
@@ -42,17 +43,22 @@ const HomePage = () => {
               <p className="font-light">
                 Book tickets for concerts,tech events, fashion and more
               </p>
+              <div className="flex">
               <div>
                 <input
                   type="text"
                   placeholder="Search for events"
                   className="bg-white rounded-lg p-1.5 w-65 text-black bg"
                 ></input>
+                </div>
+                <div>
                 <input
                   type="text"
                   placeholder="Choose a location"
                   className=" bg-white rounded-lg p-1.5 w-40 text-black mx-0.5"
-                ></input>
+                >
+                </input>
+                </div>
               </div>
             </div>
             <div className="font-light ml-auto pt-70 text-right">
@@ -75,24 +81,93 @@ const HomePage = () => {
           </section>
         </div>
       </div>
-      <div className=" relative px-3 max-w-6xl mx-auto py-10 ">
-        <div>
+      <div className="px-3 max-w-6xl mx-auto py-10">
         <p className="text-sm text-black"> Explore Categories</p>
-        <div className=" underline w-7 h-0.5 bg-black mt-1"></div>
-        <div className="  flex my-10 gap-5"> 
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
-        <span className="h-20 w-20  bg-slate-300 rounded-full"></span>
+        <div className=" underline w-7 h-0.5 bg-black"></div>
+        <div className="overflow-x-auto">
+          <div className="flex justify-between mt-6 ">
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Science & Technology</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Business</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Fashion</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Concerts</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Spirituality</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Liesure</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Culture</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
+                <img
+                  src="../public/icons/Sci&Tech.svg"
+                  alt="tech"
+                  className="w-6 h-6"
+                />
+              </span>
+              <p className="text-black text-center text-xs pt-4">Sports</p>
+            </div>
+          </div>
         </div>
-        <span></span>
-      </div>
-  
-       
-
       </div>
     </>
   );
