@@ -1,5 +1,4 @@
-import {MapPin} from "lucide-react";
-import {BriefcaseBusiness, Factory} from "lucide-react";
+
 const HomePage = () => {
   return (
     <>
@@ -43,21 +42,22 @@ const HomePage = () => {
               <p className="font-light">
                 Book tickets for concerts,tech events, fashion and more
               </p>
-              <div className="flex">
-              <div>
+              <div className="flex space-x-1 ">
+              <div className="bg-white rounded-lg p-1.5">
                 <input
                   type="text"
                   placeholder="Search for events"
-                  className="bg-white rounded-lg p-1.5 w-65 text-black bg"
+                  className="w-65 text-black outline-0"
                 ></input>
                 </div>
-                <div>
+                <div className="flex bg-white p-2 rounded-lg items-center ">
                 <input
                   type="text"
                   placeholder="Choose a location"
-                  className=" bg-white rounded-lg p-1.5 w-40 text-black mx-0.5"
+                  className=" w-40 text-black outline-none"
                 >
                 </input>
+                <img src="../public/icons/location.svg" alt="" className="w-5 h-5 "/>
                 </div>
               </div>
             </div>
@@ -69,13 +69,18 @@ const HomePage = () => {
               <p>
                 Plan events with vendors, create tickets and sell the experience
               </p>
-              <div className="flex justify-end gap-1 text-start font-semibold">
-                <p className="bg-white rounded-lg p-1.5 w-35 text-orange-300">
+              <div className="flex justify-end gap-1 text-start font-semibold ">
+                <div className=" rounded-lg inline-flex bg-white p-2 items-center">
+                <p className=" w-30 text-orange-300">
                   Get started
                 </p>
-                <p className=" bg-orange-300 rounded-lg p-1.5 w-25 text-white">
+                <img src="../public/icons/arrow.svg" className="w-5 h-5"></img>
+                </div>
+                <div className="p-2  bg-orange-300 rounded-lg">
+                <p className="  w-20 text-white">
                   Lean more
                 </p>
+                </div>
               </div>
             </div>
           </section>
