@@ -1,4 +1,3 @@
-
 const HomePage = () => {
   return (
     <>
@@ -43,21 +42,24 @@ const HomePage = () => {
                 Book tickets for concerts,tech events, fashion and more
               </p>
               <div className="flex space-x-1 ">
-              <div className="bg-white rounded-lg p-1.5">
-                <input
-                  type="text"
-                  placeholder="Search for events"
-                  className="w-65 text-black outline-0"
-                ></input>
+                <div className="bg-white rounded-lg p-1.5">
+                  <input
+                    type="text"
+                    placeholder="Search for events"
+                    className="w-65 text-black outline-0"
+                  ></input>
                 </div>
                 <div className="flex bg-white p-2 rounded-lg items-center ">
-                <input
-                  type="text"
-                  placeholder="Choose a location"
-                  className=" w-40 text-black outline-none"
-                >
-                </input>
-                <img src="../public/icons/location.svg" alt="" className="w-5 h-5 "/>
+                  <input
+                    type="text"
+                    placeholder="Choose a location"
+                    className=" w-40 text-black outline-none"
+                  ></input>
+                  <img
+                    src="../public/icons/location.svg"
+                    alt=""
+                    className="w-5 h-5 "
+                  />
                 </div>
               </div>
             </div>
@@ -70,16 +72,15 @@ const HomePage = () => {
                 Plan events with vendors, create tickets and sell the experience
               </p>
               <div className="flex justify-end gap-1 text-start font-semibold ">
-                <div className=" rounded-lg inline-flex bg-white p-2 items-center">
-                <p className=" w-30 text-orange-300">
-                  Get started
-                </p>
-                <img src="../public/icons/arrow.svg" className="w-5 h-5"></img>
+                <div className=" p-2 rounded-lg inline-flex bg-white items-center">
+                  <p className=" w-25 text-orange-300">Get started</p>
+                  <img
+                    src="../public/icons/arrow.svg"
+                    className="w-5 h-5"
+                  ></img>
                 </div>
-                <div className="p-2  bg-orange-300 rounded-lg">
-                <p className="  w-20 text-white">
-                  Lean more
-                </p>
+                <div className="p-2 bg-orange-300 rounded-lg">
+                  <p className="  w-20 text-white">Lean more</p>
                 </div>
               </div>
             </div>
@@ -87,10 +88,13 @@ const HomePage = () => {
         </div>
       </div>
       <div className="px-3 max-w-6xl mx-auto py-10">
-        <p className="text-sm text-black"> Explore Categories</p>
-        <div className=" underline w-7 h-0.5 bg-black"></div>
+        <div className=" flex justify-between">
+        <p className="text-sm text-black  "> Explore Categories</p>
+        {/* <div className=" underline w-7 h-1 rounded-2xl  bg-black "></div> */}
+        <img src="../public/icons/arrow.svg" className=""></img>
+        </div>
         <div className="overflow-x-auto">
-          <div className="flex justify-between mt-6 ">
+          <div className="flex justify-between mt-6  ">
             <div className="flex flex-col items-center">
               <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
                 <img
@@ -99,7 +103,9 @@ const HomePage = () => {
                   className="w-6 h-6"
                 />
               </span>
-              <p className="text-black text-center text-xs pt-4">Science & Technology</p>
+              <p className="text-black text-center text-xs pt-4">
+                Science & Technology
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
@@ -139,7 +145,9 @@ const HomePage = () => {
                   className="w-6 h-6"
                 />
               </span>
-              <p className="text-black text-center text-xs pt-4">Spirituality</p>
+              <p className="text-black text-center text-xs pt-4">
+                Spirituality
+              </p>
             </div>
             <div className="flex flex-col items-center">
               <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
