@@ -49,7 +49,7 @@ const HomePage = () => {
                     className="w-65 text-black outline-0"
                   ></input>
                 </div>
-                <div className="flex bg-white p-2 rounded-lg items-center ">
+                <div className="flex bg-white p-2 rounded-lg  ">
                   <input
                     type="text"
                     placeholder="Choose a location"
@@ -63,7 +63,7 @@ const HomePage = () => {
                 </div>
               </div>
             </div>
-            <div className="font-light ml-auto pt-70 text-right">
+            <div className="font-light pt-70 text-right">
               <h2 className="text-4xl font-normal">
                 Plan Your Next
                 <span className="font-bold text-orange-300"> Event</span>
@@ -71,16 +71,16 @@ const HomePage = () => {
               <p>
                 Plan events with vendors, create tickets and sell the experience
               </p>
-              <div className="flex justify-end gap-1 text-start font-semibold ">
-                <div className=" p-2 rounded-lg inline-flex bg-white items-center">
-                  <p className=" w-25 text-orange-300">Get started</p>
+              <div className="flex justify-end gap-1 text-start font-semibold items-center ">
+                <div className="flex rounded-lg bg-white p-2">
+                  <p className=" w-35 text-orange-300">Get started</p>
                   <img
                     src="../public/icons/arrow.svg"
-                    className="w-5 h-5"
+                    className="w-5 "
                   ></img>
                 </div>
                 <div className="p-2 bg-orange-300 rounded-lg">
-                  <p className="  w-20 text-white">Lean more</p>
+                  <p className="w-25 text-white">Lean more</p>
                 </div>
               </div>
             </div>
@@ -88,13 +88,13 @@ const HomePage = () => {
         </div>
       </div>
       <div className="px-3 max-w-6xl mx-auto py-10">
-        <div className=" flex justify-between">
+        <div className=" flex justify-between ">
         <p className="text-sm text-black  "> Explore Categories</p>
         {/* <div className=" underline w-7 h-1 rounded-2xl  bg-black "></div> */}
         <img src="../public/icons/arrow.svg" className=""></img>
         </div>
         <div className="overflow-x-auto">
-          <div className="flex justify-between mt-6  ">
+          <div className="flex justify-between mt-15 ">
             <div className="flex flex-col items-center">
               <span className="h-20 w-20 bg-slate-300 rounded-full flex items-center justify-center">
                 <img
