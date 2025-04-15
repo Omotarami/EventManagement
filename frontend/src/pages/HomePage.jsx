@@ -182,6 +182,12 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+      <div className="mb-10 mt-4 h-3 p-10 outline-1 outline-black"></div>
+      <span className="max-w-screen bg-none p"></span>
+      
+    
+      
+      
     </>
   );
 };
