@@ -15,7 +15,7 @@ const Hero = () => {
       </div>
       
       {/* Content Container */}
-      <div className="absolute inset-0 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-0">
+      <div className="absolute inset-0 flex md:flex-row justify-between items-center max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-0">
         {/* Discover Events Section */}
         <div className="md:w-1/2 z-10 space-y-6 md:pr-8">
           <h2 className="text-3xl md:text-5xl font-normal text-white">
@@ -60,7 +60,7 @@ const Hero = () => {
         
         {/* Diagonal Line using  */}
         <motion.div 
-          className="hidden md:block absolute left-1/2 h-3/4 w-0.5 bg-white"
+          className="hidden md:block absolute left-1/2 h-3/4 w-0.5 bg-white 1"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 0.6, height: '75%' }}
           transition={{ duration: 1 }}
@@ -68,7 +68,7 @@ const Hero = () => {
         />
         
         {/* Plan Your Event Section */}
-        <div className="md:w-1/2 z-10 space-y-6 md:pl-8 text-right mt-12 md:mt-0">
+        <div className="md:w-1/2 z-10 space-y-6 md:pl-8 text-right mt-10 md:mt-0">
           <h2 className="text-3xl md:text-5xl font-normal text-white">
             Plan Your Next
             <span className="font-bold text-orange-300"> Event</span>

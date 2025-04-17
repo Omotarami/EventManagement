@@ -7,23 +7,23 @@ const Categories = () => {
       <div className="flex justify-between items-center mb-8">
         <div className="relative">
           <h3 className="text-xl font-semibold text-black">Explore Categories</h3>
-          <div className="w-24 h-1 bg-teal-500 rounded-full mt-2" />
+          <div className="w-10 h-1 bg-black rounded-full mt-2" />
         </div>
         
         <button className="bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </button>
       </div>
       
       <div className="overflow-x-auto pb-4">
-        <div className="flex space-x-6 md:space-x-8 lg:space-x-12 min-w-max">
+        <div className="flex space-x-6 md:space-x-8 lg:space-x-16 min-w-max mt-4">
           {/* Science & Technology */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/sci&tech.svg"
                 alt="Science & Technology"
                 className="w-8 h-8"
               />
@@ -35,9 +35,9 @@ const Categories = () => {
           
           {/* Business */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/business.svg"
                 alt="Business"
                 className="w-8 h-8"
               />
@@ -49,9 +49,9 @@ const Categories = () => {
           
           {/* Fashion */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/Fashion.svg"
                 alt="Fashion"
                 className="w-8 h-8"
               />
@@ -63,9 +63,9 @@ const Categories = () => {
           
           {/* Concerts */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/concert.svg"
                 alt="Concerts"
                 className="w-8 h-8"
               />
@@ -77,9 +77,9 @@ const Categories = () => {
           
           {/* Spirituality */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/spirituality.svg"
                 alt="Spirituality"
                 className="w-8 h-8"
               />
@@ -91,9 +91,9 @@ const Categories = () => {
           
           {/* Leisure */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/leisure.svg"
                 alt="Leisure"
                 className="w-8 h-8"
               />
@@ -105,9 +105,9 @@ const Categories = () => {
           
           {/* Culture */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/culture.svg"
                 alt="Culture"
                 className="w-8 h-8"
               />
@@ -119,9 +119,9 @@ const Categories = () => {
           
           {/* Sports */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="h-20 w-20 bg-gray-200 rounded-full flex items-center justify-center shadow-md group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
+            <div className="h-20 w-20 bg-gray-300 rounded-full flex items-center justify-center  group-hover:bg-teal-50 transition-colors duration-300 hover:scale-105">
               <img
-                src="/icons/Sci&Tech.svg"
+                src="/icons/sport.svg"
                 alt="Sports"
                 className="w-8 h-8"
               />
