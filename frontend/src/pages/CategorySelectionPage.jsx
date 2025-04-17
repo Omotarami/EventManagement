@@ -3,20 +3,20 @@ import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { 
-  Briefcase, // Business
-  GraduationCap, // Educational
-  Sparkles, // Fashion & Lifestyle
-  Music, // Entertainment
-  Dumbbell, // Fitness/Sports
-  Heart, // Health
-  Laptop, // Technology
-  Plane // Travel
+  Briefcase, 
+  GraduationCap, 
+  Sparkles, 
+  Music, 
+  Dumbbell, 
+  Heart, 
+  Laptop, 
+  Plane 
 } from 'lucide-react';
 
 const CategorySelectionPage = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   
-  // Array of categories with their icons
+  
   const categories = [
     { id: 'business', name: 'Business', icon: Briefcase },
     { id: 'educational', name: 'Educational', icon: GraduationCap },
