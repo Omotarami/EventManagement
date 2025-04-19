@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  // Navigation items 
-  const navItems = [
+  // Navigation items for organizers 
+  const organizerNavItems = [
     { name: 'Home', icon: '../public/icons/home.svg', id: 'dashboard', path: '/dashboard' },
     { name: 'Calendar', icon: '../public/icons/calendar.svg', id: 'calendar', path: '/calendar' },
     { name: 'Messages', icon: '../public/icons/messages.svg', id: 'messages', path: '/messages' },
@@ -19,6 +21,18 @@ const Sidebar = () => {
     { name: 'Settings', icon: '../public/icons/settings.svg', id: 'settings', path: '/settings' },
   ];
 
+  // Navigation items for attendees (excluding Revenue)
+  const attendeeNavItems = [
+    { name: 'Home', icon: '../public/icons/home.svg', id: 'dashboard', path: '/attendee-dashboard' },
+    { name: 'Calendar', icon: '../public/icons/calendar.svg', id: 'calendar', path: '/calendar' },
+    { name: 'Messages', icon: '../public/icons/messages.svg', id: 'messages', path: '/messages' },
+    { name: 'Tickets', icon: '../public/icons/tickets.svg', id: 'tickets', path: '/tickets' },
+    { name: 'Settings', icon: '../public/icons/settings.svg', id: 'settings', path: '/settings' },
+  ];
+
+  // Choose nav items based on user role
+  const navItems = user?.role === 'organizer' ? organizerNavItems : attendeeNavItems;
+
   // Set active index based on current path when component mounts
   useEffect(() => {
     const currentPath = location.pathname;
@@ -26,7 +40,7 @@ const Sidebar = () => {
     if (index !== -1) {
       setActiveIndex(index);
     }
-  }, [location.pathname]);
+  }, [location.pathname, navItems]);
 
   // Handle navigation item click
   const handleNavClick = (index, path) => {
