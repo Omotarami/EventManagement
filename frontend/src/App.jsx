@@ -11,8 +11,13 @@ import Calendar from "./pages/admin/Calendar";
 import { Toaster } from 'react-hot-toast';
 import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
-import EventDetails from "./pages/EventDetails"
+import EventDetails from "./pages/EventDetails";
 import HomePage from "./pages/HomePage";
+import Messages from "./pages/admin/Messages"; 
+import Revenue from "./pages/admin/Revenue"; 
+import Tickets from "./pages/admin/Tickets"; 
+import Settings from "./pages/admin/Settings"; 
+import UnderConstruction from "./pages/UnderConstruction"; 
 
 const App = () => {
   return (
@@ -27,11 +32,20 @@ const App = () => {
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/categories" element={<CategorySelectionPage />} />
           <Route path="/login" element={<LoginPage />} />
+          
+          {/* Dashboard routes */}
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/events" element={<Calendar />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/revenue" element={<Revenue />} />
+          <Route path="/tickets" element={<Tickets />} />
+          <Route path="/settings" element={<Settings />} />
+          
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/event-details" element={<EventDetails/>} />
-        
+          
+          {/* 404/Under Construction page */}
+          <Route path="*" element={<UnderConstruction />} />
         </Routes>
       </Router>
     </EventProvider>
