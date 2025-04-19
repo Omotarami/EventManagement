@@ -18,6 +18,7 @@ import NoAccessPage from "./pages/NoAccessPage";
 import UnderConstruction from "./pages/UnderConstruction";
 import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
+import DashboardRouter from "./components/DashboardRouter";
 
 const App = () => {
   return (
@@ -34,9 +35,10 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/no-access" element={<NoAccessPage />} />
 
-            {/* Protected routes for organizers */}
+            <Route path="/dashboard" element={<DashboardRouter />} />
+
             <Route
-              path="/dashboard"
+              path="/organizer-dashboard"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
                   <OrganizerDashboard />
@@ -44,7 +46,6 @@ const App = () => {
               }
             />
 
-            {/* Protected routes for attendees */}
             <Route
               path="/attendee-dashboard"
               element={
@@ -54,7 +55,6 @@ const App = () => {
               }
             />
 
-            {/* Common Protected routes */}
             <Route
               path="/events"
               element={
