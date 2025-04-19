@@ -12,7 +12,7 @@ const Sidebar = () => {
   // Navigation items 
   const navItems = [
     { name: 'Home', icon: '../public/icons/home.svg', id: 'dashboard', path: '/dashboard' },
-    { name: 'Events', icon: '../public/icons/calendar.svg', id: 'events', path: '/calendar' },
+    { name: 'Calendar', icon: '../public/icons/calendar.svg', id: 'calendar', path: '/calendar' },
     { name: 'Messages', icon: '../public/icons/messages.svg', id: 'messages', path: '/messages' },
     { name: 'Revenue', icon: '../public/icons/currency.svg', id: 'revenue', path: '/revenue' },
     { name: 'Tickets', icon: '../public/icons/tickets.svg', id: 'tickets', path: '/tickets' },
