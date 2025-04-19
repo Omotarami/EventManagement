@@ -6,46 +6,117 @@ import OrganizerSignupForm from "./pages/OrganizerSignupForm";
 import OnboardingPage from "./pages/OnboardingPage";
 import LoginPage from "./pages/LoginPage";
 import CategorySelectionPage from "./pages/CategorySelectionPage";
-import Dashboard from "./pages/admin/dashboard";
-import Calendar from "./pages/admin/Calendar";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
 import EventDetails from "./pages/EventDetails";
 import HomePage from "./pages/HomePage";
-import UnderConstruction from "./pages/UnderConstruction"; 
+import OrganizerDashboard from "./pages/admin/OrganizerDashboard";
+import AttendeeDashboard from "./pages/admin/AttendeeDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import NoAccessPage from "./pages/NoAccessPage";
+import UnderConstruction from "./pages/UnderConstruction";
+import Calendar from "./pages/admin/Calendar";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
-    <EventProvider>
-      <Router>
-        {/* <Navbar /> */}
-        <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
-          <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/categories" element={<CategorySelectionPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          
-          {/* Dashboard routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/events" element={<Calendar />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/messages" element={<UnderConstruction />} />
-          <Route path="/revenue" element={<UnderConstruction />} />
-          <Route path="/tickets" element={<UnderConstruction />} />
-          <Route path="/settings" element={<UnderConstruction />} />
-          
-          <Route path="/create-event" element={<CreateEvent />} />
-          <Route path="/event-details" element={<EventDetails/>} />
-          
-          {/* 404/Under Construction page */}
-          <Route path="*" element={<UnderConstruction />} />
-        </Routes>
-      </Router>
-    </EventProvider>
+    <AuthProvider>
+      <EventProvider>
+        <Router>
+          <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
+            <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/categories" element={<CategorySelectionPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/no-access" element={<NoAccessPage />} />
+
+            {/* Protected routes for organizers */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <OrganizerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected routes for attendees */}
+            <Route
+              path="/attendee-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["attendee"]}>
+                  <AttendeeDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Common Protected routes */}
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/revenue"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/tickets"
+              element={
+                <ProtectedRoute>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/create-event"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/event-details" element={<EventDetails />} />
+
+            {/* 404/Under Construction page */}
+            <Route path="*" element={<UnderConstruction />} />
+          </Routes>
+        </Router>
+      </EventProvider>
+    </AuthProvider>
   );
 };
 
