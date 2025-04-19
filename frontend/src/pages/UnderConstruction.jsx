@@ -129,7 +129,7 @@ const UnderConstruction = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-full shadow-lg cursor-pointer transition duration-300"
               >
                 Back to Dashboard
               </motion.button>
