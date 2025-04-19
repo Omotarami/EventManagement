@@ -18,13 +18,13 @@ import {
 } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
-import DashboardNavbar from "../../components/DashboardNavbar";
-import Sidebar from "../../components/Sidebar";
-import SearchBar from "../../components/SearchBar";
-import DashboardStatCard from "../../components/DashboardStatCard";
-import EventCard from "../../components/EventCard";
-import { EventContext } from "../../context/EventContext";
-import { useAuth } from "../../context/AuthContext";
+import DashboardNavbar from "../components/DashboardNavbar";
+import Sidebar from "../components/Sidebar";
+import SearchBar from "../components/SearchBar";
+import DashboardStatCard from "../components/DashboardStatCard";
+import EventCard from "../components/EventCard";
+import { EventContext } from "../context/EventContext";
+import { useAuth } from "../context/AuthContext";
 
 const AttendeeDashboard = () => {
   const navigate = useNavigate();
