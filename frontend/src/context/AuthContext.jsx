@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for stored user on mount
     const storedUser = localStorage.getItem('eventro_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -17,10 +18,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Mike make ya call here
+      // Mike login logic, replace am with API call
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
       let userData = null;
       
-      // Mike this is mock check for organizer
+      //  Mike this one na check for organizer
       if (email.includes('organizer')) {
         userData = {
           id: 1,
@@ -29,7 +34,7 @@ export const AuthProvider = ({ children }) => {
           role: 'organizer'
         };
       } 
-      // Mike this is mock check for attendee
+      // Mike this one na check for attendee
       else {
         userData = {
           id: 2,
@@ -51,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData, userType) => {
     try {
-      // Michael make your API call here
+      // Mike do API call here
       const newUser = {
         ...userData,
         id: Date.now(),
