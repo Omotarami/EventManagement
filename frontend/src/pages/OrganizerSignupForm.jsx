@@ -446,7 +446,7 @@ const OrganizerSignupForm = () => {
               <motion.div variants={itemVariants} className="pt-4">
                 <motion.button
                   type="submit"
-                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg shadow cursor-pointer transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                   style={{backgroundColor: "#2A9D8F"}}
                   variants={buttonVariants}
                   whileHover="hover"

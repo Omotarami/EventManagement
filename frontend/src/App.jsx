@@ -11,10 +11,10 @@ import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
 import EventDetails from "./pages/EventDetails";
 import HomePage from "./pages/HomePage";
-import OrganizerDashboard from "./pages/admin/OrganizerDashboard";
-import AttendeeDashboard from "./pages/admin/AttendeeDashboard";
+import dashboard from "./pages/admin/dashboard";
+import AttendeeDashboard from "./pages/AttendeeDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import NoAccessPage from "./pages/NoAccessPage";
+import NoAccessPage from "./components/NoAccessPage";
 import UnderConstruction from "./pages/UnderConstruction";
 import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
@@ -41,7 +41,7 @@ const App = () => {
               path="/organizer-dashboard"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
-                  <OrganizerDashboard />
+                  <dashboard />
                 </ProtectedRoute>
               }
             />

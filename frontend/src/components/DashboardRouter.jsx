@@ -11,7 +11,7 @@ const DashboardRouter = () => {
       if (!user) {
         navigate('/login');
       } else if (user.role === 'organizer') {
-        navigate('/organizer-dashboard');
+        navigate('/dashboard');
       } else if (user.role === 'attendee') {
         navigate('/attendee-dashboard');
       } else {

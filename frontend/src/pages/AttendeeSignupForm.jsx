@@ -393,7 +393,7 @@ const AttendeeSignupForm = () => {
               <motion.div variants={itemVariants} className="pt-4">
                 <motion.button
                   type="submit"
-                  className="w-full py-3 px-4 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  className="w-full py-3 px-4 text-white font-medium rounded-lg shadow cursor-pointer transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                   style={{ backgroundColor: "#F4A261" }}
                   variants={buttonVariants}
                   whileHover="hover"
