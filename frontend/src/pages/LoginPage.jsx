@@ -35,7 +35,7 @@ const LoginPage = () => {
         navigate(from);
       } else {
         if (user.role === "organizer") {
-          navigate("/dashboard");
+          navigate("/organizer-dashboard");
         } else if (user.role === "attendee") {
           navigate("/attendee-dashboard");
         } else {

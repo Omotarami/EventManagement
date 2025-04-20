@@ -64,11 +64,9 @@ const App = () => {
             />
 
             <Route
-              path="/events"
+              path="/calendar"
               element={
-                <ProtectedRoute>
                   <Calendar />
-                </ProtectedRoute>
               }
             />
 
