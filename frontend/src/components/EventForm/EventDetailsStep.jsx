@@ -1,10 +1,10 @@
 import React from "react";
-import ImageUploader from "./ImageUploader";
-import EventBasicInfo from "./EventBasicInfo";
-import EventSchedule from "./EventSchedule";
-import EventTypeLocation from "./EventTypeLocation";
-import EventAgenda from "./EventAgenda";
-import StepNavigation from "../StepNavigation";
+import ImageUploader from "../EventForm/ImageUploader";
+import EventBasicInfo from "../EventForm/EventBasicInfo";
+import EventSchedule from "../EventForm/EventSchedule";
+import EventTypeLocation from "../EventForm/EventTypeLocation";
+import EventAgenda from "../EventForm/EventAgenda";
+import StepNavigation from "../EventForm/StepNavigation";
 
 /**
  * 
