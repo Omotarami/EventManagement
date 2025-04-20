@@ -1,5 +1,5 @@
 import React from "react";
-import { FormSection, FormInput, FormTextArea, FormSelect } from "./FormComponents";
+import { FormSection, FormInput, FormTextArea, FormSelect } from "../EventForm/FormComponents";
 
 /**
  * EventBasicInfo component
