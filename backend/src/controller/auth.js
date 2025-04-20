@@ -6,12 +6,11 @@ const prisma = new PrismaClient();
 
 class AuthController {
   async userRegister(req, res) {
-    const { fullName, email, passwordHash, phone } = req.body;
+    const { fullname, email, password } = req.body;
 
-    if (!fullName || !email || !passwordHash || !phone) {
+    if (!fullname || !email || !password) {
       return res.status(400).json({
-        message:
-          "All fields are required: fullName, email, password, and phone number.",
+        message: "All fields are required: fullname, email, password user",
       });
     }
 
@@ -26,14 +25,13 @@ class AuthController {
           .json({ message: "User with this email already exists." });
       }
 
-      const hashedPassword = await bcrypt.hash(passwordHash, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       await prisma.user.create({
         data: {
-          fullName,
+          fullname,
           email,
-          passwordHash: hashedPassword,
-          phone,
+          password: hashedPassword,
         },
       });
 
@@ -44,12 +42,11 @@ class AuthController {
     }
   }
   async organizerRegister(req, res) {
-    const { fullName, email, passwordHash, phone } = req.body;
+    const { fullname, email, password } = req.body;
 
-    if (!fullName || !email || !passwordHash || !phone) {
+    if (!fullname || !email || !password) {
       return res.status(400).json({
-        message:
-          "All fields are required: fullName, email, password, and phone number.",
+        message: "All fields are required: fullname, email, password organizer",
       });
     }
 
@@ -64,29 +61,31 @@ class AuthController {
           .json({ message: "User with this email already exists." });
       }
 
-      const hashedPassword = await bcrypt.hash(passwordHash, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
       const account_type = "organizer";
 
       await prisma.user.create({
         data: {
-          fullName,
+          fullname,
           email,
-          passwordHash: hashedPassword,
-          phone,
+          password: hashedPassword,
           account_type: account_type,
         },
       });
-
       res.status(201).json({ message: "User registered successfully." });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: error });
+      console.error("Error details:", error);
+      // Return a more informative error message
+      res.status(500).json({
+        message: "Server error during registration",
+        details: error.message || "Unknown error",
+      });
     }
   }
   async login(req, res) {
-    const { email, passwordHash } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !passwordHash) {
+    if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Email and password are required." });
@@ -101,10 +100,7 @@ class AuthController {
         return res.status(400).json({ message: "Invalid credentials." });
       }
 
-      const isPasswordValid = await bcrypt.compare(
-        passwordHash,
-        user.passwordHash
-      );
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Invalid credentials." });
       }
