@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import StepProgress from "../components/EventForm/StepProgress";
@@ -7,9 +7,11 @@ import TicketsStep from "../components/EventForm/TicketsStep";
 import PreviewStep from "../components/EventForm/PreviewStep";
 import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
+import { EventContext } from "../context/EventContext";
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
+  const { addEvent } = useContext(EventContext);
   
   // Track the current step
   const [currentStep, setCurrentStep] = useState(1);
@@ -21,19 +23,19 @@ const CreateEventPage = () => {
     title: "",
     description: "",
     category: "",
-    eventType: "physical",
+    eventType: "physical", 
     isRecurring: false,
     dates: [],
-    times: [], 
+    times: [],
     capacity: "",
     location: "",
-    agenda: [], 
+    agenda: [],
     
-    
+    // Tickets
     tickets: [], 
   });
 
-  
+  // Handle form data updates - this will be passed to each step component
   const updateFormData = (newData) => {
     setFormData(prevData => ({
       ...prevData,
@@ -41,31 +43,76 @@ const CreateEventPage = () => {
     }));
   };
 
-  
+  // Navigate to next step
   const nextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(prevStep => prevStep + 1);
-      window.scrollTo(0, 0);
+      window.scrollTo(0, 0); // Scroll to top on step change
     }
   };
 
- 
+  // Navigate to previous step
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(prevStep => prevStep - 1);
-      window.scrollTo(0, 0); 
+      window.scrollTo(0, 0); // Scroll to top on step change
     }
   };
 
- 
+  // Handle form submission - called from preview step
   const handleSubmit = () => {
     try {
-      // Add your API call here Mikey
-      // For now i just put success message
+      // Create a new event object formatted for the event context
+      const newEvent = {
+        id: Date.now().toString(), // Generate a unique ID
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        startDate: formData.dates[0], // Use first selected date as start date
+        endDate: formData.dates[formData.dates.length - 1], // Last date if recurring
+        
+        // Calculate start and end times based on first time slot
+        startTime: formData.times.length > 0 
+          ? `${formData.times[0].startTime} ${formData.times[0].startPeriod}` 
+          : "",
+        endTime: formData.times.length > 0 
+          ? `${formData.times[0].endTime} ${formData.times[0].endPeriod}` 
+          : "",
+        
+        location: formData.location,
+        eventType: formData.eventType,
+        isRecurring: formData.isRecurring,
+        agenda: formData.agenda,
+        
+        // Calculate total capacity from input
+        totalTickets: parseInt(formData.capacity) || 0,
+        soldTickets: 0, // New events start with 0 tickets sold
+        
+        // Calculate initial gross amount (0 for new events)
+        grossAmount: 0,
+        
+        // Set initial status to published
+        status: "published",
+        
+        // Get first image if available
+        imageSrc: formData.images.length > 0 
+          ? formData.images[0].preview || formData.images[0].url 
+          : "",
+          
+        // Add tickets information
+        tickets: formData.tickets.map(ticket => ({
+          ...ticket,
+          sold: 0 // Initialize sold count to 0
+        }))
+      };
+      
+      // Add event to context
+      addEvent(newEvent);
+      
       toast.success("Event created successfully!");
       
       // Navigate to dashboard after successful creation
-      navigate("/organizer-dashboard");
+      navigate("/dashboard");
     } catch (error) {
       toast.error("Failed to create event. Please try again.");
       console.error("Error creating event:", error);
