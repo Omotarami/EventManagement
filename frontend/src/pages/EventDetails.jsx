@@ -29,10 +29,11 @@ const EventDetails = () => {
   const { getEventById } = useContext(EventContext);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeTab, setActiveTab] = useState("overview"); 
 
-  
+  // Mikey Fix here 
   const [attendees, setAttendees] = useState([
     {
       id: "att-001",
@@ -44,7 +45,7 @@ const EventDetails = () => {
       purchaseDate: "2025-04-10T10:30:00",
       checkInStatus: "checked-in",
       orderId: "ORD-12345",
-      checkinTime: "10:15 AM, April 18, 2025"
+      checkinTime: "10:15 AM, April 18, 2025",
     },
     {
       id: "att-002",
@@ -55,29 +56,34 @@ const EventDetails = () => {
       ticketPrice: 79.99,
       purchaseDate: "2025-04-12T14:45:00",
       checkInStatus: "not-checked-in",
-      orderId: "ORD-12346"
+      orderId: "ORD-12346",
     },
-    {
-      id: "att-003",
-      name: "Michael Davis",
-      email: "michael.davis@example.com",
-      ticketType: "Standard",
-      ticketPrice: 79.99,
-      purchaseDate: "2025-04-15T09:20:00",
-      checkInStatus: "cancelled",
-      orderId: "ORD-12347"
-    }
   ]);
 
   // Fetch event details
   useEffect(() => {
-    if (eventId) {
-      const eventData = getEventById(eventId);
-      if (eventData) {
-        setEvent(eventData);
+    try {
+      if (eventId) {
+        console.log("Fetching event with ID:", eventId);
+        const eventData = getEventById(eventId);
+        console.log("Event data:", eventData);
+
+        if (eventData) {
+          setEvent(eventData);
+        } else {
+          console.error("Event not found with ID:", eventId);
+          setError("Event not found");
+        }
+      } else {
+        console.error("No event ID provided");
+        setError("No event ID provided");
       }
+    } catch (err) {
+      console.error("Error fetching event:", err);
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [eventId, getEventById]);
 
   // Handle back to dashboard
@@ -103,6 +109,24 @@ const EventDetails = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          Error Loading Event
+        </h2>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <button
+          onClick={handleBack}
+          className="px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors flex items-center"
+        >
+          <ArrowLeft size={18} className="mr-2" />
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   if (!event) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -123,24 +147,52 @@ const EventDetails = () => {
     );
   }
 
-  // Format dates for display
+  // Format dates for display - with null checks
   const formatDate = (dateString) => {
-    if (!dateString) return "";
-    
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    if (!dateString) return "N/A";
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid Date";
+
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (err) {
+      console.error("Error formatting date:", err);
+      return "Error formatting date";
+    }
   };
 
   // Calculate ticket stats
-  const ticketPercentage = event.totalTickets > 0 
-    ? (event.soldTickets / event.totalTickets) * 100 
-    : 0;
+  const ticketPercentage =
+    event.totalTickets > 0 ? (event.soldTickets / event.totalTickets) * 100 : 0;
   const remainingTickets = event.totalTickets - event.soldTickets;
+
+  // Safely display event data
+  const safeEvent = {
+    title: event.title || "Untitled Event",
+    description: event.description || "No description available.",
+    status: event.status || "draft",
+    imageSrc: event.imageSrc || "",
+    startDate: event.startDate || null,
+    endDate: event.endDate || null,
+    startTime: event.startTime || "TBD",
+    endTime: event.endTime || "TBD",
+    category: event.category || "Uncategorized",
+    location: event.location || "No location specified",
+    eventType: event.eventType || "physical",
+    isRecurring: event.isRecurring || false,
+    dates: Array.isArray(event.dates) ? event.dates : [],
+    agenda: Array.isArray(event.agenda) ? event.agenda : [],
+    tickets: Array.isArray(event.tickets) ? event.tickets : [],
+    totalTickets: event.totalTickets || 0,
+    soldTickets: event.soldTickets || 0,
+    grossAmount: event.grossAmount || 0,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,10 +218,10 @@ const EventDetails = () => {
           <div className="bg-white rounded-t-xl shadow-sm overflow-hidden">
             {/* Cover Image with Overlay */}
             <div className="relative h-48 md:h-64 bg-gray-200">
-              {event.imageSrc ? (
+              {safeEvent.imageSrc ? (
                 <img
-                  src={event.imageSrc}
-                  alt={event.title}
+                  src={safeEvent.imageSrc}
+                  alt={safeEvent.title}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -181,19 +233,19 @@ const EventDetails = () => {
 
               {/* Event Status Badge */}
               <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                {event.status === "published" && (
+                {safeEvent.status === "published" && (
                   <span className="text-green-600 flex items-center">
                     <span className="w-2 h-2 bg-green-600 rounded-full inline-block mr-1"></span>
                     Published
                   </span>
                 )}
-                {event.status === "draft" && (
+                {safeEvent.status === "draft" && (
                   <span className="text-yellow-600 flex items-center">
                     <span className="w-2 h-2 bg-yellow-600 rounded-full inline-block mr-1"></span>
                     Draft
                   </span>
                 )}
-                {event.status === "ended" && (
+                {safeEvent.status === "ended" && (
                   <span className="text-red-600 flex items-center">
                     <span className="w-2 h-2 bg-red-600 rounded-full inline-block mr-1"></span>
                     Ended
@@ -207,27 +259,31 @@ const EventDetails = () => {
               <div className="flex flex-col md:flex-row md:items-start md:justify-between">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                    {event.title}
+                    {safeEvent.title}
                   </h1>
 
                   {/* Event Meta Info */}
                   <div className="mt-2 flex flex-wrap items-center text-gray-600 text-sm">
-                    <div className="flex items-center mr-4 mb-2">
-                      <Calendar size={16} className="mr-1" />
-                      <span>{formatDate(event.startDate)}</span>
-                    </div>
-                    {event.startTime && (
+                    {safeEvent.startDate && (
+                      <div className="flex items-center mr-4 mb-2">
+                        <Calendar size={16} className="mr-1" />
+                        <span>{formatDate(safeEvent.startDate)}</span>
+                      </div>
+                    )}
+
+                    {safeEvent.startTime && (
                       <div className="flex items-center mr-4 mb-2">
                         <Clock size={16} className="mr-1" />
                         <span>
-                          {event.startTime} - {event.endTime}
+                          {safeEvent.startTime} - {safeEvent.endTime}
                         </span>
                       </div>
                     )}
-                    {event.category && (
+
+                    {safeEvent.category && (
                       <div className="flex items-center mb-2">
                         <Tag size={16} className="mr-1" />
-                        <span className="capitalize">{event.category}</span>
+                        <span className="capitalize">{safeEvent.category}</span>
                       </div>
                     )}
                   </div>
@@ -313,31 +369,31 @@ const EventDetails = () => {
                           !showFullDescription && "line-clamp-4"
                         }`}
                       >
-                        {event.description ||
-                          "No description available for this event."}
+                        {safeEvent.description}
                       </p>
 
                       {/* Only show toggle button if description is long enough */}
-                      {event.description && event.description.length > 180 && (
-                        <button
-                          className="mt-2 text-orange-500 hover:text-orange-600 flex items-center text-sm font-medium"
-                          onClick={() =>
-                            setShowFullDescription(!showFullDescription)
-                          }
-                        >
-                          {showFullDescription ? (
-                            <>
-                              <ChevronUp size={16} className="mr-1" />
-                              <span>Show Less</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown size={16} className="mr-1" />
-                              <span>Show More</span>
-                            </>
-                          )}
-                        </button>
-                      )}
+                      {safeEvent.description &&
+                        safeEvent.description.length > 180 && (
+                          <button
+                            className="mt-2 text-orange-500 hover:text-orange-600 flex items-center text-sm font-medium"
+                            onClick={() =>
+                              setShowFullDescription(!showFullDescription)
+                            }
+                          >
+                            {showFullDescription ? (
+                              <>
+                                <ChevronUp size={16} className="mr-1" />
+                                <span>Show Less</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown size={16} className="mr-1" />
+                                <span>Show More</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                     </div>
                   </motion.div>
 
@@ -352,13 +408,16 @@ const EventDetails = () => {
                       Location
                     </h2>
 
-                    {event.eventType === "physical" ? (
+                    {safeEvent.eventType === "physical" ? (
                       <div>
                         <div className="flex items-start">
-                          <MapPin size={20} className="text-gray-500 mr-3 mt-1" />
+                          <MapPin
+                            size={20}
+                            className="text-gray-500 mr-3 mt-1"
+                          />
                           <div>
                             <p className="text-gray-800 font-medium">
-                              {event.location}
+                              {safeEvent.location}
                             </p>
                             {/* Placeholder for Google Maps embedding */}
                             <div className="mt-4 bg-gray-100 h-48 rounded-lg flex items-center justify-center">
@@ -368,7 +427,7 @@ const EventDetails = () => {
                             </div>
                             <a
                               href={`https://maps.google.com/?q=${encodeURIComponent(
-                                event.location
+                                safeEvent.location
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -385,11 +444,13 @@ const EventDetails = () => {
                           <span className="text-lg font-semibold">@</span>
                         </div>
                         <div>
-                          <p className="text-gray-800 font-medium">Virtual Event</p>
+                          <p className="text-gray-800 font-medium">
+                            Virtual Event
+                          </p>
                           <p className="text-sm">
-                            {event.location ? (
+                            {safeEvent.location ? (
                               <a
-                                href={event.location}
+                                href={safeEvent.location}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-orange-500 hover:text-orange-600"
@@ -404,9 +465,9 @@ const EventDetails = () => {
                       </div>
                     )}
                   </motion.div>
-                  
+
                   {/* Agenda Card (if the event has an agenda) */}
-                  {event.agenda && event.agenda.length > 0 && (
+                  {safeEvent.agenda.length > 0 && (
                     <motion.div
                       className="bg-white rounded-lg shadow-sm p-6"
                       initial={{ opacity: 0, y: 20 }}
@@ -417,12 +478,21 @@ const EventDetails = () => {
                         Event Agenda
                       </h2>
                       <div className="space-y-4">
-                        {event.agenda.map((item, index) => (
-                          <div key={index} className="border-l-2 border-orange-200 pl-4 py-2">
-                            <p className="text-sm text-orange-500 font-medium">{item.time}</p>
-                            <h3 className="text-base font-medium text-gray-800 mt-1">{item.title}</h3>
+                        {safeEvent.agenda.map((item, index) => (
+                          <div
+                            key={index}
+                            className="border-l-2 border-orange-200 pl-4 py-2"
+                          >
+                            <p className="text-sm text-orange-500 font-medium">
+                              {item.time}
+                            </p>
+                            <h3 className="text-base font-medium text-gray-800 mt-1">
+                              {item.title}
+                            </h3>
                             {item.description && (
-                              <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {item.description}
+                              </p>
                             )}
                           </div>
                         ))}
@@ -448,10 +518,10 @@ const EventDetails = () => {
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
                         <span className="font-medium">
-                          {event.soldTickets} sold
+                          {safeEvent.soldTickets} sold
                         </span>
                         <span className="text-gray-500">
-                          {event.totalTickets} total
+                          {safeEvent.totalTickets} total
                         </span>
                       </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -480,7 +550,7 @@ const EventDetails = () => {
                           <span>Revenue</span>
                         </div>
                         <span className="font-medium text-gray-800">
-                          ${event.grossAmount}
+                          ${safeEvent.grossAmount}
                         </span>
                       </div>
 
@@ -490,7 +560,7 @@ const EventDetails = () => {
                           <span>Attendees</span>
                         </div>
                         <span className="font-medium text-gray-800">
-                          {event.soldTickets}
+                          {safeEvent.soldTickets}
                         </span>
                       </div>
                     </div>
@@ -513,7 +583,7 @@ const EventDetails = () => {
                         <span>Sell Tickets</span>
                       </button>
 
-                      <button 
+                      <button
                         className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
                         onClick={() => handleTabChange("attendees")}
                       >
@@ -529,7 +599,7 @@ const EventDetails = () => {
                   </motion.div>
 
                   {/* Event Schedule Card (for recurring events) */}
-                  {event.isRecurring && (
+                  {safeEvent.isRecurring && (
                     <motion.div
                       className="bg-white rounded-lg shadow-sm p-6"
                       initial={{ opacity: 0, y: 20 }}
@@ -541,11 +611,14 @@ const EventDetails = () => {
                       </h2>
                       <div className="text-gray-600">
                         <p>This is a recurring event</p>
-                        {event.dates && event.dates.length > 1 && (
+                        {safeEvent.dates.length > 1 && (
                           <div className="mt-3 space-y-2">
-                            {event.dates.map((date, index) => (
+                            {safeEvent.dates.map((date, index) => (
                               <div key={index} className="flex items-center">
-                                <Calendar size={16} className="mr-2 text-orange-500" />
+                                <Calendar
+                                  size={16}
+                                  className="mr-2 text-orange-500"
+                                />
                                 <span>{formatDate(date)}</span>
                               </div>
                             ))}
@@ -564,8 +637,14 @@ const EventDetails = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
+                className="bg-white rounded-lg shadow-sm p-6"
               >
-                <AttendeeList attendees={attendees} eventId={eventId} />
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                  Attendee Management
+                </h2>
+                <p>The attendee list component will be rendered here</p>
+                {/* Once the AttendeeList component is added to your project, uncomment this: */}
+                {/* <AttendeeList attendees={attendees} eventId={eventId} /> */}
               </motion.div>
             )}
 
@@ -577,59 +656,92 @@ const EventDetails = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">Ticket Management</h2>
-                
-                {event.tickets && event.tickets.length > 0 ? (
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                  Ticket Management
+                </h2>
+
+                {safeEvent.tickets.length > 0 ? (
                   <div className="space-y-6">
                     {/* Ticket Types List */}
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Ticket Type
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Price
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Sold
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Available
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               Revenue
                             </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {event.tickets.map((ticket, index) => (
+                          {safeEvent.tickets.map((ticket, index) => (
                             <tr key={index}>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{ticket.name}</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {ticket.name}
+                                </div>
                                 {ticket.description && (
-                                  <div className="text-sm text-gray-500">{ticket.description}</div>
+                                  <div className="text-sm text-gray-500">
+                                    {ticket.description}
+                                  </div>
                                 )}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">${parseFloat(ticket.price).toFixed(2)}</div>
+                                <div className="text-sm text-gray-900">
+                                  ${parseFloat(ticket.price).toFixed(2)}
+                                </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{ticket.sold || 0}</div>
+                                <div className="text-sm text-gray-900">
+                                  {ticket.sold || 0}
+                                </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">{ticket.quantity - (ticket.sold || 0)}</div>
+                                <div className="text-sm text-gray-900">
+                                  {(ticket.quantity || 0) - (ticket.sold || 0)}
+                                </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">${((ticket.sold || 0) * parseFloat(ticket.price)).toFixed(2)}</div>
+                                <div className="text-sm text-gray-900">
+                                  $
+                                  {(
+                                    (ticket.sold || 0) *
+                                    parseFloat(ticket.price || 0)
+                                  ).toFixed(2)}
+                                </div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {/* Ticket Settings */}
                     <div className="mt-8 space-y-4">
                       <button className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors">
@@ -643,8 +755,12 @@ const EventDetails = () => {
                 ) : (
                   <div className="text-center p-6 border-2 border-dashed border-gray-200 rounded-lg">
                     <Ticket size={48} className="text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Tickets Created</h3>
-                    <p className="text-gray-500 mb-4">Define ticket types for your event to start selling</p>
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">
+                      No Tickets Created
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      Define ticket types for your event to start selling
+                    </p>
                     <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
                       Create Tickets
                     </button>
