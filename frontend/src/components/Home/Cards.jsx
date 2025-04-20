@@ -18,8 +18,7 @@ const Cards = () => {
     
     {/* Location pill */}
     <div class="absolute top-3 left-3 bg-white/80 text-xs text-gray-700 px-3 py-1 rounded-full shadow-sm flex items-center space-x-1">
-</div>
-            
+</div>         
           </div>
         </div>
       </section>
