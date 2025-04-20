@@ -132,7 +132,7 @@ const TicketForm = ({ ticket = null, onSave, onCancel }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ticket Price
             </label>
-            <div className="relative">
+            <div className="relative text-black">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <DollarSign size={16} className="text-gray-500" />
               </div>
@@ -166,7 +166,7 @@ const TicketForm = ({ ticket = null, onSave, onCancel }) => {
         </div>
 
         {/* Ticket Description */}
-        <div className="mb-6">
+        <div className="mb-6 text-black">
           <FormTextArea
             id="ticket-description"
             name="description"

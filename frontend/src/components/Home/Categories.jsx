@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const Categories = () => {
   return (
     <section className="py-16 px-4 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-5">
         <div className="relative">
           <h3 className="text-xl font-semibold text-black">Explore Categories</h3>
           <div className="w-10 h-1 bg-black rounded-full mt-2" />
