@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaLock, FaEye, FaEyeSlash, FaEnvelope } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const NoAccessPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,11 +28,21 @@ const NoAccessPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Use the login function from AuthContext to handle authentication
+      const user = await login(formData.email, formData.password);
+      
       toast.success('Login successful!');
       
-      // Redirect to the originally requested page or dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from);
+      // Redirect based on user role
+      if (user.role === 'organizer') {
+        navigate('/organizer-dashboard');
+      } else if (user.role === 'attendee') {
+        navigate('/attendee-dashboard');
+      } else {
+       
+        const from = location.state?.from?.pathname || '/dashboard';
+        navigate(from);
+      }
     } catch (error) {
       toast.error('Invalid credentials');
     }
@@ -161,13 +173,13 @@ const NoAccessPage = () => {
               <div>
                 <label 
                   htmlFor="email" 
-                  className="block mb-1 text-sm font-medium text-gray-700"
+                  className="block mb-1 text-sm font-medium text-black"
                 >
                   Email Address
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaEnvelope className="text-gray-500" />
+                    <FaEnvelope className="text-black" />
                   </div>
                   <input
                     type="email"
@@ -176,7 +188,7 @@ const NoAccessPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email address"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-3 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -186,13 +198,13 @@ const NoAccessPage = () => {
               <div>
                 <label 
                   htmlFor="password" 
-                  className="block mb-1 text-sm font-medium text-gray-700"
+                  className="block mb-1 text-sm font-medium text-black"
                 >
                   Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaLock className="text-gray-500" />
+                    <FaLock className="text-black" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -201,7 +213,7 @@ const NoAccessPage = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     required
                   />
                   <div 
@@ -209,17 +221,23 @@ const NoAccessPage = () => {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? 
-                      <FaEyeSlash className="text-gray-500 hover:text-gray-700" /> : 
-                      <FaEye className="text-gray-500 hover:text-gray-700" />
+                      <FaEyeSlash className="text-black " /> : 
+                      <FaEye className="text-black " />
                     }
                   </div>
                 </div>
               </div>
               
+              {/* Helper text for testing */}
+              <div className="text-sm text-gray-500">
+                <p>Hint: Use an email with "organizer" to login as an organizer.</p>
+                <p>Example: organizer@example.com / anypassword</p>
+              </div>
+              
               {/* Login Button */}
               <motion.button 
                 type="submit" 
-                className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium cursor-pointer rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
