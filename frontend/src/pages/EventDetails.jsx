@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
@@ -20,6 +21,7 @@ import {
 import { EventContext } from "../context/EventContext";
 import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
+import AttendeeList from "../components/AttendeeList";
 
 const EventDetails = () => {
   const { eventId } = useParams();
@@ -28,6 +30,44 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview"); 
+
+  
+  const [attendees, setAttendees] = useState([
+    {
+      id: "att-001",
+      name: "John Smith",
+      email: "john.smith@example.com",
+      phone: "+1 (555) 123-4567",
+      ticketType: "VIP Pass",
+      ticketPrice: 149.99,
+      purchaseDate: "2025-04-10T10:30:00",
+      checkInStatus: "checked-in",
+      orderId: "ORD-12345",
+      checkinTime: "10:15 AM, April 18, 2025"
+    },
+    {
+      id: "att-002",
+      name: "Emily Johnson",
+      email: "emily.johnson@example.com",
+      phone: "+1 (555) 987-6543",
+      ticketType: "Standard",
+      ticketPrice: 79.99,
+      purchaseDate: "2025-04-12T14:45:00",
+      checkInStatus: "not-checked-in",
+      orderId: "ORD-12346"
+    },
+    {
+      id: "att-003",
+      name: "Michael Davis",
+      email: "michael.davis@example.com",
+      ticketType: "Standard",
+      ticketPrice: 79.99,
+      purchaseDate: "2025-04-15T09:20:00",
+      checkInStatus: "cancelled",
+      orderId: "ORD-12347"
+    }
+  ]);
 
   // Fetch event details
   useEffect(() => {
@@ -46,6 +86,11 @@ const EventDetails = () => {
   // Handle edit event
   const handleEdit = () => {
     navigate(`/edit-event/${eventId}`);
+  };
+
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
   if (loading) {
@@ -134,19 +179,19 @@ const EventDetails = () => {
 
               {/* Event Status Badge */}
               <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                {event.status === "OnSale" && (
+                {event.status === "published" && (
                   <span className="text-green-600 flex items-center">
                     <span className="w-2 h-2 bg-green-600 rounded-full inline-block mr-1"></span>
-                    On Sale
+                    Published
                   </span>
                 )}
-                {event.status === "Draft" && (
+                {event.status === "draft" && (
                   <span className="text-yellow-600 flex items-center">
                     <span className="w-2 h-2 bg-yellow-600 rounded-full inline-block mr-1"></span>
                     Draft
                   </span>
                 )}
-                {event.status === "Ended" && (
+                {event.status === "ended" && (
                   <span className="text-red-600 flex items-center">
                     <span className="w-2 h-2 bg-red-600 rounded-full inline-block mr-1"></span>
                     Ended
@@ -172,8 +217,7 @@ const EventDetails = () => {
                     <div className="flex items-center mr-4 mb-2">
                       <Clock size={16} className="mr-1" />
                       <span>
-                        {formatTime(event.startDate)} -{" "}
-                        {formatTime(event.endDate)}
+                        {event.startTime} - {event.endTime}
                       </span>
                     </div>
                     <div className="flex items-center mb-2">
@@ -202,233 +246,406 @@ const EventDetails = () => {
             </div>
           </div>
 
-          {/* Event Content Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            {/* Left Column - Event Details */}
-            <div className="md:col-span-2 space-y-6">
-              {/* Event Description Card */}
-              <motion.div
-                className="bg-white rounded-lg shadow-sm p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+          {/* Tabs */}
+          <div className="bg-white shadow-sm border-b">
+            <div className="flex overflow-x-auto">
+              <button
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === "overview"
+                    ? "text-orange-500 border-b-2 border-orange-500"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => handleTabChange("overview")}
               >
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  About This Event
-                </h2>
+                Overview
+              </button>
+              <button
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === "attendees"
+                    ? "text-orange-500 border-b-2 border-orange-500"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => handleTabChange("attendees")}
+              >
+                Attendees
+              </button>
+              <button
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === "tickets"
+                    ? "text-orange-500 border-b-2 border-orange-500"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => handleTabChange("tickets")}
+              >
+                Tickets
+              </button>
+            </div>
+          </div>
 
-                {/* Description with Show More/Less toggle */}
-                <div className="relative">
-                  <p
-                    className={`text-gray-600 whitespace-pre-line ${
-                      !showFullDescription && "line-clamp-4"
-                    }`}
+          {/* Tab Content */}
+          <div className="mt-6">
+            {/* Overview Tab */}
+            {activeTab === "overview" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Left Column - Event Details */}
+                <div className="md:col-span-2 space-y-6">
+                  {/* Event Description Card */}
+                  <motion.div
+                    className="bg-white rounded-lg shadow-sm p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
                   >
-                    {event.description ||
-                      "No description available for this event."}
-                  </p>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                      About This Event
+                    </h2>
 
-                  {/* Only show toggle button if description is long enough */}
-                  {event.description && event.description.length > 180 && (
-                    <button
-                      className="mt-2 text-orange-500 hover:text-orange-600 flex items-center text-sm font-medium"
-                      onClick={() =>
-                        setShowFullDescription(!showFullDescription)
-                      }
-                    >
-                      {showFullDescription ? (
-                        <>
-                          <ChevronUp size={16} className="mr-1" />
-                          <span>Show Less</span>
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown size={16} className="mr-1" />
-                          <span>Show More</span>
-                        </>
+                    {/* Description with Show More/Less toggle */}
+                    <div className="relative">
+                      <p
+                        className={`text-gray-600 whitespace-pre-line ${
+                          !showFullDescription && "line-clamp-4"
+                        }`}
+                      >
+                        {event.description ||
+                          "No description available for this event."}
+                      </p>
+
+                      {/* Only show toggle button if description is long enough */}
+                      {event.description && event.description.length > 180 && (
+                        <button
+                          className="mt-2 text-orange-500 hover:text-orange-600 flex items-center text-sm font-medium"
+                          onClick={() =>
+                            setShowFullDescription(!showFullDescription)
+                          }
+                        >
+                          {showFullDescription ? (
+                            <>
+                              <ChevronUp size={16} className="mr-1" />
+                              <span>Show Less</span>
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown size={16} className="mr-1" />
+                              <span>Show More</span>
+                            </>
+                          )}
+                        </button>
                       )}
-                    </button>
-                  )}
-                </div>
-              </motion.div>
+                    </div>
+                  </motion.div>
 
-              {/* Location Card */}
-              <motion.div
-                className="bg-white rounded-lg shadow-sm p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  Location
-                </h2>
+                  {/* Location Card */}
+                  <motion.div
+                    className="bg-white rounded-lg shadow-sm p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                      Location
+                    </h2>
 
-                {event.eventType === "physical" ? (
-                  <div>
-                    <div className="flex items-start">
-                      <MapPin size={20} className="text-gray-500 mr-3 mt-1" />
+                    {event.eventType === "physical" ? (
                       <div>
-                        <p className="text-gray-800 font-medium">
-                          {event.location}
-                        </p>
-                        {/* Placeholder for Google Maps embedding */}
-                        <div className="mt-4 bg-gray-100 h-48 rounded-lg flex items-center justify-center">
-                          <p className="text-gray-500">
-                            Map preview would appear here
+                        <div className="flex items-start">
+                          <MapPin size={20} className="text-gray-500 mr-3 mt-1" />
+                          <div>
+                            <p className="text-gray-800 font-medium">
+                              {event.location}
+                            </p>
+                            {/* Placeholder for Google Maps embedding */}
+                            <div className="mt-4 bg-gray-100 h-48 rounded-lg flex items-center justify-center">
+                              <p className="text-gray-500">
+                                Map preview would appear here
+                              </p>
+                            </div>
+                            <a
+                              href={`https://maps.google.com/?q=${encodeURIComponent(
+                                event.location
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-3 text-orange-500 hover:text-orange-600 inline-block"
+                            >
+                              Get Directions
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-gray-600">
+                        <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 text-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                          <span className="text-lg font-semibold">@</span>
+                        </div>
+                        <div>
+                          <p className="text-gray-800 font-medium">Virtual Event</p>
+                          <p className="text-sm">
+                            {event.location ? (
+                              <a
+                                href={event.location}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-orange-500 hover:text-orange-600"
+                              >
+                                Join event
+                              </a>
+                            ) : (
+                              "Meeting link will be provided closer to the event"
+                            )}
                           </p>
                         </div>
-                        <a
-                          href={`https://maps.google.com/?q=${encodeURIComponent(
-                            event.location
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 text-orange-500 hover:text-orange-600 inline-block"
-                        >
-                          Get Directions
-                        </a>
                       </div>
+                    )}
+                  </motion.div>
+                  
+                  {/* Agenda Card (if the event has an agenda) */}
+                  {event.agenda && event.agenda.length > 0 && (
+                    <motion.div
+                      className="bg-white rounded-lg shadow-sm p-6"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                        Event Agenda
+                      </h2>
+                      <div className="space-y-4">
+                        {event.agenda.map((item, index) => (
+                          <div key={index} className="border-l-2 border-orange-200 pl-4 py-2">
+                            <p className="text-sm text-orange-500 font-medium">{item.time}</p>
+                            <h3 className="text-base font-medium text-gray-800 mt-1">{item.title}</h3>
+                            {item.description && (
+                              <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Right Column - Event Stats and Actions */}
+                <div className="space-y-6">
+                  {/* Tickets Stats Card */}
+                  <motion.div
+                    className="bg-white rounded-lg shadow-sm p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                      Ticket Sales
+                    </h2>
+
+                    {/* Progress bar */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="font-medium">
+                          {event.soldTickets} sold
+                        </span>
+                        <span className="text-gray-500">
+                          {event.totalTickets} total
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-orange-400"
+                          style={{ width: `${ticketPercentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-gray-600">
+                          <Ticket size={18} className="mr-2" />
+                          <span>Remaining</span>
+                        </div>
+                        <span className="font-medium text-gray-800">
+                          {remainingTickets}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-gray-600">
+                          <DollarSign size={18} className="mr-2" />
+                          <span>Revenue</span>
+                        </div>
+                        <span className="font-medium text-gray-800">
+                          ${event.grossAmount}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-gray-600">
+                          <Users size={18} className="mr-2" />
+                          <span>Attendees</span>
+                        </div>
+                        <span className="font-medium text-gray-800">
+                          {event.soldTickets}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Quick Actions Card */}
+                  <motion.div
+                    className="bg-white rounded-lg shadow-sm p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                      Quick Actions
+                    </h2>
+
+                    <div className="space-y-3">
+                      <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
+                        <Ticket size={18} className="mr-2" />
+                        <span>Sell Tickets</span>
+                      </button>
+
+                      <button 
+                        className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                        onClick={() => handleTabChange("attendees")}
+                      >
+                        <Users size={18} className="mr-2" />
+                        <span>Manage Attendees</span>
+                      </button>
+
+                      <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
+                        <Download size={18} className="mr-2" />
+                        <span>Download Report</span>
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  {/* Event Schedule Card (for recurring events) */}
+                  {event.isRecurring && (
+                    <motion.div
+                      className="bg-white rounded-lg shadow-sm p-6"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        Event Schedule
+                      </h2>
+                      <div className="text-gray-600">
+                        <p>This is a recurring event</p>
+                        {event.dates && event.dates.length > 1 && (
+                          <div className="mt-3 space-y-2">
+                            {event.dates.map((date, index) => (
+                              <div key={index} className="flex items-center">
+                                <Calendar size={16} className="mr-2 text-orange-500" />
+                                <span>{formatDate(date)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Attendees Tab */}
+            {activeTab === "attendees" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <AttendeeList attendees={attendees} eventId={eventId} />
+              </motion.div>
+            )}
+
+            {/* Tickets Tab */}
+            {activeTab === "tickets" && (
+              <motion.div
+                className="bg-white rounded-lg shadow-sm p-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">Ticket Management</h2>
+                
+                {event.tickets && event.tickets.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Ticket Types List */}
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Ticket Type
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Price
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Sold
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Available
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Revenue
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {event.tickets.map((ticket, index) => (
+                            <tr key={index}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{ticket.name}</div>
+                                {ticket.description && (
+                                  <div className="text-sm text-gray-500">{ticket.description}</div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">${parseFloat(ticket.price).toFixed(2)}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{ticket.sold || 0}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{ticket.quantity - (ticket.sold || 0)}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">${((ticket.sold || 0) * parseFloat(ticket.price)).toFixed(2)}</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Ticket Settings */}
+                    <div className="mt-8 space-y-4">
+                      <button className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors">
+                        Update Ticket Prices
+                      </button>
+                      <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors ml-3">
+                        Adjust Ticket Availability
+                      </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center text-gray-600">
-                    <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 text-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                      <span className="text-lg font-semibold">@</span>
-                    </div>
-                    <div>
-                      <p className="text-gray-800 font-medium">Virtual Event</p>
-                      <p className="text-sm">
-                        {event.location ? (
-                          <a
-                            href={event.location}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-orange-500 hover:text-orange-600"
-                          >
-                            Join event
-                          </a>
-                        ) : (
-                          "Meeting link will be provided closer to the event"
-                        )}
-                      </p>
-                    </div>
+                  <div className="text-center p-6 border-2 border-dashed border-gray-200 rounded-lg">
+                    <Ticket size={48} className="text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Tickets Created</h3>
+                    <p className="text-gray-500 mb-4">Define ticket types for your event to start selling</p>
+                    <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                      Create Tickets
+                    </button>
                   </div>
                 )}
               </motion.div>
-            </div>
-
-            {/* Right Column - Event Stats and Actions */}
-            <div className="space-y-6">
-              {/* Tickets Stats Card */}
-              <motion.div
-                className="bg-white rounded-lg shadow-sm p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Ticket Sales
-                </h2>
-
-                {/* Progress bar */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium">
-                      {event.soldTickets} sold
-                    </span>
-                    <span className="text-gray-500">
-                      {event.totalTickets} total
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-orange-400"
-                      style={{ width: `${ticketPercentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-gray-600">
-                      <Ticket size={18} className="mr-2" />
-                      <span>Remaining</span>
-                    </div>
-                    <span className="font-medium text-gray-800">
-                      {remainingTickets}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-gray-600">
-                      <DollarSign size={18} className="mr-2" />
-                      <span>Revenue</span>
-                    </div>
-                    <span className="font-medium text-gray-800">
-                      ${event.grossAmount}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-gray-600">
-                      <Users size={18} className="mr-2" />
-                      <span>Attendees</span>
-                    </div>
-                    <span className="font-medium text-gray-800">
-                      {event.soldTickets}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Quick Actions Card */}
-              <motion.div
-                className="bg-white rounded-lg shadow-sm p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Quick Actions
-                </h2>
-
-                <div className="space-y-3">
-                  <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
-                    <Ticket size={18} className="mr-2" />
-                    <span>Sell Tickets</span>
-                  </button>
-
-                  <button className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center">
-                    <Users size={18} className="mr-2" />
-                    <span>Manage Attendees</span>
-                  </button>
-
-                  <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
-                    <Download size={18} className="mr-2" />
-                    <span>Download Report</span>
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* Event Schedule Card (for recurring events) */}
-              {event.schedule === "recurring" && (
-                <motion.div
-                  className="bg-white rounded-lg shadow-sm p-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                    Event Schedule
-                  </h2>
-                  <div className="text-gray-600">
-                    <p>This is a recurring event</p>
-                    {/* Add more recurring event details here */}
-                  </div>
-                </motion.div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
