@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { FormSection, ToggleButton } from "../FormComponents";
+import { FormSection, ToggleButton } from "./FormComponents";
 import TimeSelector from "./TimeSelector";
 
 /**
@@ -10,10 +10,10 @@ import TimeSelector from "./TimeSelector";
  * Handles event schedule selection (one-time vs recurring, dates, times)
  * 
  * @param {Object} props
- * @param {boolean} props.isRecurring - Whether the event is recurring
- * @param {Array} props.dates - Selected event dates
- * @param {Array} props.times - Event times (start and end)
- * @param {Function} props.onChange - Function to handle schedule changes
+ * @param {boolean} props.isRecurring 
+ * @param {Array} props.dates 
+ * @param {Array} props.times 
+ * @param {Function} props.onChange 
  */
 const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
   // Current month and year for calendar
