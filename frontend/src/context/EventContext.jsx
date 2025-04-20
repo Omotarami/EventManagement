@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-// Create the context
+
 export const EventContext = createContext();
 
 const EventProvider = ({ children }) => {
