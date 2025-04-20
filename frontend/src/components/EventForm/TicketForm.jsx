@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DollarSign } from "lucide-react";
-import { FormInput, FormTextArea, ActionButton, ToggleButton } from "../FormComponents";
+import { FormInput, FormTextArea, ActionButton, ToggleButton } from "../EventForm/FormComponents";
 
 /**
  * TicketForm component
