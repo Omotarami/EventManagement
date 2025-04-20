@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const DashboardRouter = () => {
   const { user, loading } = useAuth();
@@ -9,13 +9,13 @@ const DashboardRouter = () => {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        navigate('/login');
-      } else if (user.role === 'organizer') {
-        navigate('/dashboard');
-      } else if (user.role === 'attendee') {
-        navigate('/attendee-dashboard');
+        navigate("/login");
+      } else if (user.role === "organizer") {
+        navigate("/organizer-dashboard");
+      } else if (user.role === "attendee") {
+        navigate("/attendee-dashboard");
       } else {
-        navigate('/no-access');
+        navigate("/no-access");
       }
     }
   }, [user, loading, navigate]);
