@@ -27,7 +27,7 @@ model User {
   
   // Relations
   events           Event[]    @relation("UserEvents")
-  attendances      Attendee[] @relation("UserAttendees") 
+  attendances      Attendee[] @relation("UserAttendees")
   categories       Category[] @relation("UserCategories")
   orders           Order[]    @relation("UserOrders")
   sessions         Session[]  @relation("UserSessions")
@@ -44,11 +44,22 @@ model Event {
   category          String?
   
   // Relations
-  user              User       @relation("UserEvents", fields: [user_id], references: [id])
-  tickets           Ticket[]   @relation("EventTickets")
-  attendees         Attendee[] @relation("EventAttendees")
-  categories        Category[] @relation("EventCategories")
-  orders            Order[]    @relation("EventOrders")
+  user              User         @relation("UserEvents", fields: [user_id], references: [id])
+  tickets           Ticket[]     @relation("EventTickets")
+  attendees         Attendee[]   @relation("EventAttendees")
+  categories        Category[]   @relation("EventCategories")
+  orders            Order[]      @relation("EventOrders")
+  images            EventImage[] @relation("EventImages")
+}
+
+model EventImage {
+  id          Int      @id @default(autoincrement())
+  event_id    Int
+  image_url   String
+  description String?
+
+  // Relations
+  event       Event    @relation("EventImages", fields: [event_id], references: [id])
 }
 
 model EventSchedule {
