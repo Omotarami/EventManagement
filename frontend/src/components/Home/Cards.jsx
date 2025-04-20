@@ -12,9 +12,14 @@ const Cards = () => {
           <p>Online</p>
           <p>Free</p>
         </div>
-        <div className="flex space-x-6 justify-between w-1/4 h-60 rounded-lg border-1">
-          <div className=" flex flex-col w-80  items-center mt-3">
-            <img src="#" alt="event image" className="bg-slate-600 w-60 h-30 rounded-lg"></img>
+        <div class="w-full max-w-sm bg-white rounded-xl shadow-md overflow-hidden">
+   {/*Rounded top background section*/}
+  <div class="relative h-40 bg-blue-500 rounded-lg bg-cover bg-center">
+    
+    {/* Location pill */}
+    <div class="absolute top-3 left-3 bg-white/80 text-xs text-gray-700 px-3 py-1 rounded-full shadow-sm flex items-center space-x-1">
+</div>
+            
           </div>
         </div>
       </section>
