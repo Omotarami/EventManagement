@@ -56,6 +56,15 @@ const App = () => {
             />
 
             <Route
+              path="/create-event"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <CreateEventPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/events"
               element={
                 <ProtectedRoute>
