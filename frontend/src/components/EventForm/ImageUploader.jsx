@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Upload, X, Image } from "lucide-react";
-import { FormSection } from "../FormComponents";
+import { FormSection } from "../EventForm/FormComponents";
 
 /**
  * ImageUploader component
