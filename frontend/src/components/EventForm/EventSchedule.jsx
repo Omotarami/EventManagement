@@ -318,7 +318,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             {/* Time slots */}
             {(times.length === 0 ? [{}] : times).map((time, index) => (
               <div key={index} className="mb-3 flex items-center space-x-4">
-                <div className="flex items-center">
+                <div className="flex items-center text-black">
                   <Clock size={16} className="text-gray-400 mr-1" />
                   <span className="text-sm text-gray-600 mr-2">Start Time</span>
                   <TimeSelector
@@ -329,7 +329,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
                   />
                 </div>
                 
-                <div className="flex items-center">
+                <div className="flex items-center text-black">
                   <span className="text-sm text-gray-600 mr-2">End Time</span>
                   <TimeSelector
                     timeValue={time?.endTime || ""}

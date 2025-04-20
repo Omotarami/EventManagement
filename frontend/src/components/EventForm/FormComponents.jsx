@@ -66,12 +66,13 @@ export const FormInput = ({
           placeholder={placeholder}
           className={`w-full px-4 py-2 bg-white border ${
             error ? "border-red-500" : "border-gray-300"
-          } rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
+          } rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-black focus:border-transparent ${
             icon ? "pl-10" : ""
           } ${className}`}
           required={required}
           {...rest}
         />
+       
       </div>
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>

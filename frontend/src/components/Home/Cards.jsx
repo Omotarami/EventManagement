@@ -14,7 +14,6 @@ const Cards = () => {
     </div>
     </section>
     
-    
      
     </>
   );
