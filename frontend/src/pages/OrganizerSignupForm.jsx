@@ -1,28 +1,31 @@
-import React, {useState} from "react";
+/* eslint-disable no-unused-vars */
+import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   FaEye,
   FaEyeSlash,
   FaUser,
   FaEnvelope,
   FaLock,
-  FaBuilding,
   FaPhone,
-  FaGlobe,
   FaCalendarAlt,
   FaUsers,
 } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext"; 
+import toast from "react-hot-toast";
 
 const OrganizerSignupForm = () => {
+  const navigate = useNavigate();
+  const { signup } = useAuth();
+  
   // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     phoneNumber: "",
-    // companyName: "",
-    // website: "",
   });
 
   // Password visibility toggle
@@ -30,7 +33,7 @@ const OrganizerSignupForm = () => {
 
   // Handle input changes
   const handleChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -38,15 +41,25 @@ const OrganizerSignupForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Organizer signup:", formData);
-    // API call would go here
+    
+    try {
+    
+      const user = await signup(formData, 'organizer');
+      
+      toast.success('Account created successfully!');
+      
+      
+      navigate('/organizer-dashboard');
+    } catch (error) {
+      toast.error(error.message || 'Error creating account');
+    }
   };
 
   // Animation variants
   const containerVariants = {
-    hidden: {opacity: 0},
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
@@ -57,11 +70,11 @@ const OrganizerSignupForm = () => {
   };
 
   const itemVariants = {
-    hidden: {y: 20, opacity: 0},
+    hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: {type: "spring", stiffness: 100},
+      transition: { type: "spring", stiffness: 100 },
     },
   };
 
@@ -69,9 +82,9 @@ const OrganizerSignupForm = () => {
     hover: {
       scale: 1.05,
       backgroundColor: "#248277",
-      transition: {type: "spring", stiffness: 300, damping: 10},
+      transition: { type: "spring", stiffness: 300, damping: 10 },
     },
-    tap: {scale: 0.98},
+    tap: { scale: 0.98 },
   };
 
   return (
@@ -109,9 +122,9 @@ const OrganizerSignupForm = () => {
         {/* Main animated content */}
         <div className="relative z-10 w-full max-w-lg">
           <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{delay: 0.5, duration: 0.8}}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
             className="text-white text-center"
           >
             <motion.h1
@@ -125,15 +138,15 @@ const OrganizerSignupForm = () => {
                 repeatType: "reverse",
               }}
             >
-              Create Events on Even<span style={{color: "#F4A261"}}>tro</span>
+              Create Events on Even<span style={{ color: "#F4A261" }}>tro</span>
             </motion.h1>
 
             {/* Event organizer illustration */}
             <motion.div
               className="w-full h-64 my-8 relative"
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              transition={{delay: 0.8}}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
             >
               {/* Calendar with icon */}
               <motion.div
@@ -165,9 +178,9 @@ const OrganizerSignupForm = () => {
                     stroke="white"
                     strokeWidth="4"
                     fill="rgba(255,255,255,0.1)"
-                    initial={{pathLength: 0}}
-                    animate={{pathLength: 1}}
-                    transition={{duration: 2, ease: "easeInOut"}}
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 2, ease: "easeInOut" }}
                   />
 
                   {/* Calendar header */}
@@ -177,9 +190,9 @@ const OrganizerSignupForm = () => {
                     width="160"
                     height="30"
                     fill="#F4A261"
-                    initial={{scaleX: 0}}
-                    animate={{scaleX: 1}}
-                    transition={{duration: 1, ease: "easeInOut"}}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
                   />
 
                   {/* Calendar grid lines */}
@@ -188,9 +201,9 @@ const OrganizerSignupForm = () => {
                     stroke="white"
                     strokeWidth="2"
                     strokeOpacity="0.5"
-                    initial={{pathLength: 0}}
-                    animate={{pathLength: 1}}
-                    transition={{duration: 2, delay: 1}}
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 2, delay: 1 }}
                   />
 
                   {/* Event highlights */}
@@ -202,9 +215,9 @@ const OrganizerSignupForm = () => {
                     fill="#F4A261"
                     fillOpacity="0.6"
                     rx="4"
-                    initial={{scale: 0}}
-                    animate={{scale: 1}}
-                    transition={{duration: 0.5, delay: 2}}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, delay: 2 }}
                   />
 
                   <motion.rect
@@ -215,9 +228,9 @@ const OrganizerSignupForm = () => {
                     fill="#F4A261"
                     fillOpacity="0.6"
                     rx="4"
-                    initial={{scale: 0}}
-                    animate={{scale: 1}}
-                    transition={{duration: 0.5, delay: 2.2}}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, delay: 2.2 }}
                   />
                 </svg>
               </motion.div>
@@ -257,9 +270,9 @@ const OrganizerSignupForm = () => {
 
             <motion.p
               className="text-lg mt-4 opacity-90"
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              transition={{delay: 1.5}}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5 }}
             >
               Start planning amazing experiences today
             </motion.p>
@@ -281,7 +294,7 @@ const OrganizerSignupForm = () => {
             className="lg:hidden text-center mb-8"
           >
             <h1 className="text-3xl font-bold">
-              Even<span style={{color: "#F4A261"}}>tro</span>
+              Even<span style={{ color: "#F4A261" }}>tro</span>
             </h1>
             <p className="text-gray-600 mt-2">Where experiences come to life</p>
           </motion.div>
@@ -350,33 +363,30 @@ const OrganizerSignupForm = () => {
                 </div>
               </motion.div>
 
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-5"> */}
-                {/* Phone Number Field */}
-                <motion.div variants={itemVariants}>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block mb-1 text-sm font-medium text-gray-700"
-                  >
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <FaPhone className="text-gray-500" />
-                    </div>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleChange}
-                      placeholder="Your phone"
-                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
-                      required
-                    />
+              {/* Phone Number Field */}
+              <motion.div variants={itemVariants}>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block mb-1 text-sm font-medium text-gray-700"
+                >
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <FaPhone className="text-gray-500" />
                   </div>
-                </motion.div>
-
-              {/* </div> */}
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    placeholder="Your phone"
+                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
+                    required
+                  />
+                </div>
+              </motion.div>
 
               {/* Password Field with Toggle */}
               <motion.div variants={itemVariants}>
@@ -446,8 +456,8 @@ const OrganizerSignupForm = () => {
               <motion.div variants={itemVariants} className="pt-4">
                 <motion.button
                   type="submit"
-                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                  style={{backgroundColor: "#2A9D8F"}}
+                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg shadow cursor-pointer transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  style={{ backgroundColor: "#2A9D8F" }}
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"

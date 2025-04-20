@@ -11,66 +11,73 @@ import SearchBar from "../../components/SearchBar";
 import DashboardStatCard from "../../components/DashboardStatCard";
 import EventCard from "../../components/EventCard";
 import { EventContext } from "../../context/EventContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { events, deleteEvent } = useContext(EventContext);
   
-  // State for active tab
+  
+  React.useEffect(() => {
+    if (user?.role !== 'organizer') {
+      navigate('/no-access');
+    }
+  }, [user, navigate]);
+
+ 
   const [activeTab, setActiveTab] = useState("planned");
 
-  // State for view type
+  
   const [viewType, setViewType] = useState("grid");
 
-  // State for search term
+  
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle search
+  
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
 
-  // Handle tab change with animation
+
   const changeTab = (tab) => {
     setActiveTab(tab);
   };
 
-  // Toggle view type
+
   const changeViewType = (type) => {
     setViewType(type);
   };
 
-  // Handle create event
+
   const handleCreateEvent = () => {
     navigate("/create-event");
   };
 
-  // Handle edit event
   const handleEditEvent = (eventId) => {
     navigate(`/edit-event/${eventId}`);
   };
 
-  // Handle delete event
+  
   const handleDeleteEvent = (eventId) => {
     deleteEvent(eventId);
   };
 
-  // Handle view event details
+
   const handleViewEventDetails = (eventId) => {
     navigate(`/events/${eventId}`);
   };
 
-  // Filter events based on search term
+  
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Calculate totals for stat cards
   const totalRevenue = events.reduce((sum, event) => sum + event.grossAmount, 0);
   const totalAttendees = events.reduce((sum, event) => sum + event.soldTickets, 0);
   const totalEvents = events.length;
 
-  // Upcoming events (sort by start date)
+
   const upcomingEvents = [...events]
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     .slice(0, 3);
@@ -127,7 +134,7 @@ const Dashboard = () => {
                   }`}
                   onClick={() => changeTab("attended")}
                 >
-                  Attended
+                  Past Events
                 </button>
                 {activeTab === "attended" && (
                   <motion.div
