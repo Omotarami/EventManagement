@@ -2,8 +2,8 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, User, Clock, FileText } from "lucide-react";
-import { FormSection, FormInput, FormTextArea, ActionButton } from "../FormComponents";
-import TimeSelector from "./TimeSelector";
+import { FormSection, FormInput, FormTextArea, ActionButton } from "../EventForm/FormComponents";
+import TimeSelector from "../EventForm/TimeSelector";
 
 /**
  * EventAgenda component
