@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import StepProgress from "./StepProgress";
-import EventDetailsStep from "./EventDetails/EventDetailsStep";
-import TicketsStep from "./Tickets/TicketsStep";
-import PreviewStep from "./Preview/PreviewStep";
-import DashboardNavbar from "../../components/DashboardNavbar";
-import Sidebar from "../../components/Sidebar";
+import StepProgress from "../components/EventForm/StepProgress";
+import EventDetailsStep from "../components/EventForm/EventDetailsStep";
+import TicketsStep from "../components/EventForm/TicketsStep";
+import PreviewStep from "../components/EventForm/PreviewStep";
+import DashboardNavbar from "../components/DashboardNavbar";
+import Sidebar from "../components/Sidebar";
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
