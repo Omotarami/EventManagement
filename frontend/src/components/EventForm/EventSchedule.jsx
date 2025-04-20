@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { FormSection, ToggleButton } from "./FormComponents";
-import TimeSelector from "./TimeSelector";
+import { FormSection, ToggleButton } from "../EventForm/FormComponents";
+import TimeSelector from "../EventForm/TimeSelector";
 
 /**
  * EventSchedule component
