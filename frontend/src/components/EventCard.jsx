@@ -56,9 +56,9 @@ const EventCard = ({
   };
   
   return (
-    <div className="relative border border-gray-200 rounded-lg max-w-sm">
+    <div className="relative border-gray-300 rounded-sm w-70">
       {/* Image Area */}
-      <div className="bg-gray-200 h-36 rounded-t-lg relative">
+      <div className="bg-gray-200 h-30 rounded-lg relative ">
         {imageSrc && (
           <img 
             src={imageSrc} 
@@ -76,7 +76,7 @@ const EventCard = ({
       
       {/* Event Details */}
       <div className="p-4">
-        <h3 className="text-lg font-bold mb-2">{`Event Name: ${eventName}`}</h3>
+        <h3 className="text-sm font-medium mb-2 text-slate-400">{`Event Name: ${eventName}`}</h3>
         
         {/* Tickets Sold Progress */}
         <div className="mb-2">
