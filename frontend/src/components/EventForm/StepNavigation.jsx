@@ -8,12 +8,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
  * Navigation buttons for multi-step form (Back, Next, Submit)
  * 
  * @param {Object} props
- * @param {Function} props.onNext - Function to go to next step
- * @param {Function} props.onPrev - Function to go to previous step
- * @param {boolean} props.showPrev - Whether to show the back button
- * @param {boolean} props.isLast - Whether this is the last step
- * @param {string} props.nextLabel - Custom label for the next button
- * @param {string} props.prevLabel - Custom label for the prev button
+ * @param {Function} props.onNext 
+ * @param {Function} props.onPrev 
+ * @param {boolean} props.showPrev 
+ * @param {boolean} props.isLast 
+ * @param {string} props.nextLabel 
+ * @param {string} props.prevLabel 
  */
 const StepNavigation = ({ 
   onNext, 
