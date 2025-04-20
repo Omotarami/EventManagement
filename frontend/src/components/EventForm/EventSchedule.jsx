@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Calendar as CalendarIcon } from "lucide-react";
-import { FormSection, ToggleButton } from "../EventForm/FormComponents";
+import { ChevronLeft, ChevronRight, Clock, Calendar } from "lucide-react";
+import { FormSection, ToggleButton } from "./FormComponents";
 import TimeSelector from "../EventForm/TimeSelector";
 
 /**
@@ -300,7 +300,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </label>
         <ToggleButton
           name="scheduleType"
-          value={isRecurring ? "true" : "false"} 
+          value={isRecurring ? "true" : "false"} // Convert boolean to string for the component
           onChange={handleScheduleTypeChange}
           options={eventTypeOptions}
         />
@@ -309,7 +309,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
       {/* Calendar */}
       <div className="border border-gray-200 rounded-lg p-6 mb-6 bg-white shadow-sm">
         <div className="flex items-center mb-4 text-gray-700">
-          <CalendarIcon size={20} className="mr-2 text-orange-500" />
+          <Calendar size={20} className="mr-2 text-orange-500" />
           <h3 className="font-medium">
             {isRecurring ? "Select multiple dates" : "Select a date"}
           </h3>
