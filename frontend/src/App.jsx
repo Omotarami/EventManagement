@@ -34,7 +34,6 @@ const App = () => {
             <Route path="/categories" element={<CategorySelectionPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/no-access" element={<NoAccessPage />} />
-
             <Route path="/dashboard" element={<DashboardRouter />} />
 
             <Route
