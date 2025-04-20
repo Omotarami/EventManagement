@@ -16,19 +16,19 @@ import TimeSelector from "../EventForm/TimeSelector";
  * @param {Function} props.onChange 
  */
 const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
-  // Current month and year for calendar
+  
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
-  // Event type options (one-time vs recurring)
+  
   const eventTypeOptions = [
     { value: false, label: "One-Time Event" },
     { value: true, label: "Re-Occurring Event" },
   ];
 
-  // Handle schedule type change (one-time vs recurring)
+ 
   const handleScheduleTypeChange = (e) => {
-    // Convert string "true"/"false" to actual boolean
+    
     const newValue = e.target.value === "true";
     onChange({ isRecurring: newValue });
     
@@ -42,8 +42,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
   const handleDateSelect = (date) => {
     const dateString = date.toISOString().split("T")[0];
     
-    // For one-time events, replace any existing date
-    // For recurring events, toggle the selected date
+    
     if (!isRecurring) {
       onChange({ dates: [dateString] });
     } else {
