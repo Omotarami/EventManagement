@@ -12,19 +12,19 @@ import {
   FaMusic,
   FaStar,
 } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext"; 
 import toast from "react-hot-toast";
+import { signupUser } from "../services/Auth";
 
 const AttendeeSignupForm = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
 
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
+    fullname: "",
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   // Password visibility toggle
   const [showPassword, setShowPassword] = useState(false);
@@ -41,17 +41,15 @@ const AttendeeSignupForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
-      // Use the signup function from AuthContext with 'attendee' role Mikeylele you hear
-      const user = await signup(formData, "attendee");
-
-      toast.success("Account created successfully!");
-
-      // Redirect to attendee dashboard
-      navigate("/attendee-dashboard");
-    } catch (error) {
-      toast.error(error.message || "Error creating account");
+      const response = await signupUser(formData);
+      toast.success("Signup successful! Redirecting to login page...");
+      navigate("/login");
+    } catch (err) {
+      console.error("Signup failed:", err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -333,7 +331,7 @@ const AttendeeSignupForm = () => {
               {/* Name Field */}
               <motion.div variants={itemVariants}>
                 <label
-                  htmlFor="name"
+                  htmlFor="fullname"
                   className="block mb-1 text-sm font-medium text-gray-700"
                 >
                   Full Name
@@ -345,7 +343,7 @@ const AttendeeSignupForm = () => {
                   <input
                     type="text"
                     id="name"
-                    name="name"
+                    name="fullname"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter your full name"

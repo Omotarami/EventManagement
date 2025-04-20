@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,295 +10,162 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User Management
 model User {
-  id                  Int                @id @default(autoincrement())
-  email               String             @unique
-  passwordHash        String
-  fullName            String
-  phone               String?
-  profileImage        String?
-  bio                 String?
-  isVerified          Boolean            @default(false)
-  verificationToken   String?
-  resetToken          String?
-  resetTokenExpiresAt DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id               Int        @id @default(autoincrement())
+  fullname         String
+  email            String     @unique
+  password         String
+  email_verified   Boolean    @default(false)
+  account_type     String     @default("user")
+  account_token    String?
+  reset_token      String?
+  profile_picture  String?
+  bio              String?
+  account_balance  Float      @default(0)
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
 
-  // Relations
-  userRoles           UserRole[]
-  organizedEvents     Event[]            @relation("EventOrganizer")
-  tickets             Ticket[]
-  orders              Order[]
-  notifications       Notification[]
-  favorites           UserFavorite[]
-  attendedEvents      EventAttendee[]
-  // refunds             Refund[]
-  // twoFactorAuth       TwoFactorAuth?
-  sessions            Session[]
-}
-
-model Role {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
-  description String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  // Relations
-  userRoles   UserRole[]
-}
-
-model UserRole {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  roleId    Int
-  active    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roleId])
-}
-
-// Event Management
-model Category {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  icon        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  events      Event[]
+  events           Event[]    @relation("UserEvents")
+  attendances      Attendee[] @relation("UserAttendees")
+  categories       Category[] @relation("UserCategories")
+  orders           Order[]    @relation("UserOrders")
+  sessions         Session[]  @relation("UserSessions")
+  favourites       Favourite[] @relation("UserFavourites")
 }
 
 model Event {
-  id                   Int               @id @default(autoincrement())
-  title                String
-  description          String?
-  shortDescription     String?
-  organizerId          Int
-  categoryId           Int?
-  startDate            DateTime
-  endDate              DateTime
-  timezone             String            @default("UTC")
-  isVirtual            Boolean           @default(false)
-  locationName         String?
-  address              String?
-  city                 String?
-  state                String?
-  country              String?
-  postalCode           String?
-  latitude             Float?
-  longitude            Float?
-  virtualMeetingLink   String?
-  virtualMeetingPassword String?
-  bannerImage          String?
-  featuredImage        String?
-  capacity             Int?
-  isPublic             Boolean           @default(true)
-  isFree               Boolean           @default(false)
-  status               String            @default("draft") // draft, published, cancelled, completed
-  approvalStatus       String            @default("pending") // pending, approved, rejected
-  isFeatured           Boolean           @default(false)
-  viewCount            Int               @default(0)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  id                Int        @id @default(autoincrement())
+  user_id           Int
+  title             String
+  description       String
+  schedule_type     String     @default("one-time")
+  schedule_details  String?
+  capacity          String?
+  category          String?
 
-  // Relations
-  organizer            User              @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: SetNull)
-  category             Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images               EventImage[]
-  ticketTypes          TicketType[]
-  tickets              Ticket[]
-  attendees            EventAttendee[]
-  eventTags            EventTag[]
-  userFavorites        UserFavorite[]
-  scheduleItems        EventSchedule[]
+  user              User         @relation("UserEvents", fields: [user_id], references: [id])
+  tickets           Ticket[]     @relation("EventTickets")
+  attendees         Attendee[]   @relation("EventAttendees")
+  categories        Category[]   @relation("EventCategories")
+  orders            Order[]      @relation("EventOrders")
+  images            EventImage[] @relation("EventImages")
+  schedules         EventSchedule[] @relation("EventSchedule")
+  agendas           EventAgenda[] @relation("EventAgenda")
+  favourites        Favourite[] @relation("EventFavourites")
 }
 
 model EventImage {
-  id           Int      @id @default(autoincrement())
-  eventId      Int
-  imageUrl     String
-  isPrimary    Boolean  @default(false)
-  displayOrder Int?
-  createdAt    DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  event_id    Int
+  image_url   String
+  description String?
 
-  // Relations
-  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-}
-
-model TicketType {
-  id            Int          @id @default(autoincrement())
-  eventId       Int
-  name          String
-  description   String?
-  price         Decimal      @db.Decimal(10, 2)
-  currency      String       @default("USD")
-  quantity      Int?
-  quantitySold  Int          @default(0)
-  maxPerOrder   Int?
-  saleStartDate DateTime?
-  saleEndDate   DateTime?
-  isActive      Boolean      @default(true)
-  displayOrder  Int?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  // Relations
-  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tickets       Ticket[]
-  orderItems    OrderItem[]
-}
-
-model Ticket {
-  id           Int       @id @default(autoincrement())
-  ticketTypeId Int
-  orderId      Int?
-  userId       Int?
-  eventId      Int
-  ticketNumber String    @unique
-  qrCode       String?
-  status       String    @default("active") // active, used, cancelled, refunded
-  firstName    String?
-  lastName     String?
-  email        String?
-  checkedIn    Boolean   @default(false)
-  checkedInAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  // Relations
-  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
-  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  order        Order?     @relation(fields: [orderId], references: [id])
-}
-
-// Orders 
-model Order {
-  id                Int         @id @default(autoincrement())
-  userId            Int?
-  orderNumber       String      @unique
-  status            String      @default("pending") // pending, completed, cancelled, refunded
-  totalAmount       Decimal     @db.Decimal(10, 2)
-  currency          String      @default("USD")
-  paymentMethod     String?
-  paymentStatus     String      @default("pending") // pending, completed, failed
-  paymentIntentId   String?
-  billingEmail      String?
-  billingFirstName  String?
-  billingLastName   String?
-  billingAddress    String?
-  billingCity       String?
-  billingState      String?
-  billingCountry    String?
-  billingPostalCode String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  // Relations
-  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  orderItems        OrderItem[]
-  tickets           Ticket[]
-  // refunds           Refund[]
-}
-
-model OrderItem {
-  id            Int        @id @default(autoincrement())
-  orderId       Int
-  ticketTypeId  Int
-  quantity      Int
-  unitPrice     Decimal    @db.Decimal(10, 2)
-  totalPrice    Decimal    @db.Decimal(10, 2)
-  currency      String     @default("USD")
-  createdAt     DateTime   @default(now())
-
-  // Relations
-  order         Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  ticketType    TicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
-}
-
-
-
-
-model Notification {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  title         String
-  message       String
-  type          String?  // event_reminder, ticket_purchased, event_cancelled, etc.
-  referenceId   Int?
-  referenceType String?
-  isRead        Boolean  @default(false)
-  createdAt     DateTime @default(now())
-
-  // Relations
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model EventAttendee {
-  id               Int      @id @default(autoincrement())
-  eventId          Int
-  userId           Int
-  status           String   @default("registered") // registered, attended, cancelled
-  registrationDate DateTime @default(now())
-
-  // Relations
-  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, userId])
-}
-
-model UserFavorite {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  eventId   Int
-  createdAt DateTime @default(now())
-
-  // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, eventId])
+  event       Event    @relation("EventImages", fields: [event_id], references: [id])
 }
 
 model EventSchedule {
-  id          Int      @id @default(autoincrement())
-  eventId     Int
-  title       String
-  description String?
-  speaker     String?
-  startTime   DateTime
-  endTime     DateTime
-  location    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  event_id          Int
+  day               String
+  start_time        String
+  end_time          String
+  comment           String
+  location_type     String?
+  location_details  String?
 
-  // Relations
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event             Event    @relation("EventSchedule", fields: [event_id], references: [id])
 }
 
+model EventAgenda {
+  id           Int      @id @default(autoincrement())
+  event_id     Int
+  name         String
+  description  String?
+  speakers     String?
+  time         String?
 
+  event        Event    @relation("EventAgenda", fields: [event_id], references: [id])
+}
 
-// Security and Authentication
+model Ticket {
+  id             Int         @id @default(autoincrement())
+  event_id       Int
+  ticket_type    String
+  ticket_name    String
+  is_free        Boolean     @default(false)
+  description    String?
+  price          Float?
+  quantity       Int?
+
+  event          Event       @relation("EventTickets", fields: [event_id], references: [id])
+  attendees      Attendee[]  @relation("TicketAttendees")
+  orderItems     OrderItem[] @relation("TicketOrderItems")
+}
+
+model Attendee {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  event_id    Int
+  ticket_id   Int?
+  comment     String?
+
+  user        User      @relation("UserAttendees", fields: [user_id], references: [id])
+  event       Event     @relation("EventAttendees", fields: [event_id], references: [id])
+  ticket      Ticket?   @relation("TicketAttendees", fields: [ticket_id], references: [id])
+}
+
+model Category {
+  id        Int     @id @default(autoincrement())
+  user_id   Int
+  event_id  Int
+  comment   String?
+
+  user      User    @relation("UserCategories", fields: [user_id], references: [id])
+  event     Event   @relation("EventCategories", fields: [event_id], references: [id])
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  user_id      Int
+  event_id     Int
+  order_number String      @unique
+  total_price  Float
+  status       String
+
+  user         User        @relation("UserOrders", fields: [user_id], references: [id])
+  event        Event       @relation("EventOrders", fields: [event_id], references: [id])
+  orderItems   OrderItem[] @relation("OrderItems")
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  order_id    Int
+  ticket_id   Int
+  quantity    Int
+  unit_price  Float
+  total_price Float
+
+  order       Order   @relation("OrderItems", fields: [order_id], references: [id])
+  ticket      Ticket  @relation("TicketOrderItems", fields: [ticket_id], references: [id])
+}
+
+model Favourite {
+  id        Int    @id @default(autoincrement())
+  user_id   Int
+  event_id  Int
+  comment   String?
+
+  user      User   @relation("UserFavourites", fields: [user_id], references: [id])
+  event     Event  @relation("EventFavourites", fields: [event_id], references: [id])
+}
 
 model Session {
   id         Int      @id @default(autoincrement())
-  userId     Int
+  user_id    Int
   token      String   @unique
-  ipAddress  String?
-  userAgent  String?
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  is_active  Boolean  @default(true)
+  user_agent String?
+  expires_at DateTime
 
-  // Relations
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation("UserSessions", fields: [user_id], references: [id])
 }
