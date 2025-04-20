@@ -2,7 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Edit, ShoppingCart, Calendar, MapPin, Clock } from "lucide-react";
-import StepNavigation from "../StepNavigation";
+import StepNavigation from "../EventForm/StepNavigation";
 
 /**
  * PreviewStep component
