@@ -107,7 +107,7 @@ const App = () => {
               }
             />
 
-            {/* Updated routes */}
+            {/* Updated route with eventId parameter */}
             <Route
               path="/events/:eventId"
               element={

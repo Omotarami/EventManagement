@@ -71,9 +71,11 @@ const EventDetails = () => {
 
   // Fetch event details
   useEffect(() => {
-    const eventData = getEventById(eventId);
-    if (eventData) {
-      setEvent(eventData);
+    if (eventId) {
+      const eventData = getEventById(eventId);
+      if (eventData) {
+        setEvent(eventData);
+      }
     }
     setLoading(false);
   }, [eventId, getEventById]);
@@ -123,6 +125,8 @@ const EventDetails = () => {
 
   // Format dates for display
   const formatDate = (dateString) => {
+    if (!dateString) return "";
+    
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       weekday: "long",
@@ -132,16 +136,10 @@ const EventDetails = () => {
     });
   };
 
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   // Calculate ticket stats
-  const ticketPercentage = (event.soldTickets / event.totalTickets) * 100;
+  const ticketPercentage = event.totalTickets > 0 
+    ? (event.soldTickets / event.totalTickets) * 100 
+    : 0;
   const remainingTickets = event.totalTickets - event.soldTickets;
 
   return (
@@ -168,12 +166,16 @@ const EventDetails = () => {
           <div className="bg-white rounded-t-xl shadow-sm overflow-hidden">
             {/* Cover Image with Overlay */}
             <div className="relative h-48 md:h-64 bg-gray-200">
-              {event.imageSrc && (
+              {event.imageSrc ? (
                 <img
                   src={event.imageSrc}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <Calendar size={40} className="text-gray-400" />
+                </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
 
@@ -214,16 +216,20 @@ const EventDetails = () => {
                       <Calendar size={16} className="mr-1" />
                       <span>{formatDate(event.startDate)}</span>
                     </div>
-                    <div className="flex items-center mr-4 mb-2">
-                      <Clock size={16} className="mr-1" />
-                      <span>
-                        {event.startTime} - {event.endTime}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-2">
-                      <Tag size={16} className="mr-1" />
-                      <span className="capitalize">{event.category}</span>
-                    </div>
+                    {event.startTime && (
+                      <div className="flex items-center mr-4 mb-2">
+                        <Clock size={16} className="mr-1" />
+                        <span>
+                          {event.startTime} - {event.endTime}
+                        </span>
+                      </div>
+                    )}
+                    {event.category && (
+                      <div className="flex items-center mb-2">
+                        <Tag size={16} className="mr-1" />
+                        <span className="capitalize">{event.category}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
