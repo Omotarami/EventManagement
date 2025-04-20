@@ -6,6 +6,7 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  background-color: #e2e8f0;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -37,6 +38,8 @@
   --color-error: #ef4444;
   --color-info: #3b82f6;
 }
+
+
 
 
 @layer base {

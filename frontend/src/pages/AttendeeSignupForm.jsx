@@ -1,18 +1,25 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { 
-  FaEye, 
-  FaEyeSlash, 
-  FaUser, 
-  FaEnvelope, 
+import { useNavigate } from "react-router-dom";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaUser,
+  FaEnvelope,
   FaLock,
   FaTicketAlt,
   FaMusic,
-  FaStar
+  FaStar,
 } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext"; 
+import toast from "react-hot-toast";
 
 const AttendeeSignupForm = () => {
+  const navigate = useNavigate();
+  const { signup } = useAuth();
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -33,40 +40,50 @@ const AttendeeSignupForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Attendee signup:", formData);
-    // API call would go here
+
+    try {
+      // Use the signup function from AuthContext with 'attendee' role Mikeylele you hear
+      const user = await signup(formData, "attendee");
+
+      toast.success("Account created successfully!");
+
+      // Redirect to attendee dashboard
+      navigate("/attendee-dashboard");
+    } catch (error) {
+      toast.error(error.message || "Error creating account");
+    }
   };
 
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      } 
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
-  
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { type: 'spring', stiffness: 100 }
-    }
+      transition: { type: "spring", stiffness: 100 },
+    },
   };
 
   const buttonVariants = {
-    hover: { 
+    hover: {
       scale: 1.05,
-      backgroundColor: "#F39C55", 
-      transition: { type: 'spring', stiffness: 300, damping: 10 }
+      backgroundColor: "#F39C55",
+      transition: { type: "spring", stiffness: 300, damping: 10 },
     },
-    tap: { scale: 0.98 }
+    tap: { scale: 0.98 },
   };
 
   return (
@@ -103,26 +120,26 @@ const AttendeeSignupForm = () => {
 
         {/* Main animated content */}
         <div className="relative z-10 w-full max-w-lg">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
             className="text-white text-center"
           >
-            <motion.h1 
+            <motion.h1
               className="text-4xl font-bold mb-6"
-              animate={{ 
+              animate={{
                 y: [0, -8, 0],
               }}
-              transition={{ 
-                duration: 6, 
+              transition={{
+                duration: 6,
                 repeat: Infinity,
                 repeatType: "reverse",
               }}
             >
-              Join Events on Even<span style={{ color: '#2A9D8F' }}>tro</span>
+              Join Events on Even<span style={{ color: "#2A9D8F" }}>tro</span>
             </motion.h1>
-            
+
             {/* Event attendee illustration */}
             <motion.div
               className="w-full h-64 my-8 relative"
@@ -133,102 +150,120 @@ const AttendeeSignupForm = () => {
               {/* Ticket illustration */}
               <motion.div
                 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                animate={{ 
+                animate={{
                   rotate: [-2, 2, -2],
-                  y: [0, -5, 0]
+                  y: [0, -5, 0],
                 }}
-                transition={{ 
-                  duration: 8, 
+                transition={{
+                  duration: 8,
                   repeat: Infinity,
                   repeatType: "reverse",
                 }}
               >
-                <svg width="240" height="160" viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="240"
+                  height="160"
+                  viewBox="0 0 240 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   {/* Ticket base */}
-                  <motion.path 
-                    d="M20 40 H180 C180 40, 190 40, 190 50 V110 C190 110, 190 120, 180 120 H20 C20 120, 10 120, 10 110 V50 C10 50, 10 40, 20 40 Z" 
-                    fill="rgba(255,255,255,0.15)" 
-                    stroke="white" 
+                  <motion.path
+                    d="M20 40 H180 C180 40, 190 40, 190 50 V110 C190 110, 190 120, 180 120 H20 C20 120, 10 120, 10 110 V50 C10 50, 10 40, 20 40 Z"
+                    fill="rgba(255,255,255,0.15)"
+                    stroke="white"
                     strokeWidth="3"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
                     transition={{ duration: 2, ease: "easeInOut" }}
                   />
-                  
+
                   {/* Ticket perforation */}
-                  <motion.path 
-                    d="M150 40 V120" 
-                    stroke="white" 
-                    strokeWidth="3" 
+                  <motion.path
+                    d="M150 40 V120"
+                    stroke="white"
+                    strokeWidth="3"
                     strokeDasharray="6 4"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
                     transition={{ duration: 1, delay: 1 }}
                   />
-                  
+
                   {/* Event details on ticket */}
-                  <motion.rect 
-                    x="30" y="60" width="80" height="8" 
-                    fill="white" 
+                  <motion.rect
+                    x="30"
+                    y="60"
+                    width="80"
+                    height="8"
+                    fill="white"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.5, delay: 1.5 }}
                   />
-                  
-                  <motion.rect 
-                    x="30" y="80" width="100" height="8" 
-                    fill="white" 
+
+                  <motion.rect
+                    x="30"
+                    y="80"
+                    width="100"
+                    height="8"
+                    fill="white"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.5, delay: 1.7 }}
                   />
-                  
-                  <motion.rect 
-                    x="30" y="100" width="60" height="8" 
-                    fill="white" 
+
+                  <motion.rect
+                    x="30"
+                    y="100"
+                    width="60"
+                    height="8"
+                    fill="white"
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.5, delay: 1.9 }}
                   />
-                  
+
                   {/* Ticket code */}
-                  <motion.rect 
-                    x="160" y="70" width="20" height="20" 
-                    fill="#2A9D8F" 
+                  <motion.rect
+                    x="160"
+                    y="70"
+                    width="20"
+                    height="20"
+                    fill="#2A9D8F"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.5, delay: 2.1 }}
                   />
                 </svg>
               </motion.div>
-              
+
               {/* Floating icons */}
               <motion.div
                 className="absolute top-0 right-12"
                 animate={{
                   y: [0, -15, 0],
-                  rotate: [-5, 5, -5]
+                  rotate: [-5, 5, -5],
                 }}
                 transition={{
                   duration: 5,
                   repeat: Infinity,
-                  repeatType: "reverse"
+                  repeatType: "reverse",
                 }}
               >
                 <FaTicketAlt size={40} color="#2A9D8F" />
               </motion.div>
-              
+
               <motion.div
                 className="absolute bottom-0 left-12"
                 animate={{
                   y: [0, 10, 0],
-                  rotate: [5, -5, 5]
+                  rotate: [5, -5, 5],
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  delay: 1
+                  delay: 1,
                 }}
               >
                 <FaMusic size={34} color="white" />
@@ -238,20 +273,20 @@ const AttendeeSignupForm = () => {
                 className="absolute top-12 left-8"
                 animate={{
                   y: [0, -10, 0],
-                  rotate: [-5, 5, -5]
+                  rotate: [-5, 5, -5],
                 }}
                 transition={{
                   duration: 3.5,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  delay: 0.5
+                  delay: 0.5,
                 }}
               >
                 <FaStar size={24} color="white" />
               </motion.div>
             </motion.div>
-            
-            <motion.p 
+
+            <motion.p
               className="text-lg mt-4 opacity-90"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -262,29 +297,36 @@ const AttendeeSignupForm = () => {
           </motion.div>
         </div>
       </div>
-      
+
       {/* Right side - Signup Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <motion.div 
+        <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Logo for mobile view */}
-          <motion.div variants={itemVariants} className="lg:hidden text-center mb-8">
+          <motion.div
+            variants={itemVariants}
+            className="lg:hidden text-center mb-8"
+          >
             <h1 className="text-3xl font-bold">
-              Even<span style={{ color: '#F4A261' }}>tro</span>
+              Even<span style={{ color: "#F4A261" }}>tro</span>
             </h1>
             <p className="text-gray-600 mt-2">Where experiences come to life</p>
           </motion.div>
-          
+
           <motion.div variants={itemVariants} className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Create an account</h2>
-            <p className="text-gray-600 mt-2">Start discovering amazing events</p>
+            <h2 className="text-3xl font-bold text-gray-800">
+              Create an account
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Start discovering amazing events
+            </p>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             variants={itemVariants}
             className="bg-white p-8 rounded-lg shadow-md border border-gray-200"
           >
@@ -374,8 +416,6 @@ const AttendeeSignupForm = () => {
                 </div>
               </motion.div>
 
-             
-
               {/* Terms Agreement */}
               <motion.div variants={itemVariants} className="flex items-center">
                 <input
@@ -384,8 +424,24 @@ const AttendeeSignupForm = () => {
                   className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
                   required
                 />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                  I agree to the <a href="/terms" className="text-orange-600 hover:text-orange-700">Terms of Service</a> and <a href="/privacy" className="text-orange-600 hover:text-orange-700">Privacy Policy</a>
+                <label
+                  htmlFor="terms"
+                  className="ml-2 block text-sm text-gray-700"
+                >
+                  I agree to the{" "}
+                  <a
+                    href="/terms"
+                    className="text-orange-600 hover:text-orange-700"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy"
+                    className="text-orange-600 hover:text-orange-700"
+                  >
+                    Privacy Policy
+                  </a>
                 </label>
               </motion.div>
 
