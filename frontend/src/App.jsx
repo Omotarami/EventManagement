@@ -106,16 +106,24 @@ const App = () => {
               }
             />
 
+            {/* Updated route with eventId parameter */}
             <Route
-              path="/create-event"
+              path="/events/:eventId"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
-                  <CreateEventPage />
+                  <EventDetails />
                 </ProtectedRoute>
               }
             />
 
-            <Route path="/event-details" element={<EventDetails />} />
+            <Route
+              path="/edit-event/:eventId"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 404/Under Construction page */}
             <Route path="*" element={<UnderConstruction />} />

@@ -32,7 +32,7 @@ const EventProvider = ({ children }) => {
     setEvents(events.filter(event => event.id !== eventId));
   };
 
-  // Get a specific event by ID
+  
   const getEventById = (eventId) => {
     return events.find(event => event.id === eventId);
   };
