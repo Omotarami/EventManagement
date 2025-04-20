@@ -11,7 +11,7 @@ import CreateEvent from "./pages/admin/CreateEvent";
 import EventProvider from "./context/EventContext";
 import EventDetails from "./pages/EventDetails";
 import HomePage from "./pages/HomePage";
-import dashboard from "./pages/admin/dashboard";
+import Dashboard from "./pages/admin/dashboard";
 import AttendeeDashboard from "./pages/AttendeeDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NoAccessPage from "./components/NoAccessPage";
@@ -41,7 +41,7 @@ const App = () => {
               path="/organizer-dashboard"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
-                  <dashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
