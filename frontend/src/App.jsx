@@ -7,7 +7,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import LoginPage from "./pages/LoginPage";
 import CategorySelectionPage from "./pages/CategorySelectionPage";
 import { Toaster } from "react-hot-toast";
-import CreateEvent from "./pages/admin/CreateEvent";
+import CreateEventPage from "./pages/CreateEventPage";
 import EventProvider from "./context/EventContext";
 import EventDetails from "./pages/EventDetails";
 import HomePage from "./pages/HomePage";
@@ -104,7 +104,7 @@ const App = () => {
               path="/create-event"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
-                  <CreateEvent />
+                  <CreateEventPage />
                 </ProtectedRoute>
               }
             />
