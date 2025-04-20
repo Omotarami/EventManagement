@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, MoreVertical } from "lucide-react";
-import { ActionButton } from "../FormComponents";
-import StepNavigation from "../StepNavigation";
-import TicketForm from "./TicketForm";
+import { ActionButton } from "../EventForm/FormComponents";
+import StepNavigation from "../EventForm/StepNavigation";
+import TicketForm from "../EventForm/TicketForm";
 
 /**
  * TicketsStep component
