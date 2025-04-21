@@ -10,9 +10,9 @@ const DashboardRouter = () => {
     if (!loading) {
       if (!user) {
         navigate('/login');
-      } else if (user.role === 'organizer') {
+      } else if (user.account_type === 'organizer') {
         navigate('/dashboard');
-      } else if (user.role === 'attendee') {
+      } else if (user.account_type === 'attendee') {
         navigate('/attendee-dashboard');
       } else {
         navigate('/no-access');
