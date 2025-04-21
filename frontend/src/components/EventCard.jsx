@@ -2,7 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
-import { MoreVertical, Calendar, Users, DollarSign, Clock, MapPin, Tag } from 'lucide-react';
+import { MoreVertical, Calendar, Users, DollarSign, Clock, MapPin, Tag, Ticket } from 'lucide-react';
+import { useTickets } from '../context/TicketContext';
+import PurchaseTicketButton from '../components/Ticket/PurchaseTicketButton';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * 
@@ -20,6 +23,8 @@ import { MoreVertical, Calendar, Users, DollarSign, Clock, MapPin, Tag } from 'l
  * @param {function} props.onEdit 
  * @param {function} props.onDelete 
  * @param {function} props.onClick 
+ * @param {Object} props.event
+ * @param {string} props.userRole
  */
 const EventCard = ({
   eventName,
@@ -33,11 +38,15 @@ const EventCard = ({
   category,
   onEdit,
   onDelete,
-  onClick
+  onClick,
+  event,
+  userRole = null
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const menuRef = useRef(null);
+  const { hasTicketForEvent } = useTickets();
+  const navigate = useNavigate();
   
 
   useEffect(() => {
@@ -230,39 +239,64 @@ const EventCard = ({
         </div>
       </div>
       
-      {/* Menu Button */}
-      <div className="absolute bottom-4 right-4" ref={menuRef}>
-        <button 
-          onClick={handleMenuClick} 
-          className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm transition-colors duration-200"
-          aria-label="Menu"
-        >
-          <MoreVertical size={16} className="text-black" />
-        </button>
-        
-        {/* Dropdown Menu */}
-        {menuOpen && (
-          <motion.div 
-            className="absolute bottom-full right-0 mb-2 bg-white shadow-lg rounded-lg overflow-hidden z-10"
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.2 }}
+      {/* Purchase Button for Attendees */}
+      {userRole === "attendee" && status === 'published' && (
+        <div className="absolute bottom-4 left-4 right-16">
+          {hasTicketForEvent && hasTicketForEvent(event?.id) ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/event-details/${event?.id}`);
+              }}
+              className="w-full text-center py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center justify-center text-sm"
+            >
+              <Ticket size={16} className="mr-2" />
+              View Ticket
+            </button>
+          ) : (
+            <PurchaseTicketButton 
+              event={event} 
+              buttonStyle="w-full text-center py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors flex items-center justify-center text-sm"
+            />
+          )}
+        </div>
+      )}
+      
+      {/* Menu Button for Organizers */}
+      {userRole === "organizer" && (
+        <div className="absolute bottom-4 right-4" ref={menuRef}>
+          <button 
+            onClick={handleMenuClick} 
+            className="p-2 rounded-full bg-white hover:bg-gray-100 shadow-sm transition-colors duration-200"
+            aria-label="Menu"
           >
-            <button 
-              onClick={handleEditClick}
-              className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2"
+            <MoreVertical size={16} className="text-black" />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {menuOpen && (
+            <motion.div 
+              className="absolute bottom-full right-0 mb-2 bg-white shadow-lg rounded-lg overflow-hidden z-10"
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.2 }}
             >
-              <span>Edit</span>
-            </button>
-            <button 
-              onClick={handleDeleteClick}
-              className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-500 flex items-center space-x-2"
-            >
-              <span>Delete</span>
-            </button>
-          </motion.div>
-        )}
-      </div>
+              <button 
+                onClick={handleEditClick}
+                className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center space-x-2"
+              >
+                <span>Edit</span>
+              </button>
+              <button 
+                onClick={handleDeleteClick}
+                className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-500 flex items-center space-x-2"
+              >
+                <span>Delete</span>
+              </button>
+            </motion.div>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -277,9 +311,11 @@ EventCard.propTypes = {
   eventDate: PropTypes.string,
   location: PropTypes.string,
   category: PropTypes.string,
-  onEdit: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  onClick: PropTypes.func
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onClick: PropTypes.func,
+  event: PropTypes.object,
+  userRole: PropTypes.string
 };
 
 export default EventCard;
