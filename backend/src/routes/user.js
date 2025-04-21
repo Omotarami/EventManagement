@@ -14,12 +14,27 @@ class UserRoute {
 
   initializeRoutes() {
     // route for getting user profile information
-
     this.router.get(
-      `${this.path}/profile`,
+      `${this.path}/profile/:id`,
       isAuthenticated,
       useCatchErrors(
         this.userController.getUserProfile.bind(this.userController)
+      )
+    );
+
+    this.router.post(
+      `${this.path}/profile/visibility`,
+      isAuthenticated,
+      useCatchErrors(
+        this.userController.updateProfileVisibility.bind(this.userController)
+      )
+    );
+
+    this.router.get(
+      `${this.path}/public`,
+      isAuthenticated,
+      useCatchErrors(
+        this.userController.getPublicUsers.bind(this.userController)
       )
     );
 
@@ -29,6 +44,7 @@ class UserRoute {
       isAuthenticated,
       useCatchErrors(this.userController.allUsers.bind(this.userController))
     );
+    
     // Search User
     this.router.get(
       `${this.path}/search/:query`,
@@ -37,8 +53,6 @@ class UserRoute {
         this.userController.searchUserByNameOrEmail.bind(this.userController)
       )
     );
-
-    
 
     this.router.post(
       `${this.path}/reset-password`,

@@ -29,7 +29,9 @@ const App = () => {
   return (
     <AuthProvider>
       <EventProvider>
+
         <ProfileProvider>
+
           <TicketProvider>
             <Router>
               <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
@@ -74,6 +76,8 @@ const App = () => {
                 <Route
                   path="/calendar"
                   element={
+
+          
                     <Calendar />
                   }
                 />
