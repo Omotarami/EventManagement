@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -45,11 +46,11 @@ const RecentEventsSection = ({ events }) => {
   );
 };
 
-// Separate EventCard component to keep things modular
+
 const EventCard = ({ event, hasTicket, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
   
-  // Format date for display
+
   const formatDate = (dateString) => {
     if (!dateString) return 'TBD';
     const date = new Date(dateString);
@@ -60,7 +61,7 @@ const EventCard = ({ event, hasTicket, onViewDetails }) => {
     });
   };
   
-  // Get lowest ticket price
+ 
   const getLowestPrice = () => {
     if (!event.tickets || event.tickets.length === 0) {
       return event.price ? `$${event.price}` : 'Free';
