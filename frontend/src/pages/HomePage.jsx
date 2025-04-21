@@ -169,8 +169,8 @@ const HomePage = () => {
           <div className="flex py-10 items-center justify-between">
             <div className="flex items-center">
               <img src="../public/icons/footerarr.svg" alt="" />
-              <div className="flex">
-                <a href="" className="space-x-1">
+              <div className="flex space-x-2">
+                <a href="" className="">
                   <img src="../public/icons/instagram.svg" alt="" />{" "}
                 </a>
                 <a href="">
@@ -182,8 +182,8 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className=" font-imfell transform: translate-10 rotate-[-15deg] ">
-              <h1>Even<span className="text-orange-300">tro</span></h1>
+            <div className=" transform: translate-5 rotate-[-15deg] ">
+              <h1 style={{ fontFamily:'"Gideon Roman",cursive'}} className="text-8xl">Even<span className="text-orange-300">tro</span></h1>
             </div>
             <div>
               <p>&copy;Copyright Policy</p>

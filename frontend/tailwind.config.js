@@ -38,7 +38,7 @@ export default {
         },
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
-          imfell: ['"IM Fell English SC"', 'serif'],
+          gideon: ['"Gideon Roman"', 'cursive'],
         },
     
         boxShadow: {
