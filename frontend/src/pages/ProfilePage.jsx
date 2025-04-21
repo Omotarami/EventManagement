@@ -5,7 +5,7 @@ import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import DashboardNavbar from '../components/DashboardNavbar';
 import Sidebar from '../components/Sidebar';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, Mail, Phone, User } from 'lucide-react';
 
 const ProfilePage = () => {
   const { profile, updateProfileField, updateSocial } = useProfile();
@@ -13,8 +13,11 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: profile.name || '',
+    email: profile.email || '',
+    phone: profile.phone || '',
     bio: profile.bio || '',
     profileImage: profile.profileImage || '',
+    // Social media links for attendees
     twitter: profile.socials?.twitter || '',
     facebook: profile.socials?.facebook || '',
     instagram: profile.socials?.instagram || '',
@@ -30,23 +33,29 @@ const ProfilePage = () => {
     }));
   };
 
-  
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Update common fields
     updateProfileField('name', formData.name);
+    updateProfileField('email', formData.email);
+    updateProfileField('phone', formData.phone);
     updateProfileField('bio', formData.bio);
     updateProfileField('profileImage', formData.profileImage);
     
-    
-    updateSocial('twitter', formData.twitter);
-    updateSocial('facebook', formData.facebook);
-    updateSocial('instagram', formData.instagram);
-    updateSocial('linkedin', formData.linkedin);
+    // Update social links for attendees
+    if (user?.role === 'attendee') {
+      updateSocial('twitter', formData.twitter);
+      updateSocial('facebook', formData.facebook);
+      updateSocial('instagram', formData.instagram);
+      updateSocial('linkedin', formData.linkedin);
+    }
     
     setIsEditing(false);
   };
 
- 
+  // Handle file upload for profile image
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -149,10 +158,53 @@ const ProfilePage = () => {
               </div>
             </div>
 
+            {/* Contact Information */}
+            <div className="mb-6">
+              <h3 className="text-md font-semibold text-gray-700 mb-3">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center mb-1">
+                    <Mail size={16} className="text-gray-500 mr-2" />
+                    <label className="text-gray-600 text-sm">Email</label>
+                  </div>
+                  {isEditing ? (
+                    <input 
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-md px-3 py-1 w-full"
+                      placeholder="your@email.com"
+                    />
+                  ) : (
+                    <p className="text-gray-800">{profile.email || "Not provided"}</p>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center mb-1">
+                    <Phone size={16} className="text-gray-500 mr-2" />
+                    <label className="text-gray-600 text-sm">Phone</label>
+                  </div>
+                  {isEditing ? (
+                    <input 
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-md px-3 py-1 w-full"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  ) : (
+                    <p className="text-gray-800">{profile.phone || "Not provided"}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Profile Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Bio Section */}
-              <div className="col-span-2">
+              <div>
                 <h3 className="text-md font-semibold text-gray-700 mb-2">About Me</h3>
                 {isEditing ? (
                   <textarea
@@ -169,9 +221,9 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {/* Social Links (Show for attendees) */}
+              {/* Social Links (Show for attendees only) */}
               {user?.role === 'attendee' && (
-                <div className="col-span-2">
+                <div>
                   <h3 className="text-md font-semibold text-gray-700 mb-2">Social Links</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -243,6 +295,17 @@ const ProfilePage = () => {
                       )}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Organizer specific fields could go here */}
+              {user?.role === 'organizer' && (
+                <div>
+                  <h3 className="text-md font-semibold text-gray-700 mb-2">Organizer Information</h3>
+                  <p className="text-gray-600 mb-4">
+                    Update your organizer profile to help attendees know more about your events.
+                  </p>
+                  {/* Add any organizer-specific fields here */}
                 </div>
               )}
             </div>
