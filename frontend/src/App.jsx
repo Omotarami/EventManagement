@@ -10,7 +10,9 @@ import { Toaster } from "react-hot-toast";
 import CreateEventPage from "./pages/CreateEventPage";
 import EventProvider from "./context/EventContext";
 import ProfileProvider from "./context/ProfileContext";
+import TicketProvider from "./context/TicketContext";
 import EventDetails from "./pages/EventDetails";
+import MyTicketsPage from "./components/Ticket/MyTicketsPage";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/admin/dashboard";
 import AttendeeDashboard from "./pages/AttendeeDashboard";
@@ -27,122 +29,136 @@ const App = () => {
     <AuthProvider>
       <EventProvider>
         <ProfileProvider>
-          <Router>
-            <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
-              <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/categories" element={<CategorySelectionPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/no-access" element={<NoAccessPage />} />
+          <TicketProvider>
+            <Router>
+              <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
+                <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/categories" element={<CategorySelectionPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/no-access" element={<NoAccessPage />} />
 
-              <Route path="/dashboard" element={<DashboardRouter />} />
+                <Route path="/dashboard" element={<DashboardRouter />} />
 
-              <Route
-                path="/organizer-dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer"]}>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/organizer-dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/attendee-dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["attendee"]}>
-                    <AttendeeDashboard />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/attendee-dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["attendee"]}>
+                      <AttendeeDashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/create-event"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer"]}>
-                    <CreateEventPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/create-event"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <CreateEventPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/calendar"
-                element={
+                <Route
+                  path="/calendar"
+                  element={
                     <Calendar />
-                }
-              />
+                  }
+                />
 
-              <Route
-                path="/messages"
-                element={
-                  <ProtectedRoute>
-                    <UnderConstruction />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/messages"
+                  element={
+                    <ProtectedRoute>
+                      <UnderConstruction />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/revenue"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer"]}>
-                    <UnderConstruction />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/revenue"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <UnderConstruction />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/tickets"
-                element={
-                  <ProtectedRoute>
-                    <UnderConstruction />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Tickets Page */}
+                <Route
+                  path="/tickets"
+                  element={
+                    <ProtectedRoute>
+                      <MyTicketsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <UnderConstruction />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <UnderConstruction />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Profile Page */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Profile Page */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Updated route with eventId parameter */}
-              <Route
-                path="/events/:eventId"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer"]}>
-                    <EventDetails />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Event Detail Pages */}
+                {/* For organizers - with editing capabilities */}
+                <Route
+                  path="/events/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <EventDetails />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/edit-event/:eventId"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer"]}>
-                    <UnderConstruction />
-                  </ProtectedRoute>
-                }
-              />
+                {/* For attendees - to view event details and purchase */}
+                <Route
+                  path="/event-details/:eventId"
+                  element={
+                    <ProtectedRoute>
+                      <EventDetails viewOnly={false} />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* 404/Under Construction page */}
-              <Route path="*" element={<UnderConstruction />} />
-            </Routes>
-          </Router>
+                <Route
+                  path="/edit-event/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <UnderConstruction />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 404/Under Construction page */}
+                <Route path="*" element={<UnderConstruction />} />
+              </Routes>
+            </Router>
+          </TicketProvider>
         </ProfileProvider>
       </EventProvider>
     </AuthProvider>
