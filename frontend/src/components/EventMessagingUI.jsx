@@ -119,7 +119,7 @@ const EventMessagingUI = () => {
             <input
               type="text"
               placeholder="Search events..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
+              className="w-full pl-10 pr-4 py-2 border text-black border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -179,7 +179,7 @@ const EventMessagingUI = () => {
             <input
               type="text"
               placeholder="Search attendees..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
+              className="w-full pl-10 pr-4 py-2 text-black border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
             />
           </div>
         </div>
@@ -291,7 +291,7 @@ const EventMessagingUI = () => {
                   <input
                     type="text"
                     placeholder="Type a message..."
-                    className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-full focus:outline-none focus:border-orange-400"
+                    className="w-full pl-4 pr-10 py-2 border text-black border-gray-200 rounded-full focus:outline-none focus:border-orange-400"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />
