@@ -140,14 +140,16 @@ const NoAccessPage = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowLoginForm(true)}
-              className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium shadow-md hover:bg-orange-600 transition-colors"
-            >
-              Log in to access
-            </motion.button>
+            <motion.a href="/login">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                // onClick={() => setShowLoginForm(true)}
+                className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium shadow-md hover:bg-orange-600 transition-colors"
+              >
+                Log in to access
+              </motion.button>
+            </motion.a>
 
             <motion.button
               whileHover={{ scale: 1.05 }}

@@ -9,9 +9,6 @@ class EventController {    // Create a new event
                 user_id,
                 title,
                 description,
-                schedule_type = "one-time",
-                schedule_details,
-                capacity,
                 category
             } = req.body;
     
@@ -26,9 +23,6 @@ class EventController {    // Create a new event
                     user_id,
                     title,
                     description,
-                    schedule_type,
-                    schedule_details,
-                    capacity,
                     category
                 },
             });
@@ -48,9 +42,6 @@ class EventController {    // Create a new event
             const {
                 title,
                 description,
-                schedule_type,
-                schedule_details,
-                capacity,
                 category
             } = req.body;
     
@@ -69,9 +60,6 @@ class EventController {    // Create a new event
                 data: {
                     title,
                     description,
-                    schedule_type,
-                    schedule_details,
-                    capacity,
                     category
                 },
             });

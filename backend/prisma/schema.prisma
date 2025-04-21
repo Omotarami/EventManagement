@@ -38,9 +38,6 @@ model Event {
   user_id           Int
   title             String
   description       String
-  schedule_type     String     @default("one-time")
-  schedule_details  String?
-  capacity          String?
   category          String?
 
   user              User         @relation("UserEvents", fields: [user_id], references: [id])
@@ -69,9 +66,9 @@ model EventSchedule {
   day               String
   start_time        String
   end_time          String
-  comment           String
-  location_type     String?
-  location_details  String?
+  comment           String?
+  location_type     String       @default("Physical")
+  location_details  String
 
   event             Event    @relation("EventSchedule", fields: [event_id], references: [id])
 }
@@ -90,9 +87,8 @@ model EventAgenda {
 model Ticket {
   id             Int         @id @default(autoincrement())
   event_id       Int
-  ticket_type    String
-  ticket_name    String
-  is_free        Boolean     @default(false)
+  ticket_type    String      @default("free")
+  ticket_name    String?
   description    String?
   price          Float?
   quantity       Int?

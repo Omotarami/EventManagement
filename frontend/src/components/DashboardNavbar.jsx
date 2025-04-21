@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogOut, User, Settings, Bell } from "lucide-react";
 
 const DashboardNavbar = ({ userName = "Sarah Johnson" }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { logout } = useAuth();
 
   // Animation variants for dropdown
   const dropdownVariants = {
@@ -157,7 +159,7 @@ const DashboardNavbar = ({ userName = "Sarah Johnson" }) => {
               <div className="border-t border-gray-100 my-1"></div>
 
               <motion.a
-                href="/logout"
+                onClick={logout}
                 className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 whileHover={{ x: 5 }}
               >

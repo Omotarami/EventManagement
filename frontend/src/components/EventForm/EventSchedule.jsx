@@ -1,248 +1,306 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Calendar } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Calendar,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { FormSection, ToggleButton } from "./FormComponents";
 import TimeSelector from "../EventForm/TimeSelector";
 
-/**
- * EventSchedule component
- * Handles event schedule selection (one-time vs recurring, dates, times)
- * 
- * @param {Object} props
- * @param {boolean} props.isRecurring 
- * @param {Array} props.dates 
- * @param {Array} props.times 
- * @param {Function} props.onChange 
- */
-const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
-  // Current month and year for calendar
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  
+const EventSchedule = ({ isRecurring, dates = [], onChange }) => {
+  const today = new Date();
+  const currentDate = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [showYearDropdown, setShowYearDropdown] = useState(false);
+
+  // Generate years for dropdown (current year to +10)
+  const years = Array.from({ length: 11 }, (_, i) => today.getFullYear() + i);
+
+  // Check if a given month/year is in the past
+  const isPastMonth = (month, year) => {
+    if (year < today.getFullYear()) return true;
+    if (year === today.getFullYear() && month < today.getMonth()) return true;
+    return false;
+  };
+
   // Format dates array properly on component mount
   useEffect(() => {
-    // Ensure all dates are in full ISO format
     if (dates.length > 0) {
-      const formattedDates = dates.map(date => {
-        if (typeof date === 'string' && !date.includes('T')) {
-          // If it's just a date without time (YYYY-MM-DD), convert to full ISO
-          return new Date(date).toISOString();
+      const formattedDates = dates.map((date) => {
+        // Initialize with default time values if they don't exist
+        const formattedDate = { ...date };
+        if (
+          typeof formattedDate.date === "string" &&
+          !formattedDate.date.includes("T")
+        ) {
+          formattedDate.date = new Date(formattedDate.date).toISOString();
         }
-        return date;
+        if (!formattedDate.startTime) formattedDate.startTime = "";
+        if (!formattedDate.startPeriod) formattedDate.startPeriod = "AM";
+        if (!formattedDate.endTime) formattedDate.endTime = "";
+        if (!formattedDate.endPeriod) formattedDate.endPeriod = "PM";
+
+        return formattedDate;
       });
-      
+
       if (JSON.stringify(formattedDates) !== JSON.stringify(dates)) {
         onChange({ dates: formattedDates });
       }
     }
   }, []);
 
-  // Event type options (one-time vs recurring)
   const eventTypeOptions = [
     { value: "false", label: "One-Time Event" },
     { value: "true", label: "Re-Occurring Event" },
   ];
 
-  // Handle schedule type change (one-time vs recurring)
   const handleScheduleTypeChange = (e) => {
-    // Convert string "true"/"false" to actual boolean
     const newValue = e.target.value === "true";
     onChange({ isRecurring: newValue });
-    
-    // Clear dates when switching types
     if (dates.length > 0) {
       onChange({ dates: [] });
     }
   };
 
-  // Handle date selection
   const handleDateSelect = (date) => {
-    // Create a date at noon to avoid timezone issues
     const selectedDate = new Date(date);
     selectedDate.setHours(12, 0, 0, 0);
-    
-    // Full ISO date string that includes time information
     const dateString = selectedDate.toISOString();
-    
-    // For one-time events, replace any existing date
-    // For recurring events, toggle the selected date
+
     if (!isRecurring) {
-      onChange({ dates: [dateString] });
+      // For one-time events, just replace the date
+      const newDate = {
+        date: dateString,
+        startTime: dates.length > 0 ? dates[0].startTime || "" : "",
+        startPeriod: dates.length > 0 ? dates[0].startPeriod || "AM" : "AM",
+        endTime: dates.length > 0 ? dates[0].endTime || "" : "",
+        endPeriod: dates.length > 0 ? dates[0].endPeriod || "PM" : "PM",
+      };
+      onChange({ dates: [newDate] });
     } else {
-      // Check if the date already exists (comparing just the date part)
-      const dateExists = dates.some(d => {
-        const existingDate = new Date(d);
-        return existingDate.getDate() === selectedDate.getDate() && 
-               existingDate.getMonth() === selectedDate.getMonth() && 
-               existingDate.getFullYear() === selectedDate.getFullYear();
+      // For recurring events, check if the date already exists
+      const existingIndex = dates.findIndex((d) => {
+        const existingDate = new Date(d.date);
+        return (
+          existingDate.getDate() === selectedDate.getDate() &&
+          existingDate.getMonth() === selectedDate.getMonth() &&
+          existingDate.getFullYear() === selectedDate.getFullYear()
+        );
       });
-      
-      const newDates = dateExists
-        ? dates.filter(d => {
-            const existingDate = new Date(d);
-            return !(existingDate.getDate() === selectedDate.getDate() && 
-                   existingDate.getMonth() === selectedDate.getMonth() && 
-                   existingDate.getFullYear() === selectedDate.getFullYear());
-          })
-        : [...dates, dateString];
-      
-      onChange({ dates: newDates });
+
+      if (existingIndex >= 0) {
+        // If the date exists, remove it
+        const newDates = [...dates];
+        newDates.splice(existingIndex, 1);
+        onChange({ dates: newDates });
+      } else {
+        // If the date doesn't exist, add it with default time values
+        const newDate = {
+          date: dateString,
+          startTime: "",
+          startPeriod: "AM",
+          endTime: "",
+          endPeriod: "PM",
+        };
+        const newDates = [...dates, newDate];
+        onChange({ dates: newDates });
+      }
     }
   };
 
-  // Handle time changes
   const handleTimeChange = (index, field, value) => {
-    const newTimes = [...times];
-    
-    // Create new time entry if needed
-    if (!newTimes[index]) {
-      newTimes[index] = { startTime: "", startPeriod: "AM", endTime: "", endPeriod: "PM" };
-    }
-    
-    newTimes[index] = { ...newTimes[index], [field]: value };
-    onChange({ times: newTimes });
+    const newDates = [...dates];
+    newDates[index] = { ...newDates[index], [field]: value };
+    onChange({ dates: newDates });
   };
 
-  // Add a new time slot
-  const addTimeSlot = () => {
-    const newTimes = [
-      ...times, 
-      { startTime: "", startPeriod: "AM", endTime: "", endPeriod: "PM" }
-    ];
-    onChange({ times: newTimes });
-  };
-
-  // Remove a time slot
-  const removeTimeSlot = (index) => {
-    const newTimes = [...times];
-    newTimes.splice(index, 1);
-    onChange({ times: newTimes });
-  };
-
-  // Navigate to previous month
+  // Navigation functions with past month/year restrictions
   const prevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
+    if (isPastMonth(currentMonth - 1, currentYear)) return;
+    setCurrentMonth((prev) => (prev === 0 ? 11 : prev - 1));
+    if (currentMonth === 0) setCurrentYear((prev) => prev - 1);
   };
 
-  // Navigate to next month
   const nextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
+    setCurrentMonth((prev) => (prev === 11 ? 0 : prev + 1));
+    if (currentMonth === 11) setCurrentYear((prev) => prev + 1);
   };
 
-  // Generate calendar days
+  const prevYear = () => {
+    if (currentYear <= today.getFullYear()) return;
+    setCurrentYear((prev) => prev - 1);
+  };
+
+  const nextYear = () => {
+    setCurrentYear((prev) => prev + 1);
+  };
+
+  const selectYear = (year) => {
+    if (year < today.getFullYear()) return;
+    setCurrentYear(year);
+    // If selecting current year, make sure month isn't in the past
+    if (year === today.getFullYear() && currentMonth < today.getMonth()) {
+      setCurrentMonth(today.getMonth());
+    }
+    setShowYearDropdown(false);
+  };
+
   const generateCalendar = () => {
     const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
-    
+
     const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-    
-    // Get first day of month and total days
+
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    // Get days from previous month to fill first week
-    const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
-    const prevDays = Array.from({ length: firstDay }, (_, i) => {
-      return {
-        day: prevMonthDays - firstDay + i + 1,
-        month: currentMonth === 0 ? 11 : currentMonth - 1,
-        year: currentMonth === 0 ? currentYear - 1 : currentYear,
-        isCurrentMonth: false
-      };
-    });
-    
-    // Current month days
-    const currentDays = Array.from({ length: daysInMonth }, (_, i) => {
-      return {
-        day: i + 1,
-        month: currentMonth,
-        year: currentYear,
-        isCurrentMonth: true
-      };
-    });
-    
-    // Next month days to complete the calendar
-    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-    const nextDays = Array.from({ length: totalCells - (prevDays.length + currentDays.length) }, (_, i) => {
-      return {
-        day: i + 1,
-        month: currentMonth === 11 ? 0 : currentMonth + 1,
-        year: currentMonth === 11 ? currentYear + 1 : currentYear,
-        isCurrentMonth: false
-      };
-    });
-    
-    const allDays = [...prevDays, ...currentDays, ...nextDays];
-    
-    // Check if a date is selected by comparing year, month, and day
+
+    // Create current month days only
+    const currentDays = Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      month: currentMonth,
+      year: currentYear,
+      isCurrentMonth: true,
+    }));
+
     const isDateSelected = (dayObj) => {
-      return dates.some(dateStr => {
-        const date = new Date(dateStr);
-        return date.getDate() === dayObj.day && 
-               date.getMonth() === dayObj.month && 
-               date.getFullYear() === dayObj.year;
+      return dates.some((dateObj) => {
+        const date = new Date(dateObj.date);
+        return (
+          date.getDate() === dayObj.day &&
+          date.getMonth() === dayObj.month &&
+          date.getFullYear() === dayObj.year
+        );
       });
     };
-    
-    // Check if a date is today
+
     const isToday = (dayObj) => {
-      const today = new Date();
       return (
         dayObj.day === today.getDate() &&
         dayObj.month === today.getMonth() &&
         dayObj.year === today.getFullYear()
       );
     };
-    
-    // Check if a date is in the past
+
     const isPastDate = (dayObj) => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
       const checkDate = new Date(dayObj.year, dayObj.month, dayObj.day);
-      return checkDate < today;
+      return (
+        checkDate <
+        new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      );
     };
-    
+
+    // Check if navigation to previous month/year should be disabled
+    const prevMonthDisabled = isPastMonth(currentMonth - 1, currentYear);
+    const prevYearDisabled = currentYear <= today.getFullYear();
+
     return (
       <div className="mb-6">
-        {/* Calendar header with month/year and nav buttons */}
+        {/* Enhanced calendar header */}
         <div className="flex justify-between items-center mb-4 px-2">
-          <h2 className="text-lg font-medium text-gray-800">
-            {monthNames[currentMonth]} {currentYear}
-          </h2>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-4">
+            <button
+              type="button"
+              onClick={prevYear}
+              disabled={prevYearDisabled}
+              className={`p-1 rounded-full ${
+                prevYearDisabled
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+              aria-label="Previous year"
+            >
+              <ChevronsLeft size={18} />
+            </button>
             <button
               type="button"
               onClick={prevMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              disabled={prevMonthDisabled}
+              className={`p-1 rounded-full ${
+                prevMonthDisabled
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
               aria-label="Previous month"
             >
               <ChevronLeft size={18} />
             </button>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <h2 className="text-lg font-medium text-gray-800">
+              {monthNames[currentMonth]}
+            </h2>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowYearDropdown(!showYearDropdown)}
+                className="text-sm font-medium text-gray-600 hover:text-gray-800"
+              >
+                {currentYear}
+              </button>
+              {showYearDropdown && (
+                <div className="absolute z-10 mt-1 w-24 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                  {years.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => selectYear(year)}
+                      disabled={year < today.getFullYear()}
+                      className={`block w-full px-4 py-2 text-sm text-left text-black ${
+                        year === currentYear
+                          ? "bg-orange-100 text-orange-800"
+                          : year < today.getFullYear()
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4">
             <button
               type="button"
               onClick={nextMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-1 rounded-full text-gray-600 hover:bg-gray-100"
               aria-label="Next month"
             >
               <ChevronRight size={18} />
             </button>
+            <button
+              type="button"
+              onClick={nextYear}
+              className="p-1 rounded-full text-gray-600 hover:bg-gray-100"
+              aria-label="Next year"
+            >
+              <ChevronsRight size={18} />
+            </button>
           </div>
         </div>
-        
-        {/* Day names (Su, Mo, etc.) */}
+
+        {/* Day names */}
         <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2">
           {dayNames.map((day, index) => (
             <div
@@ -253,35 +311,57 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             </div>
           ))}
         </div>
-        
-        {/* Calendar grid */}
+
+        {/* Calendar grid - show empty cells for first days of the month */}
         <div className="grid grid-cols-7 gap-2">
-          {allDays.map((dayObj, index) => {
+          {/* Empty cells for days before the 1st of the month */}
+          {Array(firstDay)
+            .fill(null)
+            .map((_, index) => (
+              <div key={`empty-start-${index}`} className="h-10"></div>
+            ))}
+
+          {/* Current month days */}
+          {currentDays.map((dayObj, index) => {
             const selected = isDateSelected(dayObj);
             const today = isToday(dayObj);
             const pastDate = isPastDate(dayObj);
-            
+            const disabled = pastDate;
+
             return (
               <motion.button
-                key={index}
+                key={`day-${index}`}
                 type="button"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={!disabled ? { scale: 1.1 } : {}}
+                whileTap={!disabled ? { scale: 0.95 } : {}}
                 onClick={() => {
-                  if (!pastDate && dayObj.isCurrentMonth) {
-                    handleDateSelect(new Date(dayObj.year, dayObj.month, dayObj.day));
+                  if (!disabled) {
+                    handleDateSelect(
+                      new Date(dayObj.year, dayObj.month, dayObj.day)
+                    );
                   }
                 }}
-                disabled={pastDate || !dayObj.isCurrentMonth}
+                disabled={disabled}
                 className={`
-                  h-10 flex items-center justify-center text-sm rounded-lg
-                  ${!dayObj.isCurrentMonth ? "text-gray-300" : ""}
-                  ${pastDate && dayObj.isCurrentMonth ? "text-gray-400" : ""}
+                  h-10 flex items-center justify-center text-sm rounded-lg text-black
+                  ${pastDate ? "text-gray-400" : ""}
                   ${selected ? "bg-orange-400 text-white font-medium" : ""}
-                  ${!selected && today ? "border-2 border-orange-400 font-medium" : ""}
-                  ${!selected && !today && !pastDate && dayObj.isCurrentMonth ? "hover:bg-gray-100 border border-gray-100" : ""}
+                  ${
+                    !selected && today
+                      ? "border-2 border-orange-400 font-medium"
+                      : ""
+                  }
+                  ${
+                    !selected && !today && !pastDate
+                      ? "hover:bg-gray-100 border border-gray-100"
+                      : ""
+                  }
                   transition-colors duration-150 ease-in-out
+                  ${disabled ? "cursor-not-allowed" : "cursor-pointer"}
                 `}
+                aria-label={`${dayObj.day} ${monthNames[dayObj.month]} ${
+                  dayObj.year
+                }`}
               >
                 {dayObj.day}
               </motion.button>
@@ -300,13 +380,12 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </label>
         <ToggleButton
           name="scheduleType"
-          value={isRecurring ? "true" : "false"} // Convert boolean to string for the component
+          value={isRecurring ? "true" : "false"}
           onChange={handleScheduleTypeChange}
           options={eventTypeOptions}
         />
       </div>
 
-      {/* Calendar */}
       <div className="border border-gray-200 rounded-lg p-6 mb-6 bg-white shadow-sm">
         <div className="flex items-center mb-4 text-gray-700">
           <Calendar size={20} className="mr-2 text-orange-500" />
@@ -314,106 +393,85 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             {isRecurring ? "Select multiple dates" : "Select a date"}
           </h3>
         </div>
-        
+
         {generateCalendar()}
-        
-        {/* Selected dates summary */}
+
         {dates.length > 0 && (
           <div className="mb-6 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
             <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Calendar size={16} className="mr-1 text-orange-500" />
-              Selected Dates:
+              Selected Dates with Times:
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {dates.map((date, index) => {
-                const displayDate = new Date(date);
+            <div className="space-y-3">
+              {dates.map((dateObj, index) => {
+                const displayDate = new Date(dateObj.date);
+
                 return (
-                  <div 
+                  <div
                     key={index}
-                    className="bg-orange-100 text-orange-800 text-sm px-3 py-1 rounded-md flex items-center"
+                    className="flex flex-col p-3 border border-gray-200 rounded-md bg-white"
                   >
-                    {displayDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric"
-                    })}
-                    <button
-                      type="button"
-                      className="ml-2 text-orange-600 hover:text-orange-800"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const newDates = [...dates];
-                        newDates.splice(index, 1);
-                        onChange({ dates: newDates });
-                      }}
-                    >
-                      &times;
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Calendar size={16} className="mr-2 text-orange-500" />
+                        <span className="text-sm font-medium text-black">
+                          {displayDate.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => {
+                          const newDates = [...dates];
+                          newDates.splice(index, 1);
+                          onChange({ dates: newDates });
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <div className="flex items-center">
+                        <Clock size={14} className="mr-1 text-gray-800" />
+                        <span className="text-xs text-gray-800 mr-2">
+                          Time:
+                        </span>
+                        <div className="flex items-center text-black">
+                          <TimeSelector
+                            timeValue={dateObj.startTime || ""}
+                            periodValue={dateObj.startPeriod || "AM"}
+                            onTimeChange={(value) =>
+                              handleTimeChange(index, "startTime", value)
+                            }
+                            onPeriodChange={(value) =>
+                              handleTimeChange(index, "startPeriod", value)
+                            }
+                          />
+
+                          <span className="mx-2 text-xs text-gray-800">to</span>
+
+                          <TimeSelector
+                            timeValue={dateObj.endTime || ""}
+                            periodValue={dateObj.endPeriod || "PM"}
+                            onTimeChange={(value) =>
+                              handleTimeChange(index, "endTime", value)
+                            }
+                            onPeriodChange={(value) =>
+                              handleTimeChange(index, "endPeriod", value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
-            </div>
-          </div>
-        )}
-        
-        {/* Time selection */}
-        {dates.length > 0 && (
-          <div className="border-t border-gray-200 pt-4 mt-4">
-            <div className="mb-3 flex justify-between items-center">
-              <h3 className="font-medium text-gray-700 flex items-center">
-                <Clock size={16} className="mr-2 text-orange-500" />
-                Event Time{isRecurring && times.length > 1 ? "s" : ""}:
-              </h3>
-              {isRecurring && (
-                <button
-                  type="button"
-                  onClick={addTimeSlot}
-                  className="text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center"
-                >
-                  + Add another time
-                </button>
-              )}
-            </div>
-            
-            {/* Time slots */}
-            <div className="space-y-4">
-              {(times.length === 0 ? [{}] : times).map((time, index) => (
-                <div 
-                  key={index} 
-                  className="p-3 border border-gray-200 rounded-lg bg-gray-50 flex flex-wrap items-center gap-4"
-                >
-                  <div className="flex items-center text-black">
-                    <span className="text-sm font-medium text-gray-700 mr-2">Start:</span>
-                    <TimeSelector
-                      timeValue={time?.startTime || ""}
-                      periodValue={time?.startPeriod || "AM"}
-                      onTimeChange={(value) => handleTimeChange(index, "startTime", value)}
-                      onPeriodChange={(value) => handleTimeChange(index, "startPeriod", value)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center text-black">
-                    <span className="text-sm font-medium text-gray-700 mr-2">End:</span>
-                    <TimeSelector
-                      timeValue={time?.endTime || ""}
-                      periodValue={time?.endPeriod || "PM"}
-                      onTimeChange={(value) => handleTimeChange(index, "endTime", value)}
-                      onPeriodChange={(value) => handleTimeChange(index, "endPeriod", value)}
-                    />
-                  </div>
-                  
-                  {/* Remove button for additional time slots */}
-                  {isRecurring && times.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTimeSlot(index)}
-                      className="text-sm text-red-500 hover:text-red-600 ml-auto"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         )}

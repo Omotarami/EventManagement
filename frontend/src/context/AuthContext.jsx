@@ -74,7 +74,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("eventro_user");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
     toast.success("Logged out successfully");
   };
