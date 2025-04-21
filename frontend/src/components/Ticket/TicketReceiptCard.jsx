@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Check, Download, ArrowRight, BarChart4 } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 
 const TicketReceiptCard = ({ ticket, showActions = true }) => {
   const [isFlipped, setIsFlipped] = useState(false);
