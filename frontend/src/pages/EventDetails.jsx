@@ -22,18 +22,32 @@ import { EventContext } from "../context/EventContext";
 import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
 import AttendeeList from "../components/AttendeeList";
+import { useTickets } from "../context/TicketContext";
+import EventRevenueSection from "../components/Ticket/EventRevenueSection";
+import PurchaseTicketButton from "../components/Ticket/PurchaseTicketButton";
+import TicketReceiptCard from "../components/Ticket/TicketReceiptCard";
+import { useAuth } from "../context/AuthContext";
 
 const EventDetails = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const { getEventById } = useContext(EventContext);
+  const { user } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview"); 
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Mikey Fix here 
+  const { hasTicketForEvent, getTicketsByEvent, getUserTickets } = useTickets();
+  const userHasTicket = hasTicketForEvent(eventId);
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
+  const userTicket = getUserTickets().find(
+    (ticket) => ticket.eventId === eventId
+  );
+  const attendeeCount = getTicketsByEvent(eventId).length;
+
+  // Mikey Fix here
   const [attendees, setAttendees] = useState([
     {
       id: "att-001",
@@ -60,7 +74,6 @@ const EventDetails = () => {
     },
   ]);
 
-  // Fetch event details
   useEffect(() => {
     try {
       if (eventId) {
@@ -86,35 +99,29 @@ const EventDetails = () => {
     }
   }, [eventId, getEventById]);
 
-  // Handle back to dashboard
   const handleBack = () => {
     navigate("/organizer-dashboard");
   };
 
-  // Handle edit event
   const handleEdit = () => {
     navigate(`/edit-event/${eventId}`);
   };
 
-  // Handle tab change
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
-  // Function to format time objects or strings
   const formatTimeValue = (timeValue) => {
     if (!timeValue) return "TBD";
-    
-    // If timeValue is an object with time and period properties
-    if (typeof timeValue === 'object' && timeValue !== null) {
-      if ('time' in timeValue && 'period' in timeValue) {
+
+    if (typeof timeValue === "object" && timeValue !== null) {
+      if ("time" in timeValue && "period" in timeValue) {
         return `${timeValue.time} ${timeValue.period}`;
       }
-      // For other object formats, convert to string
+
       return JSON.stringify(timeValue);
     }
-    
-    // If it's already a string, return as is
+
     return timeValue;
   };
 
@@ -164,7 +171,6 @@ const EventDetails = () => {
     );
   }
 
-  // Format dates for display - with null checks
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
 
@@ -184,12 +190,10 @@ const EventDetails = () => {
     }
   };
 
-  // Calculate ticket stats
   const ticketPercentage =
     event.totalTickets > 0 ? (event.soldTickets / event.totalTickets) * 100 : 0;
   const remainingTickets = event.totalTickets - event.soldTickets;
 
-  // Safely display event data
   const safeEvent = {
     title: event.title || "Untitled Event",
     description: event.description || "No description available.",
@@ -204,10 +208,12 @@ const EventDetails = () => {
     eventType: event.eventType || "physical",
     isRecurring: event.isRecurring || false,
     dates: Array.isArray(event.dates) ? event.dates : [],
-    agenda: Array.isArray(event.agenda) ? event.agenda.map(item => ({
-      ...item,
-      time: formatTimeValue(item.time)
-    })) : [],
+    agenda: Array.isArray(event.agenda)
+      ? event.agenda.map((item) => ({
+          ...item,
+          time: formatTimeValue(item.time),
+        }))
+      : [],
     tickets: Array.isArray(event.tickets) ? event.tickets : [],
     totalTickets: event.totalTickets || 0,
     soldTickets: event.soldTickets || 0,
@@ -416,6 +422,10 @@ const EventDetails = () => {
                         )}
                     </div>
                   </motion.div>
+
+                  {user?.role === "organizer" && (
+                    <EventRevenueSection eventId={eventId} event={event} />
+                  )}
 
                   {/* Location Card */}
                   <motion.div
@@ -658,7 +668,34 @@ const EventDetails = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <AttendeeList attendees={attendees} eventId={eventId} />
+                {user?.role === "organizer" ? (
+                  <AttendeeList
+                    attendees={attendees.concat(
+                      getTicketsByEvent(eventId).map((ticket) => ({
+                        id: ticket.id,
+                        name: ticket.userName,
+                        email: ticket.userEmail,
+                        phone: "",
+                        ticketType: ticket.ticketType,
+                        ticketPrice: ticket.price,
+                        purchaseDate: ticket.purchaseDate,
+                        checkInStatus: ticket.checkInStatus,
+                        orderId: ticket.orderId,
+                      }))
+                    )}
+                    eventId={eventId}
+                  />
+                ) : (
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                      Attendees
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      This event has {attendeeCount} registered{" "}
+                      {attendeeCount === 1 ? "attendee" : "attendees"}.
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
 

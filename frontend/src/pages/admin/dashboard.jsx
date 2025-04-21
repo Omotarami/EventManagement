@@ -302,6 +302,8 @@ const Dashboard = () => {
                         onEdit={() => handleEditEvent(event.id)}
                         onDelete={() => handleDeleteEvent(event.id)}
                         onClick={() => handleViewEventDetails(event.id)}
+                        event={event}         
+                        userRole="organizer"
                       />
                     </motion.div>
                   ))}
