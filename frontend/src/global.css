@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Poppins:wght@400&family=Roboto:wght@300;400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Poppins:wght@400&family=Roboto:wght@300;400;500&display=swap");
 @import "tailwindcss";
 @tailwind utilities;
 
@@ -39,26 +39,25 @@
   --color-info: #3b82f6;
 }
 
-
-
-
 @layer base {
   body {
-    @apply  font-normal  leading-relaxed ;
+    @apply font-normal  leading-relaxed;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply  font-bold leading-tight ;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold leading-tight;
   }
 
   h1 {
-    @apply text-[60px] ;
+    @apply text-[60px];
   }
 
   a {
-    @apply no-underline transition-colors duration-200 ;
+    @apply no-underline transition-colors duration-200;
   }
-
 }
-
-

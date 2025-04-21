@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+    
+  
     content: [
       "./index.html",
       "./src/**/*.{js,ts,jsx,tsx}",
@@ -36,7 +38,9 @@ export default {
         },
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
+          imfell: ['"IM Fell English SC"', 'serif'],
         },
+    
         boxShadow: {
           'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
         },

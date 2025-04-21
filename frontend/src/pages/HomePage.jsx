@@ -65,7 +65,132 @@ const HomePage = () => {
           </button>
         </div>
       </div>
-      <footer className="bg-"></footer>
+      <footer className="relative ">
+        <div className="absolute grid">
+          <img
+            src="../public/images/footer.png"
+            alt=""
+            className=" object-cover inset-0"
+          />
+          <div className="absolute inset-0 bg-white opacity-70"></div>
+          <div className="absolute inset-0 bg-black opacity-80"></div>
+        </div>
+        <div className=" relative  md:px-6 text-white  ">
+          <div className="flex justify-between pt-10 text-xl font-bold">
+            <div className=" flex flex-col">
+              <p>Eventro</p>
+              <div className=" flex flex-col pt-10  text-sm font-light ">
+                <a href="#" className="flex items-center ">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+              </div>
+            </div>
+            <div className="flex-col ">
+              <p>For Attendees</p>
+              <div className="flex flex-col pt-10 text-sm font-light">
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+              </div>
+            </div>
+            <div className="flex-col ">
+              <p>For Organisers</p>
+              <div className="flex flex-col pt-10 text-sm font-light">
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+              </div>
+            </div>
+            <div className="flex-col ">
+              <p>Legal</p>
+              <div className="flex flex-col pt-10 text-sm font-light">
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+                <a href="#" className="flex items-center">
+                  <img src="../public/icons/footerarr.svg" alt="" />
+                  About us
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="flex py-10 items-center justify-between">
+            <div className="flex items-center">
+              <img src="../public/icons/footerarr.svg" alt="" />
+              <div className="flex">
+                <a href="" className="space-x-1">
+                  <img src="../public/icons/instagram.svg" alt="" />{" "}
+                </a>
+                <a href="">
+                  <img src="../public/icons/facebook.svg" alt="" />
+                </a>
+                <a href="">
+                  <img src="../public/icons/twitter.svg" alt="" />
+                </a>
+              </div>
+            </div>
+
+            <div className=" font-imfell transform: translate-10 rotate-[-15deg] ">
+              <h1>Even<span className="text-orange-300">tro</span></h1>
+            </div>
+            <div>
+              <p>&copy;Copyright Policy</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
