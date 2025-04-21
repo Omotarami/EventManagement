@@ -108,21 +108,44 @@ const Sidebar = () => {
           ))}
         </div>
         
-          
-        {/* Profile tooltip */}
-        {hoveredIndex === 'profile' && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="absolute left-full ml-2 px-3 py-1 bg-gray-800 text-white text-sm rounded whitespace-nowrap"
-            style={{ top: '50%', transform: 'translateY(-50%)'}}
+        {/* Profile Section */}
+        <div 
+          className="relative mt-auto"
+          onMouseEnter={() => setHoveredIndex('profile')}
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
+          <div 
+            className="p-1 rounded-full transition-all duration-300 transform cursor-pointer hover:bg-gray-100"
+            onClick={() => navigate('/profile')}
           >
-            My Profile
-            <div 
-              className="absolute top-1/2 -left-1 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"
-            />
-          </motion.div>
-        )}
+            {user?.profileImage ? (
+              <img 
+                src={user.profileImage} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full object-cover" 
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
+          </div>
+          
+          {/* Profile Tooltip */}
+          {hoveredIndex === 'profile' && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="absolute left-full ml-2 px-3 py-1 bg-gray-800 text-white text-sm rounded whitespace-nowrap"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            >
+              My Profile
+              <div 
+                className="absolute top-1/2 -left-1 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"
+              />
+            </motion.div>
+          )}
+        </div>
       </motion.div>
     </div>
   );
