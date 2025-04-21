@@ -12,7 +12,7 @@ const Cards = () => {
           <p>Online</p>
           <p>Free</p>
         </div>
-        <div className="flex space-x-7 justify-center w-full ">
+        <div className="flex space-x-4 justify-center w-full ">
           <div className="bg-teal-100 w-130 h-50 rounded-lg  pt-12 pl-5">
             <div className="flex items-baseline space-x-3 space-y-3">
               <img src="../public/icons/buy.svg" alt="buy" className="w-7" />
