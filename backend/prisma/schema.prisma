@@ -22,6 +22,7 @@ model User {
   profile_picture  String?
   bio              String?
   account_balance  Float      @default(0)
+  profile_visibility String   @default("private") // "public" or "private"
   created_at       DateTime   @default(now())
   updated_at       DateTime   @updatedAt
 
@@ -31,6 +32,8 @@ model User {
   orders           Order[]    @relation("UserOrders")
   sessions         Session[]  @relation("UserSessions")
   favourites       Favourite[] @relation("UserFavourites")
+  sentMessages     Message[]  @relation("SentMessages")
+  chatParticipants ChatParticipant[] @relation("UserChatParticipants")
 }
 
 model Event {
@@ -52,6 +55,7 @@ model Event {
   schedules         EventSchedule[] @relation("EventSchedule")
   agendas           EventAgenda[] @relation("EventAgenda")
   favourites        Favourite[] @relation("EventFavourites")
+  chatRoom          ChatRoom?      @relation("EventChatRoom")
 }
 
 model EventImage {
@@ -168,4 +172,44 @@ model Session {
   expires_at DateTime
 
   user       User     @relation("UserSessions", fields: [user_id], references: [id])
+}
+
+model ChatRoom {
+  id              Int              @id @default(autoincrement())
+  event_id        Int              @unique
+  name            String
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  
+  event           Event            @relation("EventChatRoom", fields: [event_id], references: [id])
+  messages        Message[]        @relation("ChatRoomMessages")
+  participants    ChatParticipant[] @relation("ChatRoomParticipants")
+}
+
+model Message {
+  id              Int         @id @default(autoincrement())
+  chat_room_id    Int
+  sender_id       Int
+  content         String
+  is_deleted      Boolean     @default(false)
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  
+  chatRoom        ChatRoom    @relation("ChatRoomMessages", fields: [chat_room_id], references: [id])
+  sender          User        @relation("SentMessages", fields: [sender_id], references: [id])
+}
+
+model ChatParticipant {
+  id              Int         @id @default(autoincrement())
+  chat_room_id    Int
+  user_id         Int
+  is_active       Boolean     @default(true)
+  joined_at       DateTime    @default(now())
+  last_read_at    DateTime?
+  
+  chatRoom        ChatRoom    @relation("ChatRoomParticipants", fields: [chat_room_id], references: [id])
+  user            User        @relation("UserChatParticipants", fields: [user_id], references: [id])
+  
+  @@unique([chat_room_id, user_id])
 }

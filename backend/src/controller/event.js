@@ -2,7 +2,8 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-class EventController {    // Create a new event
+class EventController {    
+    // Create a new event
     async createEvent (req, res) {
         try {
             const {
@@ -30,6 +31,14 @@ class EventController {    // Create a new event
                     schedule_details,
                     capacity,
                     category
+                },
+            });
+
+            // Create a chat room for the event
+            await prisma.chatRoom.create({
+                data: {
+                    event_id: event.id,
+                    name: `Chat for ${title}`,
                 },
             });
     
@@ -158,4 +167,4 @@ class EventController {    // Create a new event
     };
 }
 
-module.exports = EventController
+module.exports = EventController;
