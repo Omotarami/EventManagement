@@ -101,6 +101,23 @@ const EventDetails = () => {
     setActiveTab(tab);
   };
 
+  // Function to format time objects or strings
+  const formatTimeValue = (timeValue) => {
+    if (!timeValue) return "TBD";
+    
+    // If timeValue is an object with time and period properties
+    if (typeof timeValue === 'object' && timeValue !== null) {
+      if ('time' in timeValue && 'period' in timeValue) {
+        return `${timeValue.time} ${timeValue.period}`;
+      }
+      // For other object formats, convert to string
+      return JSON.stringify(timeValue);
+    }
+    
+    // If it's already a string, return as is
+    return timeValue;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -180,14 +197,17 @@ const EventDetails = () => {
     imageSrc: event.imageSrc || "",
     startDate: event.startDate || null,
     endDate: event.endDate || null,
-    startTime: event.startTime || "TBD",
-    endTime: event.endTime || "TBD",
+    startTime: formatTimeValue(event.startTime) || "TBD",
+    endTime: formatTimeValue(event.endTime) || "TBD",
     category: event.category || "Uncategorized",
     location: event.location || "No location specified",
     eventType: event.eventType || "physical",
     isRecurring: event.isRecurring || false,
     dates: Array.isArray(event.dates) ? event.dates : [],
-    agenda: Array.isArray(event.agenda) ? event.agenda : [],
+    agenda: Array.isArray(event.agenda) ? event.agenda.map(item => ({
+      ...item,
+      time: formatTimeValue(item.time)
+    })) : [],
     tickets: Array.isArray(event.tickets) ? event.tickets : [],
     totalTickets: event.totalTickets || 0,
     soldTickets: event.soldTickets || 0,
@@ -637,14 +657,8 @@ const EventDetails = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white rounded-lg shadow-sm p-6"
               >
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                  Attendee Management
-                </h2>
-                <p>The attendee list component will be rendered here</p>
-                {/* Once the AttendeeList component is added to your project, uncomment this: */}
-                {/* <AttendeeList attendees={attendees} eventId={eventId} /> */}
+                <AttendeeList attendees={attendees} eventId={eventId} />
               </motion.div>
             )}
 
