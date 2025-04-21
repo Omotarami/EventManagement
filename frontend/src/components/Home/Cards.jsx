@@ -52,7 +52,10 @@ const Cards = () => {
           <h1 className=" text-3xl text-black font-medium">
             Ready to experience Eventro?
           </h1>
-          <p className="text-black text-center max-w-xl">Discover, connect, and engage with events. Business conferences, tech meetups  to exclusive concerts, we connect you to the best.</p>
+          <p className="text-black text-center max-w-xl">
+            Discover, connect, and engage with events. Business conferences,
+            tech meetups to exclusive concerts, we connect you to the best.
+          </p>
         </div>
         <footer></footer>
       </section>
