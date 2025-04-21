@@ -23,6 +23,7 @@ import UnderConstruction from "./pages/UnderConstruction";
 import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardRouter from "./components/DashboardRouter";
+import Messages from "./pages/Messages";  
 
 const App = () => {
   return (
@@ -77,11 +78,12 @@ const App = () => {
                   }
                 />
 
+               
                 <Route
                   path="/messages"
                   element={
                     <ProtectedRoute>
-                      <UnderConstruction />
+                      <Messages /> 
                     </ProtectedRoute>
                   }
                 />
