@@ -39,7 +39,7 @@ const App = () => {
             <Route
               path="/organizer-dashboard"
               element={
-                <ProtectedRoute allowedRoles={["organizer"]}>
+                <ProtectedRoute allowedRoles={"organizer"}>
                   <Dashboard />
                 </ProtectedRoute>
               }
