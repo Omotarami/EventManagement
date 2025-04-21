@@ -13,20 +13,19 @@ import {
   FaCalendarAlt,
   FaUsers,
 } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext"; 
 import toast from "react-hot-toast";
+import { signupOrganizer } from "../services/Auth"
 
 const OrganizerSignupForm = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
   
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    phoneNumber: "",
+    fullname: '',
+    email: '',
+    password: '',
   });
+  const [loading, setLoading] = useState(false);
 
   // Password visibility toggle
   const [showPassword, setShowPassword] = useState(false);
@@ -40,20 +39,18 @@ const OrganizerSignupForm = () => {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setLoading(true);
     try {
-    
-      const user = await signup(formData, 'organizer');
-      
-      toast.success('Account created successfully!');
-      
-      
-      navigate('/organizer-dashboard');
-    } catch (error) {
-      toast.error(error.message || 'Error creating account');
+      const response = await signupOrganizer(formData);
+      toast.success('Signup successful! Redirecting to login page...');
+      navigate('/login');
+
+    } catch (err) {
+      console.error('Signup failed:', err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -316,7 +313,7 @@ const OrganizerSignupForm = () => {
               {/* Name Field */}
               <motion.div variants={itemVariants}>
                 <label
-                  htmlFor="name"
+                  htmlFor="fullname"
                   className="block mb-1 text-sm font-medium text-gray-700"
                 >
                   Full Name
@@ -328,7 +325,7 @@ const OrganizerSignupForm = () => {
                   <input
                     type="text"
                     id="name"
-                    name="name"
+                    name="fullname"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter your full name"
@@ -357,31 +354,6 @@ const OrganizerSignupForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email address"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
-                    required
-                  />
-                </div>
-              </motion.div>
-
-              {/* Phone Number Field */}
-              <motion.div variants={itemVariants}>
-                <label
-                  htmlFor="phoneNumber"
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaPhone className="text-gray-500" />
-                  </div>
-                  <input
-                    type="tel"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Your phone"
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
                     required
                   />

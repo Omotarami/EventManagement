@@ -26,6 +26,7 @@ const App = () => {
   return (
     <AuthProvider>
       <EventProvider>
+
         <ProfileProvider>
           <Router>
             <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
@@ -39,6 +40,7 @@ const App = () => {
               <Route path="/no-access" element={<NoAccessPage />} />
 
               <Route path="/dashboard" element={<DashboardRouter />} />
+
 
               <Route
                 path="/organizer-dashboard"

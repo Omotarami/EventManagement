@@ -38,8 +38,6 @@ class UserRoute {
       )
     );
 
-    
-
     this.router.post(
       `${this.path}/reset-password`,
       useCatchErrors(

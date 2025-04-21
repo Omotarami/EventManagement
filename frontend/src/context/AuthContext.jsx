@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 const AuthContext = createContext(null);
 
@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for stored user on mount
-    const storedUser = localStorage.getItem('eventro_user');
+    const storedUser = localStorage.getItem("eventro_user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -20,36 +20,36 @@ export const AuthProvider = ({ children }) => {
     try {
       // Mike login logic, replace am with API call
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        throw new Error("Email and password are required");
       }
 
       let userData = null;
-      
+
       //  Mike this one na check for organizer
-      if (email.includes('organizer')) {
+      if (email.includes("organizer")) {
         userData = {
           id: 1,
-          name: 'Demo Organizer',
+          name: "Demo Organizer",
           email: email,
-          role: 'organizer'
+          role: "organizer",
         };
-      } 
+      }
       // Mike this one na check for attendee
       else {
         userData = {
           id: 2,
-          name: 'Demo Attendee',
+          name: "Demo Attendee",
           email: email,
-          role: 'attendee'
+          role: "attendee",
         };
       }
 
-      localStorage.setItem('eventro_user', JSON.stringify(userData));
+      localStorage.setItem("eventro_user", JSON.stringify(userData));
       setUser(userData);
-      toast.success('Welcome back!');
+      toast.success("Welcome back!");
       return userData;
     } catch (error) {
-      toast.error('Invalid credentials');
+      toast.error("Invalid credentials");
       throw error;
     }
   };
@@ -60,23 +60,23 @@ export const AuthProvider = ({ children }) => {
       const newUser = {
         ...userData,
         id: Date.now(),
-        role: userType
+        role: userType,
       };
-      
-      localStorage.setItem('eventro_user', JSON.stringify(newUser));
+
+      localStorage.setItem("eventro_user", JSON.stringify(newUser));
       setUser(newUser);
-      toast.success('Account created successfully!');
+      toast.success("Account created successfully!");
       return newUser;
     } catch (error) {
-      toast.error('Signup failed');
+      toast.error("Signup failed");
       throw error;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('eventro_user');
+    localStorage.removeItem("eventro_user");
     setUser(null);
-    toast.success('Logged out successfully');
+    toast.success("Logged out successfully");
   };
 
   const value = {
@@ -84,20 +84,16 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
-    logout
+    logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
