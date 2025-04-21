@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const UnderConstruction = () => {
   return (
@@ -14,19 +14,19 @@ const UnderConstruction = () => {
           className="space-y-6"
         >
           {/* Fun Construction Icon */}
-          <motion.div 
+          <motion.div
             className="mx-auto"
-            animate={{ 
+            animate={{
               rotate: [0, 10, -10, 10, 0],
             }}
-            transition={{ 
-              repeat: Infinity, 
-              repeatType: "loop", 
-              duration: 5 
+            transition={{
+              repeat: Infinity,
+              repeatType: "loop",
+              duration: 5,
             }}
           >
             <div className="relative h-40 w-40 mx-auto">
-              <motion.div 
+              <motion.div
                 className="absolute top-4 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-orange-400 rounded-full z-10"
                 animate={{ y: [0, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
@@ -36,7 +36,7 @@ const UnderConstruction = () => {
                 <div className="absolute top-5 right-4 w-4 h-4 bg-white rounded-full"></div>
                 <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-white rounded-full"></div>
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-20 bg-yellow-500 rounded-t-full"
                 animate={{ rotate: [-5, 5, -5] }}
                 transition={{ repeat: Infinity, duration: 2 }}
@@ -47,16 +47,16 @@ const UnderConstruction = () => {
           </motion.div>
 
           {/* 404 Text */}
-          <motion.h1 
+          <motion.h1
             className="text-7xl font-bold text-orange-500"
-            animate={{ 
+            animate={{
               scale: [1, 1.05, 1],
-              color: ["#f97316", "#fb923c", "#f97316"]
+              color: ["#f97316", "#fb923c", "#f97316"],
             }}
-            transition={{ 
-              repeat: Infinity, 
-              repeatType: "reverse", 
-              duration: 2 
+            transition={{
+              repeat: Infinity,
+              repeatType: "reverse",
+              duration: 2,
             }}
           >
             404
@@ -72,52 +72,52 @@ const UnderConstruction = () => {
               Oops! This Page is Under Construction
             </h2>
             <p className="text-gray-600 mb-6">
-              Our tiny cartoon builders are working day and night to bring this amazing feature to life! 
-              Check back soon for all the fun!
+              Our tiny cartoon builders are working day and night to bring this
+              amazing feature to life! Check back soon for all the fun!
             </p>
 
             {/* Tools Animation */}
             <div className="flex justify-center gap-8 mb-8">
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: [0, 15, 0],
-                  y: [0, -5, 0]
+                  y: [0, -5, 0],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  repeatType: "reverse", 
+                transition={{
+                  repeat: Infinity,
+                  repeatType: "reverse",
                   duration: 1.5,
-                  delay: 0.2
+                  delay: 0.2,
                 }}
                 className="text-3xl"
               >
                 🔨
               </motion.div>
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: [0, -15, 0],
-                  y: [0, -5, 0]
+                  y: [0, -5, 0],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  repeatType: "reverse", 
+                transition={{
+                  repeat: Infinity,
+                  repeatType: "reverse",
                   duration: 1.5,
-                  delay: 0.5
+                  delay: 0.5,
                 }}
                 className="text-3xl"
               >
                 🔧
               </motion.div>
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: [0, 15, 0],
-                  y: [0, -5, 0]
+                  y: [0, -5, 0],
                 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  repeatType: "reverse", 
+                transition={{
+                  repeat: Infinity,
+                  repeatType: "reverse",
                   duration: 1.5,
-                  delay: 0.8
+                  delay: 0.8,
                 }}
                 className="text-3xl"
               >
@@ -125,7 +125,7 @@ const UnderConstruction = () => {
               </motion.div>
             </div>
 
-            <Link to="/dashboard">
+            <Link to="/organizer-dashboard">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

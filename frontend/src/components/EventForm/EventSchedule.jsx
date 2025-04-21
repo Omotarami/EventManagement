@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { FormSection, ToggleButton } from "../EventForm/FormComponents";
+import { ChevronLeft, ChevronRight, Clock, Calendar } from "lucide-react";
+import { FormSection, ToggleButton } from "./FormComponents";
 import TimeSelector from "../EventForm/TimeSelector";
 
 /**
@@ -19,11 +19,29 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
   // Current month and year for calendar
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  
+  // Format dates array properly on component mount
+  useEffect(() => {
+    // Ensure all dates are in full ISO format
+    if (dates.length > 0) {
+      const formattedDates = dates.map(date => {
+        if (typeof date === 'string' && !date.includes('T')) {
+          // If it's just a date without time (YYYY-MM-DD), convert to full ISO
+          return new Date(date).toISOString();
+        }
+        return date;
+      });
+      
+      if (JSON.stringify(formattedDates) !== JSON.stringify(dates)) {
+        onChange({ dates: formattedDates });
+      }
+    }
+  }, []);
 
   // Event type options (one-time vs recurring)
   const eventTypeOptions = [
-    { value: false, label: "One-Time Event" },
-    { value: true, label: "Re-Occurring Event" },
+    { value: "false", label: "One-Time Event" },
+    { value: "true", label: "Re-Occurring Event" },
   ];
 
   // Handle schedule type change (one-time vs recurring)
@@ -40,8 +58,12 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
 
   // Handle date selection
   const handleDateSelect = (date) => {
+    // Create a date at noon to avoid timezone issues
+    const selectedDate = new Date(date);
+    selectedDate.setHours(12, 0, 0, 0);
+    
     // Full ISO date string that includes time information
-    const dateString = new Date(date).toISOString();
+    const dateString = selectedDate.toISOString();
     
     // For one-time events, replace any existing date
     // For recurring events, toggle the selected date
@@ -49,12 +71,20 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
       onChange({ dates: [dateString] });
     } else {
       // Check if the date already exists (comparing just the date part)
-      const dateExists = dates.some(d => 
-        new Date(d).toISOString().split('T')[0] === dateString.split('T')[0]
-      );
+      const dateExists = dates.some(d => {
+        const existingDate = new Date(d);
+        return existingDate.getDate() === selectedDate.getDate() && 
+               existingDate.getMonth() === selectedDate.getMonth() && 
+               existingDate.getFullYear() === selectedDate.getFullYear();
+      });
       
       const newDates = dateExists
-        ? dates.filter(d => new Date(d).toISOString().split('T')[0] !== dateString.split('T')[0])
+        ? dates.filter(d => {
+            const existingDate = new Date(d);
+            return !(existingDate.getDate() === selectedDate.getDate() && 
+                   existingDate.getMonth() === selectedDate.getMonth() && 
+                   existingDate.getFullYear() === selectedDate.getFullYear());
+          })
         : [...dates, dateString];
       
       onChange({ dates: newDates });
@@ -157,12 +187,14 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
     
     const allDays = [...prevDays, ...currentDays, ...nextDays];
     
-    // Check if a date is selected
+    // Check if a date is selected by comparing year, month, and day
     const isDateSelected = (dayObj) => {
-      const dateString = new Date(dayObj.year, dayObj.month, dayObj.day)
-        .toISOString()
-        .split("T")[0];
-      return dates.includes(dateString);
+      return dates.some(dateStr => {
+        const date = new Date(dateStr);
+        return date.getDate() === dayObj.day && 
+               date.getMonth() === dayObj.month && 
+               date.getFullYear() === dayObj.year;
+      });
     };
     
     // Check if a date is today
@@ -186,36 +218,36 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
     return (
       <div className="mb-6">
         {/* Calendar header with month/year and nav buttons */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-medium">
+        <div className="flex justify-between items-center mb-4 px-2">
+          <h2 className="text-lg font-medium text-gray-800">
             {monthNames[currentMonth]} {currentYear}
           </h2>
           <div className="flex space-x-2">
             <button
               type="button"
               onClick={prevMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100"
               aria-label="Previous month"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={18} />
             </button>
             <button
               type="button"
               onClick={nextMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100"
               aria-label="Next month"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>
         
         {/* Day names (Su, Mo, etc.) */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2">
           {dayNames.map((day, index) => (
             <div
               key={index}
-              className="text-center text-xs font-medium text-gray-500 py-1"
+              className="text-center text-sm font-medium text-gray-600 py-1"
             >
               {day}
             </div>
@@ -223,7 +255,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-2">
           {allDays.map((dayObj, index) => {
             const selected = isDateSelected(dayObj);
             const today = isToday(dayObj);
@@ -242,12 +274,13 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
                 }}
                 disabled={pastDate || !dayObj.isCurrentMonth}
                 className={`
-                  aspect-square flex items-center justify-center text-sm rounded-full
+                  h-10 flex items-center justify-center text-sm rounded-lg
                   ${!dayObj.isCurrentMonth ? "text-gray-300" : ""}
                   ${pastDate && dayObj.isCurrentMonth ? "text-gray-400" : ""}
-                  ${selected ? "bg-orange-400 text-white" : ""}
-                  ${!selected && today ? "border border-orange-400" : ""}
-                  ${!selected && !today && !pastDate && dayObj.isCurrentMonth ? "hover:bg-gray-100" : ""}
+                  ${selected ? "bg-orange-400 text-white font-medium" : ""}
+                  ${!selected && today ? "border-2 border-orange-400 font-medium" : ""}
+                  ${!selected && !today && !pastDate && dayObj.isCurrentMonth ? "hover:bg-gray-100 border border-gray-100" : ""}
+                  transition-colors duration-150 ease-in-out
                 `}
               >
                 {dayObj.day}
@@ -261,37 +294,61 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
 
   return (
     <FormSection label="Event Schedule">
-      {/* One-time vs Recurring toggle */}
       <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Select event type:
+        </label>
         <ToggleButton
           name="scheduleType"
-          value={isRecurring}
+          value={isRecurring ? "true" : "false"} // Convert boolean to string for the component
           onChange={handleScheduleTypeChange}
           options={eventTypeOptions}
         />
       </div>
 
       {/* Calendar */}
-      <div className="border border-gray-200 rounded-lg p-4 mb-6">
+      <div className="border border-gray-200 rounded-lg p-6 mb-6 bg-white shadow-sm">
+        <div className="flex items-center mb-4 text-gray-700">
+          <Calendar size={20} className="mr-2 text-orange-500" />
+          <h3 className="font-medium">
+            {isRecurring ? "Select multiple dates" : "Select a date"}
+          </h3>
+        </div>
+        
         {generateCalendar()}
         
         {/* Selected dates summary */}
         {dates.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Dates:</h3>
+          <div className="mb-6 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <Calendar size={16} className="mr-1 text-orange-500" />
+              Selected Dates:
+            </h3>
             <div className="flex flex-wrap gap-2">
               {dates.map((date, index) => {
                 const displayDate = new Date(date);
                 return (
                   <div 
                     key={index}
-                    className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full"
+                    className="bg-orange-100 text-orange-800 text-sm px-3 py-1 rounded-md flex items-center"
                   >
                     {displayDate.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric"
                     })}
+                    <button
+                      type="button"
+                      className="ml-2 text-orange-600 hover:text-orange-800"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newDates = [...dates];
+                        newDates.splice(index, 1);
+                        onChange({ dates: newDates });
+                      }}
+                    >
+                      &times;
+                    </button>
                   </div>
                 );
               })}
@@ -301,14 +358,17 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         
         {/* Time selection */}
         {dates.length > 0 && (
-          <div>
-            <div className="mb-2 flex justify-between items-center">
-              <h3 className="text-sm font-medium text-gray-700">Event Time:</h3>
-              {isRecurring && times.length > 0 && (
+          <div className="border-t border-gray-200 pt-4 mt-4">
+            <div className="mb-3 flex justify-between items-center">
+              <h3 className="font-medium text-gray-700 flex items-center">
+                <Clock size={16} className="mr-2 text-orange-500" />
+                Event Time{isRecurring && times.length > 1 ? "s" : ""}:
+              </h3>
+              {isRecurring && (
                 <button
                   type="button"
                   onClick={addTimeSlot}
-                  className="text-sm text-orange-500 hover:text-orange-600"
+                  className="text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center"
                 >
                   + Add another time
                 </button>
@@ -316,41 +376,45 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             </div>
             
             {/* Time slots */}
-            {(times.length === 0 ? [{}] : times).map((time, index) => (
-              <div key={index} className="mb-3 flex items-center space-x-4">
-                <div className="flex items-center">
-                  <Clock size={16} className="text-gray-400 mr-1" />
-                  <span className="text-sm text-gray-600 mr-2">Start Time</span>
-                  <TimeSelector
-                    timeValue={time?.startTime || ""}
-                    periodValue={time?.startPeriod || "AM"}
-                    onTimeChange={(value) => handleTimeChange(index, "startTime", value)}
-                    onPeriodChange={(value) => handleTimeChange(index, "startPeriod", value)}
-                  />
+            <div className="space-y-4">
+              {(times.length === 0 ? [{}] : times).map((time, index) => (
+                <div 
+                  key={index} 
+                  className="p-3 border border-gray-200 rounded-lg bg-gray-50 flex flex-wrap items-center gap-4"
+                >
+                  <div className="flex items-center text-black">
+                    <span className="text-sm font-medium text-gray-700 mr-2">Start:</span>
+                    <TimeSelector
+                      timeValue={time?.startTime || ""}
+                      periodValue={time?.startPeriod || "AM"}
+                      onTimeChange={(value) => handleTimeChange(index, "startTime", value)}
+                      onPeriodChange={(value) => handleTimeChange(index, "startPeriod", value)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center text-black">
+                    <span className="text-sm font-medium text-gray-700 mr-2">End:</span>
+                    <TimeSelector
+                      timeValue={time?.endTime || ""}
+                      periodValue={time?.endPeriod || "PM"}
+                      onTimeChange={(value) => handleTimeChange(index, "endTime", value)}
+                      onPeriodChange={(value) => handleTimeChange(index, "endPeriod", value)}
+                    />
+                  </div>
+                  
+                  {/* Remove button for additional time slots */}
+                  {isRecurring && times.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTimeSlot(index)}
+                      className="text-sm text-red-500 hover:text-red-600 ml-auto"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
-                
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-600 mr-2">End Time</span>
-                  <TimeSelector
-                    timeValue={time?.endTime || ""}
-                    periodValue={time?.endPeriod || "PM"}
-                    onTimeChange={(value) => handleTimeChange(index, "endTime", value)}
-                    onPeriodChange={(value) => handleTimeChange(index, "endPeriod", value)}
-                  />
-                </div>
-                
-                {/* Remove button for additional time slots */}
-                {isRecurring && times.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeTimeSlot(index)}
-                    className="text-sm text-red-500 hover:text-red-600"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

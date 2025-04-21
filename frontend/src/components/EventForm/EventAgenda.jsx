@@ -139,7 +139,7 @@ const EventAgenda = ({ agenda = [], onChange }) => {
               </div>
 
               {/* Speakers */}
-              <div className="mb-4">
+              <div className="mb-4 text-black">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Speakers
                 </label>
@@ -200,7 +200,7 @@ const EventAgenda = ({ agenda = [], onChange }) => {
                     placeholder="Add Description"
                     value={item.description || ""}
                     onChange={(e) => updateAgendaField(itemIndex, "description", e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-black"
                     rows={3}
                   />
                 </div>
@@ -208,11 +208,11 @@ const EventAgenda = ({ agenda = [], onChange }) => {
 
               {/* Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1 text-black">
                   Time
                 </label>
-                <div className="flex items-center">
-                  <Clock size={16} className="text-gray-500 mr-2" />
+                <div className="flex items-center text-black">
+                  <Clock size={16} className="text-black mr-2" />
                   <TimeSelector
                     timeValue={item.time?.time || ""}
                     periodValue={item.time?.period || "AM"}

@@ -50,6 +50,7 @@ const EventBasicInfo = ({ title, description, category, onChange }) => {
               id="event-description"
               name="description"
               placeholder="Describe Your Events In Detail"
+              className="text-black"
               value={description}
               onChange={(e) => onChange("description", e.target.value)}
               rows={5}
@@ -71,6 +72,7 @@ const EventBasicInfo = ({ title, description, category, onChange }) => {
       {/* Event Category */}
       <FormSection>
         <FormSelect
+        className="text-black bg-amber-100"
           id="event-category"
           name="category"
           label="Event Category"

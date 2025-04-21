@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FaLock, FaEye, FaEyeSlash, FaEnvelope } from 'react-icons/fa';
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const NoAccessPage = () => {
   const navigate = useNavigate();
@@ -13,15 +13,15 @@ const NoAccessPage = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -30,21 +30,20 @@ const NoAccessPage = () => {
     try {
       // Use the login function from AuthContext to handle authentication
       const user = await login(formData.email, formData.password);
-      
-      toast.success('Login successful!');
-      
+
+      toast.success("Login successful!");
+
       // Redirect based on user role
-      if (user.role === 'organizer') {
-        navigate('/organizer-dashboard');
-      } else if (user.role === 'attendee') {
-        navigate('/attendee-dashboard');
+      if (user.role === "organizer") {
+        navigate("/organizer-dashboard");
+      } else if (user.role === "attendee") {
+        navigate("/attendee-dashboard");
       } else {
-       
-        const from = location.state?.from?.pathname || '/dashboard';
+        const from = location.state?.from?.pathname || "/organizer-dashboard";
         navigate(from);
       }
     } catch (error) {
-      toast.error('Invalid credentials');
+      toast.error("Invalid credentials");
     }
   };
 
@@ -60,14 +59,14 @@ const NoAccessPage = () => {
           {/* Animated Lock Character */}
           <motion.div
             className="mb-8 relative"
-            animate={{ 
+            animate={{
               rotate: [-5, 5, -5],
-              y: [0, -10, 0]
+              y: [0, -10, 0],
             }}
-            transition={{ 
-              duration: 3, 
+            transition={{
+              duration: 3,
               repeat: Infinity,
-              repeatType: "reverse"
+              repeatType: "reverse",
             }}
           >
             <div className="w-32 h-32 mx-auto bg-orange-100 rounded-full flex items-center justify-center">
@@ -83,21 +82,22 @@ const NoAccessPage = () => {
           </motion.div>
 
           {/* Playful Warning Message */}
-          <motion.h1 
+          <motion.h1
             className="text-3xl font-bold text-gray-800 mb-4"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             Whoa there, adventurer!
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             className="text-lg text-gray-600 mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            This area is locked tighter than a treasure chest! 🔒<br />
+            This area is locked tighter than a treasure chest! 🔒
+            <br />
             You need to be logged in to access this mysterious dashboard.
           </motion.p>
 
@@ -105,10 +105,10 @@ const NoAccessPage = () => {
           <div className="relative h-16">
             <motion.span
               className="absolute text-3xl"
-              style={{ left: '20%', top: '0' }}
-              animate={{ 
+              style={{ left: "20%", top: "0" }}
+              animate={{
                 y: [0, -20, 0],
-                x: [-5, 5, -5]
+                x: [-5, 5, -5],
               }}
               transition={{ duration: 3, repeat: Infinity }}
             >
@@ -116,10 +116,10 @@ const NoAccessPage = () => {
             </motion.span>
             <motion.span
               className="absolute text-3xl"
-              style={{ left: '50%', top: '20%' }}
-              animate={{ 
+              style={{ left: "50%", top: "20%" }}
+              animate={{
                 y: [0, -15, 0],
-                x: [0, 10, 0]
+                x: [0, 10, 0],
               }}
               transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
             >
@@ -127,10 +127,10 @@ const NoAccessPage = () => {
             </motion.span>
             <motion.span
               className="absolute text-3xl"
-              style={{ left: '80%', top: '10%' }}
-              animate={{ 
+              style={{ left: "80%", top: "10%" }}
+              animate={{
                 y: [0, -25, 0],
-                x: [5, -5, 5]
+                x: [5, -5, 5],
               }}
               transition={{ duration: 3.5, repeat: Infinity, delay: 1 }}
             >
@@ -148,11 +148,11 @@ const NoAccessPage = () => {
             >
               Log in to access
             </motion.button>
-            
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
             >
               Return to safety
@@ -166,13 +166,15 @@ const NoAccessPage = () => {
           className="w-full max-w-md"
         >
           <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Welcome Back!</h2>
-            
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+              Welcome Back!
+            </h2>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
-                <label 
-                  htmlFor="email" 
+                <label
+                  htmlFor="email"
                   className="block mb-1 text-sm font-medium text-black"
                 >
                   Email Address
@@ -193,11 +195,11 @@ const NoAccessPage = () => {
                   />
                 </div>
               </div>
-              
+
               {/* Password Field */}
               <div>
-                <label 
-                  htmlFor="password" 
+                <label
+                  htmlFor="password"
                   className="block mb-1 text-sm font-medium text-black"
                 >
                   Password
@@ -216,27 +218,30 @@ const NoAccessPage = () => {
                     className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     required
                   />
-                  <div 
+                  <div
                     className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? 
-                      <FaEyeSlash className="text-black " /> : 
+                    {showPassword ? (
+                      <FaEyeSlash className="text-black " />
+                    ) : (
                       <FaEye className="text-black " />
-                    }
+                    )}
                   </div>
                 </div>
               </div>
-              
+
               {/* Helper text for testing */}
               <div className="text-sm text-gray-500">
-                <p>Hint: Use an email with "organizer" to login as an organizer.</p>
+                <p>
+                  Hint: Use an email with "organizer" to login as an organizer.
+                </p>
                 <p>Example: organizer@example.com / anypassword</p>
               </div>
-              
+
               {/* Login Button */}
-              <motion.button 
-                type="submit" 
+              <motion.button
+                type="submit"
                 className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium cursor-pointer rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -244,7 +249,7 @@ const NoAccessPage = () => {
                 Sign in
               </motion.button>
             </form>
-            
+
             <div className="mt-4 text-center">
               <button
                 onClick={() => setShowLoginForm(false)}

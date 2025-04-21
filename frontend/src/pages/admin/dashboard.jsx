@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ const Dashboard = () => {
   const { events, deleteEvent } = useContext(EventContext);
   
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (user?.role !== 'organizer') {
       navigate('/no-access');
     }
@@ -27,60 +27,71 @@ const Dashboard = () => {
 
  
   const [activeTab, setActiveTab] = useState("planned");
-
-  
   const [viewType, setViewType] = useState("grid");
-
-  
   const [searchTerm, setSearchTerm] = useState("");
 
-  
+  // Handle search input
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
 
-
+  // Change active tab
   const changeTab = (tab) => {
     setActiveTab(tab);
   };
 
-
+  // Change view type (grid, list, calendar)
   const changeViewType = (type) => {
     setViewType(type);
   };
 
-
+  // Navigate to create event page
   const handleCreateEvent = () => {
     navigate("/create-event");
   };
 
+  // Navigate to edit event page
   const handleEditEvent = (eventId) => {
+    console.log("Navigating to edit event with ID:", eventId);
     navigate(`/edit-event/${eventId}`);
   };
-
   
+  // Delete an event
   const handleDeleteEvent = (eventId) => {
+    console.log("Deleting event with ID:", eventId);
     deleteEvent(eventId);
   };
 
-
+  // Navigate to event details page
   const handleViewEventDetails = (eventId) => {
+    console.log("Navigating to event details with ID:", eventId);
+    // Make sure the ID is valid and exists before navigating
+    if (!eventId) {
+      console.error("Invalid event ID:", eventId);
+      return;
+    }
     navigate(`/events/${eventId}`);
   };
 
-  
+  // Filter events based on search term
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalRevenue = events.reduce((sum, event) => sum + event.grossAmount, 0);
-  const totalAttendees = events.reduce((sum, event) => sum + event.soldTickets, 0);
+  // Calculate dashboard statistics
+  const totalRevenue = events.reduce((sum, event) => sum + (event.grossAmount || 0), 0);
+  const totalAttendees = events.reduce((sum, event) => sum + (event.soldTickets || 0), 0);
   const totalEvents = events.length;
 
-
+  // Get upcoming events for the quick view section
   const upcomingEvents = [...events]
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     .slice(0, 3);
+
+  // Log event IDs to help with debugging
+  useEffect(() => {
+    console.log("Available events:", events.map(e => ({ id: e.id, title: e.title })));
+  }, [events]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -273,18 +284,24 @@ const Dashboard = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3 }}
-                      onClick={() => handleViewEventDetails(event.id)}
                       className="cursor-pointer"
                     >
                       <EventCard
                         eventName={event.title}
-                        soldTickets={event.soldTickets}
-                        totalTickets={event.totalTickets}
-                        grossAmount={event.grossAmount}
-                        status={event.status}
+                        soldTickets={event.soldTickets || 0}
+                        totalTickets={event.totalTickets || 0}
+                        grossAmount={event.grossAmount || 0}
+                        status={event.status || 'published'}
                         imageSrc={event.imageSrc}
+                        eventDate={event.startDate ? new Date(event.startDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
+                        }) : ''}
+                        location={event.location}
+                        category={event.category}
                         onEdit={() => handleEditEvent(event.id)}
                         onDelete={() => handleDeleteEvent(event.id)}
+                        onClick={() => handleViewEventDetails(event.id)}
                       />
                     </motion.div>
                   ))}
@@ -318,12 +335,12 @@ const Dashboard = () => {
                 
                 <div className="space-y-3">
                   {upcomingEvents.map(event => {
-                    // Format the date
-                    const eventDate = new Date(event.startDate);
-                    const formattedDate = eventDate.toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric'
-                    });
+                    // Format the date safely
+                    const formattedDate = event.startDate ? 
+                      new Date(event.startDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                      }) : 'TBD';
                     
                     return (
                       <motion.div 
@@ -340,7 +357,7 @@ const Dashboard = () => {
                               <span>{formattedDate}</span>
                               <span className="mx-2">•</span>
                               <Users size={14} className="mr-1" />
-                              <span>{event.soldTickets} attendees</span>
+                              <span>{event.soldTickets || 0} attendees</span>
                             </div>
                           </div>
                           <button 

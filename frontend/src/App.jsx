@@ -34,7 +34,6 @@ const App = () => {
             <Route path="/categories" element={<CategorySelectionPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/no-access" element={<NoAccessPage />} />
-
             <Route path="/dashboard" element={<DashboardRouter />} />
 
             <Route
@@ -65,11 +64,9 @@ const App = () => {
             />
 
             <Route
-              path="/events"
+              path="/calendar"
               element={
-                <ProtectedRoute>
                   <Calendar />
-                </ProtectedRoute>
               }
             />
 
@@ -109,16 +106,24 @@ const App = () => {
               }
             />
 
+            {/* Updated route with eventId parameter */}
             <Route
-              path="/create-event"
+              path="/events/:eventId"
               element={
                 <ProtectedRoute allowedRoles={["organizer"]}>
-                  <CreateEventPage />
+                  <EventDetails />
                 </ProtectedRoute>
               }
             />
 
-            <Route path="/event-details" element={<EventDetails />} />
+            <Route
+              path="/edit-event/:eventId"
+              element={
+                <ProtectedRoute allowedRoles={["organizer"]}>
+                  <UnderConstruction />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 404/Under Construction page */}
             <Route path="*" element={<UnderConstruction />} />
