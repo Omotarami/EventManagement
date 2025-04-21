@@ -12,17 +12,38 @@ const Cards = () => {
           <p>Online</p>
           <p>Free</p>
         </div>
-
-        <div className="flex items-center">
-          <div className="absolute justify-items-center"></div>
-          <div className=" bg-white shadow-md w-70 h-70 rounded-lg pt-4 ">
-            <div className="bg-gray-300 h-30 w-50 rounded-lg outline-none">
-              <img src="sj" alt="event image"/>
-              <div className="flex bg-slate-400 opacity-40 text-black  w-40 p-1 rounded-lg bottom-5">
-                <img src="../public/icons/location.svg" alt="" />
-              <p>Anywhere street</p>
+        <div className="flex space-x-7 justify-center w-full ">
+          <div className="bg-teal-100 w-130 h-50 rounded-lg  pt-12 pl-5">
+            <div className="flex items-baseline space-x-3 space-y-3">
+              <img src="../public/icons/buy.svg" alt="buy" className="w-7" />
+              <h3 className=" font-medium text-3xl text-black">
+                {" "}
+                Buy Tickets and Explore
+              </h3>
               </div>
-            </div>
+              
+              <p className="text-xs text-black">
+                Discover exciting events near you and secure your tickets in
+                just a few clicks. Browse by category, location, or interest,
+                and get instant access to the best experiences. With Eventro,
+                finding and attending events has never been easier!
+              </p>
+          </div>
+          <div className="bg-orange-100 w-130 h-50 rounded-lg  pt-12 pl-5">
+          <div className="flex items-baseline space-x-3 space-y-3 ">
+              <img src="../public/icons/host.svg" alt="buy" className="w-7" />
+              <h3 className=" font-medium text-3xl text-black">
+                {" "}
+                Buy Tickets and Explore
+              </h3>
+              </div>
+              
+              <p className="text-xs text-black">
+                Discover exciting events near you and secure your tickets in
+                just a few clicks. Browse by category, location, or interest,
+                and get instant access to the best experiences. With Eventro,
+                finding and attending events has never been easier!
+              </p>
           </div>
         </div>
       </section>
