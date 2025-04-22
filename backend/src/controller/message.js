@@ -2,21 +2,21 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class MessageController {
-  // Send a message in a chat room
+  // Send a message in a conversation
   async sendMessage(req, res) {
-    const { chat_room_id, sender_id, content } = req.body;
+    const { conversation_id, sender_id, content } = req.body;
 
-    if (!chat_room_id || !sender_id || !content) {
+    if (!conversation_id || !sender_id || !content) {
       return res.status(400).json({
-        message: "Missing required fields: chat_room_id, sender_id, and content are required",
+        message: "Missing required fields: conversation_id, sender_id, and content are required",
       });
     }
 
     try {
-      // Check if sender is a participant in the chat room
-      const participant = await prisma.chatParticipant.findFirst({
+      // Check if sender is a participant in the conversation
+      const participant = await prisma.conversationParticipant.findFirst({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           user_id: parseInt(sender_id),
           is_active: true,
         },
@@ -24,7 +24,7 @@ class MessageController {
 
       if (!participant) {
         return res.status(403).json({
-          message: "You are not a participant in this chat room",
+          message: "You are not a participant in this conversation",
         });
       }
 
@@ -43,7 +43,7 @@ class MessageController {
       // Create the message
       const message = await prisma.message.create({
         data: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           sender_id: parseInt(sender_id),
           content,
         },
@@ -59,7 +59,7 @@ class MessageController {
       });
 
       // Update participant's last read time
-      await prisma.chatParticipant.update({
+      await prisma.conversationParticipant.update({
         where: { id: participant.id },
         data: { last_read_at: new Date() },
       });
@@ -76,9 +76,9 @@ class MessageController {
     }
   }
 
-  // Get messages from a chat room
-  async getChatMessages(req, res) {
-    const { chat_room_id } = req.params;
+  // Get messages from a conversation (added to fix the error)
+  async getConversationMessages(req, res) {
+    const { conversation_id } = req.params;
     const { page = 1, limit = 50 } = req.query;
     const skip = (page - 1) * limit;
 
@@ -86,7 +86,7 @@ class MessageController {
       // Get messages with pagination
       const messages = await prisma.message.findMany({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           is_deleted: false,
           sender: {
             profile_visibility: "public", // Only show messages from public profiles
@@ -111,7 +111,7 @@ class MessageController {
       // Get total count for pagination
       const total = await prisma.message.count({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           is_deleted: false,
           sender: {
             profile_visibility: "public",
@@ -136,6 +136,14 @@ class MessageController {
         message: "An error occurred while fetching messages",
       });
     }
+  }
+
+  // This method has been replaced by getConversationMessages
+  // Keeping this stub for backwards compatibility
+  async getChatMessages(req, res) {
+    return res.status(410).json({
+      message: "This endpoint is deprecated. Please use /conversation/:conversation_id/messages instead.",
+    });
   }
 
   // Delete a message (soft delete)
@@ -184,7 +192,7 @@ class MessageController {
 
   // Mark messages as read
   async markMessagesAsRead(req, res) {
-    const { chat_room_id } = req.params;
+    const { conversation_id } = req.params;
     const { user_id } = req.body;
 
     if (!user_id) {
@@ -195,9 +203,9 @@ class MessageController {
 
     try {
       // Update the last_read_at timestamp for the participant
-      await prisma.chatParticipant.updateMany({
+      await prisma.conversationParticipant.updateMany({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           user_id: parseInt(user_id),
         },
         data: {
@@ -216,29 +224,29 @@ class MessageController {
     }
   }
 
-  // Get unread message count for a user in a chat room
+  // Get unread message count for a user in a conversation
   async getUnreadCount(req, res) {
-    const { chat_room_id, user_id } = req.params;
+    const { conversation_id, user_id } = req.params;
 
     try {
       // Get participant's last read time
-      const participant = await prisma.chatParticipant.findFirst({
+      const participant = await prisma.conversationParticipant.findFirst({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           user_id: parseInt(user_id),
         },
       });
 
       if (!participant) {
         return res.status(404).json({
-          message: "User is not a participant in this chat room",
+          message: "User is not a participant in this conversation",
         });
       }
 
       // Count messages sent after last read time
       const unreadCount = await prisma.message.count({
         where: {
-          chat_room_id: parseInt(chat_room_id),
+          conversation_id: parseInt(conversation_id),
           is_deleted: false,
           sender: {
             profile_visibility: "public",
