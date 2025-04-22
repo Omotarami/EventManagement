@@ -2,7 +2,8 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-class EventController {    // Create a new event
+class EventController {    
+    // Create a new event
     async createEvent (req, res) {
         try {
             const {
@@ -32,7 +33,6 @@ class EventController {    // Create a new event
                     category
                 },
             });
-    
             // Return the created event
             res.status(201).json(event);
         } catch (error) {
@@ -158,4 +158,4 @@ class EventController {    // Create a new event
     };
 }
 
-module.exports = EventController
+module.exports = EventController;

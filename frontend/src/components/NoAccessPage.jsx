@@ -152,7 +152,7 @@ const NoAccessPage = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/")}
+              onClick={() => navigate(-1)}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
             >
               Return to safety

@@ -415,6 +415,15 @@ const AttendeeDashboard = () => {
                         grossAmount={event.grossAmount}
                         status={event.status}
                         imageSrc={event.imageSrc}
+                        location={event.location}
+                        category={event.category}
+                        onClick={() => handleViewEventDetails(event.id)}
+                        event={event}
+                        userRole="attendee"
+                        eventDate={event.startDate ? new Date(event.startDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
+                        }) : ''}
                       />
                     </motion.div>
                   ))}

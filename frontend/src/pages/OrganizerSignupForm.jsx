@@ -48,7 +48,7 @@ const OrganizerSignupForm = () => {
       navigate('/login');
 
     } catch (err) {
-      console.error('Signup failed:', err.message);
+      toast.error('Signup failed:', err.message);
     } finally {
       setLoading(false);
     }

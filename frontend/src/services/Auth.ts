@@ -4,6 +4,11 @@ export type SignupInput = {
   password: string;
 };
 
+export type LoginInput = {
+  email: string;
+  password: string;
+};
+
 export const signupOrganizer = async (data: SignupInput) => {
   try {
     const res = await fetch('http://localhost:8080/api/auth/organizer/signup', {
@@ -48,6 +53,31 @@ export const signupUser = async (data: SignupInput) => {
   }
 };
 
+// Frontend login function
+export const login = async (data) => {
+  try {
+    const res = await fetch('http://localhost:8080/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Login failed');
+    }
 
+    const responseData = await res.json();
+
+    // Store token and user data in localStorage
+    localStorage.setItem('token', responseData.token);
+    localStorage.setItem('user', JSON.stringify(responseData.user));
+
+    return responseData;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 

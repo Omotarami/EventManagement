@@ -108,7 +108,7 @@ class AuthController {
       const token = jwt.sign({ username: user.username }, "your_jwt_secret", {
         expiresIn: "1h",
       });
-      res.status(200).json({ message: "Login successful.", token });
+      res.status(200).json({ message: "Login successful.", token, user });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error." });
