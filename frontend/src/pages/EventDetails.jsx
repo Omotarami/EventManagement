@@ -12,7 +12,9 @@ import EventTabs from "../components/EventDetail/EventTabs";
 import EventOverview from "../components/EventDetail/EventOverview";
 import EventAttendees from "../components/EventDetail/EventAttendees";
 import EventTickets from "../components/EventDetail/EventTickets";
-import EventChat from "../components/EventDetail/EventChat";
+
+
+import EventMessagingUI from "../components/EventMessagingUI";
 
 const EventDetails = () => {
   const { eventId } = useParams();
@@ -24,6 +26,7 @@ const EventDetails = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Determine if user is viewing details as an attendee
   const isAttendeeView = window.location.pathname.includes('/event-details/');
 
   // Fetch event data
@@ -64,6 +67,12 @@ const EventDetails = () => {
   // Handle tab changes
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+  };
+
+  // Handle navigating to messages with specific attendee
+  const handleMessageAttendee = (attendeeId) => {
+    // Navigate to the messages page with the current event selected
+    navigate(`/messages?event=${eventId}&attendee=${attendeeId}`);
   };
 
   // Loading state
@@ -115,7 +124,7 @@ const EventDetails = () => {
     );
   }
 
-  
+  // Prepare safe event object (with fallbacks for missing properties)
   const safeEvent = {
     id: event.id,
     title: event.title || "Untitled Event",
@@ -138,16 +147,16 @@ const EventDetails = () => {
     grossAmount: event.grossAmount || 0,
   };
 
- 
+  // Determine available tabs based on user role
   const availableTabs = [
     { id: "overview", label: "Overview" },
     { id: "attendees", label: "Attendees" },
     { id: "tickets", label: "Tickets" },
   ];
   
-  
+  // Add messaging tab for attendees
   if (user?.role === "attendee") {
-    availableTabs.push({ id: "chat", label: "Chat" });
+    availableTabs.push({ id: "messages", label: "Connect" });
   }
 
   return (
@@ -200,6 +209,7 @@ const EventDetails = () => {
               <EventAttendees 
                 eventId={eventId} 
                 userRole={user?.role}
+                onMessageAttendee={handleMessageAttendee}
               />
             )}
 
@@ -211,9 +221,11 @@ const EventDetails = () => {
               />
             )}
 
-            {/* Chat Tab - Only for attendees */}
-            {activeTab === "chat" && user?.role === "attendee" && (
-              <EventChat eventId={eventId} />
+            {/* Messages Tab - Using your existing EventMessagingUI */}
+            {activeTab === "messages" && user?.role === "attendee" && (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden h-[600px]">
+                <EventMessagingUI eventId={eventId} />
+              </div>
             )}
           </div>
         </div>
