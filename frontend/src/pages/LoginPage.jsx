@@ -3,18 +3,17 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { login } from "../services/Auth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,22 +25,11 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const user = await login(formData.email, formData.password);
-
-      // Redirect based on user role
-      const from = location.state?.from?.pathname;
-      if (from) {
-        navigate(from);
-      } else {
-        if (user.role === "organizer") {
-          navigate("/organizer-dashboard");
-        } else if (user.role === "attendee") {
-          navigate("/attendee-dashboard");
-        } else {
-          navigate("/");
-        }
-      }
+      const user = await login(formData);
+      toast.success("Login successful! Redirect to Dashboard...");
+      navigate("/dashboard");
     } catch (error) {
       toast.error(error.message || "Login failed");
     }
