@@ -9,24 +9,25 @@ import { useAuth } from "../../context/AuthContext";
 /**
  * 
  * 
- * 
  * @param {Object} props
  * @param {string} props.eventId 
  * @param {string} props.userRole 
+ * @param {function} props.onMessageAttendee 
  */
-const EventAttendees = ({ eventId, userRole }) => {
+const EventAttendees = ({ eventId, userRole, onMessageAttendee }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { getTicketsByEvent } = useTickets();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   
-  
+  // Fetch tickets for this event
   const tickets = getTicketsByEvent(eventId);
   
+  // Initialize attendees state based on tickets
   const [attendees, setAttendees] = useState([]);
   
-
+  // On mount, process tickets into attendees
   useEffect(() => {
     // Map tickets to attendees
     const eventAttendees = tickets.map(ticket => ({
@@ -41,7 +42,7 @@ const EventAttendees = ({ eventId, userRole }) => {
       orderId: ticket.orderId,
     }));
     
-
+    // Add some mock data for demo purposes
     const mockData = [
       {
         id: "att-001",
@@ -68,16 +69,16 @@ const EventAttendees = ({ eventId, userRole }) => {
       },
     ];
     
-    
+    // Combine real and mock data
     setAttendees([...eventAttendees, ...mockData]);
   }, [tickets, eventId]);
   
   // Filter attendees based on search term and filter status
   const filteredAttendees = attendees.filter(attendee => {
     const matchesSearch = 
-      attendee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      attendee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      attendee.orderId.toLowerCase().includes(searchTerm.toLowerCase());
+      attendee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      attendee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      attendee.orderId?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter =
       filterStatus === "all" ||
@@ -87,7 +88,7 @@ const EventAttendees = ({ eventId, userRole }) => {
     return matchesSearch && matchesFilter;
   });
   
-
+  // Handle check-in status change (organizer only)
   const handleCheckInStatusChange = (attendeeId, newStatus) => {
     setAttendees(prev =>
       prev.map(attendee =>
@@ -142,8 +143,13 @@ const EventAttendees = ({ eventId, userRole }) => {
   
   // Handle sending message to attendee (works for both roles)
   const handleMessageAttendee = (attendeeId) => {
-    // Navigate to messages with this attendee selected
-    navigate(`/messages?recipient=${attendeeId}`);
+    // Use the callback if provided, otherwise navigate directly
+    if (onMessageAttendee) {
+      onMessageAttendee(attendeeId);
+    } else {
+      // Navigate to messages with this attendee selected
+      navigate(`/messages?event=${eventId}&attendee=${attendeeId}`);
+    }
   };
   
   // Organizer view renders a detailed table with actions
