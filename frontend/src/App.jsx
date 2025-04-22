@@ -30,6 +30,7 @@ const App = () => {
     <AuthProvider>
       <EventProvider>
 
+
         <ProfileProvider>
 
           <TicketProvider>
@@ -166,6 +167,7 @@ const App = () => {
             </Router>
           </TicketProvider>
         </ProfileProvider>
+
       </EventProvider>
     </AuthProvider>
   );
