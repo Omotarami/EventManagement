@@ -6,7 +6,7 @@ const CategoryRoute = require("./routes/category");
 const ScheduleRoute = require("./routes/event-schedule");
 const TicketRoute = require("./routes/ticket");
 const FavouriteRoute = require("./routes/favourite");
-const ChatRoute = require("./routes/chat");
+const ConversationRoute = require("./routes/conversation");
 
 const server = new App();
 server.initializedRoutes([
@@ -17,6 +17,6 @@ server.initializedRoutes([
   new ScheduleRoute(),
   new TicketRoute(),
   new FavouriteRoute(),
-  new ChatRoute(),
+  new ConversationRoute(),
 ]);
 server.listen();

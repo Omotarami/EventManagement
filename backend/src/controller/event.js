@@ -33,15 +33,6 @@ class EventController {
                     category
                 },
             });
-
-            // Create a chat room for the event
-            await prisma.chatRoom.create({
-                data: {
-                    event_id: event.id,
-                    name: `Chat for ${title}`,
-                },
-            });
-    
             // Return the created event
             res.status(201).json(event);
         } catch (error) {

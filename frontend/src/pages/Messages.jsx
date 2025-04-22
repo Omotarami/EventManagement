@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { 
   Search, 
   Send, 
@@ -9,7 +9,8 @@ import {
   Paperclip,
   Smile,
   Check,
-  CheckCheck
+  CheckCheck,
+  MessageCircle
 } from 'lucide-react';
 import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
@@ -22,66 +23,151 @@ const Messages = () => {
   const { events } = useContext(EventContext);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [messageableUsers, setMessageableUsers] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  
-  const conversations = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      avatar: "/api/placeholder/40/40",
-      lastMessage: "Hi, are you attending the session on AI?",
-      timestamp: "10:30 AM",
-      unread: 2,
-      online: true
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      avatar: "/api/placeholder/40/40",
-      lastMessage: "Let's meet at the networking area",
-      timestamp: "9:45 AM",
-      unread: 0,
-      online: false
-    },
-    {
-      id: 3,
-      name: "Emma Davis",
-      avatar: "/api/placeholder/40/40",
-      lastMessage: "Thank you for the information!",
-      timestamp: "Yesterday",
-      unread: 0,
-      online: true
+  // Fetch conversations when an event is selected
+  useEffect(() => {
+    if (selectedEvent && user) {
+      fetchConversations(selectedEvent.id);
+      fetchMessageableUsers(selectedEvent.id);
     }
-  ];
+  }, [selectedEvent, user]);
 
-  const messages = [
-    {
-      id: 1,
-      sender: "Sarah Johnson",
-      content: "Hi, are you attending the session on AI?",
-      timestamp: "10:28 AM",
-      isSender: false,
-      status: "read"
-    },
-    {
-      id: 2,
-      sender: "You",
-      content: "Hi Sarah! Yes, I'll be there. It starts at 2 PM, right?",
-      timestamp: "10:29 AM",
-      isSender: true,
-      status: "read"
-    },
-    {
-      id: 3,
-      sender: "Sarah Johnson",
-      content: "That's right! I'm really excited about the keynote speaker.",
-      timestamp: "10:30 AM",
-      isSender: false,
-      status: "read"
+  // Fetch messages when a conversation is selected
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id);
     }
-  ];
+  }, [selectedConversation]);
+
+  // Fetch user's event conversations
+  const fetchConversations = async (eventId) => {
+    try {
+      const response = await fetch(`/api/conversation/event/${eventId}/user/${user.id}`);
+      const data = await response.json();
+      if (response.ok) {
+        setConversations(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    }
+  };
+
+  // Fetch messageable users for the event
+  const fetchMessageableUsers = async (eventId) => {
+    try {
+      const response = await fetch(`/api/conversation/event/${eventId}/messageable-users/${user.id}`);
+      const data = await response.json();
+      if (response.ok) {
+        setMessageableUsers(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching messageable users:", error);
+    }
+  };
+
+  // Fetch messages for a conversation
+  const fetchMessages = async (conversationId) => {
+    try {
+      const response = await fetch(`/api/conversation/${conversationId}/messages?user_id=${user.id}`);
+      const data = await response.json();
+      if (response.ok) {
+        setMessages(data.data.messages);
+        // Mark messages as read
+        markMessagesAsRead(conversationId);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  // Start a new conversation
+  const startConversation = async (otherUserId) => {
+    try {
+      const response = await fetch("/api/conversation/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event_id: selectedEvent.id,
+          participant_ids: [user.id, otherUserId],
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSelectedConversation(data.data);
+        fetchConversations(selectedEvent.id);
+      }
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+    }
+  };
+
+  // Send a message
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || !selectedConversation) return;
+
+    try {
+      const response = await fetch("/api/conversation/message/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversation_id: selectedConversation.id,
+          sender_id: user.id,
+          content: message.trim(),
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessages([...messages, data.data]);
+        setMessage("");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+
+  // Mark messages as read
+  const markMessagesAsRead = async (conversationId) => {
+    try {
+      await fetch(`/api/conversation/${conversationId}/mark-read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+        }),
+      });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
+  // Get the other participant in a conversation
+  const getOtherParticipant = (conversation) => {
+    if (!conversation || !conversation.participants) return null;
+    return conversation.participants.find(p => p.user_id !== user.id)?.user;
+  };
+
+  // Filter events based on user role and attendance
+  const filteredEvents = events.filter(event => {
+    if (user?.role === 'organizer') {
+      return event.organizerId === user.id;
+    } else {
+      // For attendees, check if they have a ticket for the event
+      return event.attendees?.includes(user?.id) || event.soldTickets > 0;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,11 +201,7 @@ const Messages = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto">
-                {events.filter(event => 
-                  // For attendees, show only events they've registered for
-                  // For organizers, show events they've created
-                  user?.role === 'organizer' ? event.organizerId === user.id : event.attendees?.includes(user?.id)
-                ).map((event) => (
+                {filteredEvents.map((event) => (
                   <div
                     key={event.id}
                     onClick={() => setSelectedEvent(event)}
@@ -140,9 +222,6 @@ const Messages = () => {
                           <span className="text-sm text-gray-500">
                             {new Date(event.startDate).toLocaleDateString()}
                           </span>
-                          <span className="mx-2 text-gray-300">•</span>
-                          <Users size={14} className="text-gray-400 mr-1" />
-                          <span className="text-sm text-gray-500">{event.attendees?.length || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -154,9 +233,9 @@ const Messages = () => {
             {/* Conversations List */}
             <div className="w-80 border-r border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200">
-                <h2 className="font-semibold text-gray-800">Event Attendees</h2>
+                <h2 className="font-semibold text-gray-800">Chat with Attendees</h2>
                 <p className="text-sm text-gray-500">
-                  {selectedEvent ? `${selectedEvent.attendees?.length || 0} people attending` : 'Select an event'}
+                  {selectedEvent ? `${selectedEvent.soldTickets || 0} people attending` : 'Select an event'}
                 </p>
               </div>
 
@@ -172,40 +251,86 @@ const Messages = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto">
-                {conversations.map((conversation) => (
+                {/* Existing Conversations */}
+                {conversations.map((conversation) => {
+                  const otherUser = getOtherParticipant(conversation);
+                  const lastMessage = conversation.messages?.[0];
+                  
+                  return (
+                    <div
+                      key={conversation.id}
+                      onClick={() => setSelectedConversation(conversation)}
+                      className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                        selectedConversation?.id === conversation.id ? 'bg-orange-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="relative">
+                          <img
+                            src={otherUser?.profile_picture || "/api/placeholder/40/40"}
+                            alt={otherUser?.fullname}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium text-gray-800">{otherUser?.fullname}</h3>
+                            {lastMessage && (
+                              <span className="text-xs text-gray-500">
+                                {new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 truncate">
+                            {lastMessage?.content || "Start a conversation"}
+                          </p>
+                        </div>
+                        {conversation.unread_count > 0 && (
+                          <div className="w-5 h-5 bg-orange-400 rounded-full flex items-center justify-center ml-2">
+                            <span className="text-xs text-white font-medium">{conversation.unread_count}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Divider if there are both conversations and messageable users */}
+                {conversations.length > 0 && messageableUsers.length > 0 && (
+                  <div className="border-t border-gray-200 my-2 mx-4"></div>
+                )}
+
+                {/* Messageable Users */}
+                {messageableUsers.filter(u => !u.has_conversation).map((messageableUser) => (
                   <div
-                    key={conversation.id}
-                    onClick={() => setSelectedConversation(conversation)}
-                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedConversation?.id === conversation.id ? 'bg-orange-50' : ''
-                    }`}
+                    key={messageableUser.id}
+                    onClick={() => startConversation(messageableUser.id)}
+                    className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center">
                       <div className="relative">
                         <img
-                          src={conversation.avatar}
-                          alt={conversation.name}
+                          src={messageableUser.profile_picture || "/api/placeholder/40/40"}
+                          alt={messageableUser.fullname}
                           className="w-10 h-10 rounded-full"
                         />
-                        {conversation.online && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
-                        )}
                       </div>
                       <div className="ml-3 flex-1">
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-medium text-gray-800">{conversation.name}</h3>
-                          <span className="text-xs text-gray-500">{conversation.timestamp}</span>
-                        </div>
-                        <p className="text-sm text-gray-500 truncate">{conversation.lastMessage}</p>
+                        <h3 className="font-medium text-gray-800">{messageableUser.fullname}</h3>
+                        <p className="text-sm text-gray-500">Click to start messaging</p>
                       </div>
-                      {conversation.unread > 0 && (
-                        <div className="w-5 h-5 bg-orange-400 rounded-full flex items-center justify-center ml-2">
-                          <span className="text-xs text-white font-medium">{conversation.unread}</span>
-                        </div>
-                      )}
+                      <MessageCircle size={16} className="text-gray-400" />
                     </div>
                   </div>
                 ))}
+
+                {/* Empty state */}
+                {selectedEvent && conversations.length === 0 && messageableUsers.length === 0 && (
+                  <div className="p-4 text-center text-gray-500">
+                    <Users size={24} className="mx-auto mb-2 text-gray-400" />
+                    <p>No attendees with public profiles yet</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -213,17 +338,20 @@ const Messages = () => {
             <div className="flex-1 flex flex-col">
               {selectedConversation ? (
                 <>
+                  {/* Chat Header */}
                   <div className="h-16 px-6 flex items-center justify-between border-b border-gray-200">
                     <div className="flex items-center">
                       <img
-                        src={selectedConversation.avatar}
-                        alt={selectedConversation.name}
+                        src={getOtherParticipant(selectedConversation)?.profile_picture || "/api/placeholder/40/40"}
+                        alt={getOtherParticipant(selectedConversation)?.fullname}
                         className="w-10 h-10 rounded-full"
                       />
                       <div className="ml-3">
-                        <h3 className="font-medium text-gray-800">{selectedConversation.name}</h3>
+                        <h3 className="font-medium text-gray-800">
+                          {getOtherParticipant(selectedConversation)?.fullname}
+                        </h3>
                         <p className="text-sm text-gray-500">
-                          {selectedConversation.online ? 'Online' : 'Offline'}
+                          Attending {selectedEvent?.title}
                         </p>
                       </div>
                     </div>
@@ -232,42 +360,40 @@ const Messages = () => {
                     </button>
                   </div>
 
+                  {/* Messages Area */}
                   <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
                           className={`max-w-md px-4 py-2 rounded-2xl ${
-                            msg.isSender
+                            msg.sender_id === user.id
                               ? 'bg-orange-400 text-white'
                               : 'bg-gray-100 text-gray-800'
                           }`}
                         >
                           <p>{msg.content}</p>
                           <div className={`flex items-center justify-end mt-1 space-x-1 ${
-                            msg.isSender ? 'text-orange-100' : 'text-gray-400'
+                            msg.sender_id === user.id ? 'text-orange-100' : 'text-gray-400'
                           }`}>
-                            <span className="text-xs">{msg.timestamp}</span>
-                            {msg.isSender && msg.status === 'read' && (
-                              <CheckCheck size={14} />
-                            )}
-                            {msg.isSender && msg.status === 'delivered' && (
-                              <Check size={14} />
-                            )}
+                            <span className="text-xs">
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
 
+                  {/* Message Input */}
                   <div className="p-4 border-t border-gray-200">
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+                    <form onSubmit={sendMessage} className="flex items-center space-x-2">
+                      <button type="button" className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
                         <Paperclip size={20} />
                       </button>
-                      <button className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+                      <button type="button" className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
                         <Image size={20} />
                       </button>
                       <div className="flex-1 relative">
@@ -278,14 +404,18 @@ const Messages = () => {
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
                         />
-                        <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                        <button type="button" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
                           <Smile size={20} />
                         </button>
                       </div>
-                      <button className="p-2 bg-orange-400 text-white rounded-full hover:bg-orange-500">
+                      <button 
+                        type="submit" 
+                        className="p-2 bg-orange-400 text-white rounded-full hover:bg-orange-500 disabled:opacity-50"
+                        disabled={!message.trim()}
+                      >
                         <Send size={20} />
                       </button>
-                    </div>
+                    </form>
                   </div>
                 </>
               ) : (
@@ -294,8 +424,14 @@ const Messages = () => {
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Users size={32} className="text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-800">Select a conversation</h3>
-                    <p className="text-gray-500 mt-1">Choose an attendee to start chatting</p>
+                    <h3 className="text-lg font-medium text-gray-800">
+                      {selectedEvent ? 'Select a conversation' : 'Select an event'}
+                    </h3>
+                    <p className="text-gray-500 mt-1">
+                      {selectedEvent 
+                        ? 'Choose an attendee to start chatting' 
+                        : 'Choose an event to see attendees you can message'}
+                    </p>
                   </div>
                 </div>
               )}
