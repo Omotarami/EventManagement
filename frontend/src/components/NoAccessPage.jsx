@@ -39,7 +39,7 @@ const NoAccessPage = () => {
       } else if (user.role === "attendee") {
         navigate("/attendee-dashboard");
       } else {
-        const from = location.state?.from?.pathname || "/organizer-dashboard";
+        const from = location.state?.from?.pathname || "/dashboard";
         navigate(from);
       }
     } catch (error) {
