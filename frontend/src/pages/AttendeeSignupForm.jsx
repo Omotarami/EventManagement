@@ -13,10 +13,11 @@ import {
   FaStar,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { signupUser } from "../services/Auth";
+import { useAuth } from "../context/AuthContext";
 
 const AttendeeSignupForm = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -43,11 +44,11 @@ const AttendeeSignupForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await signupUser(formData);
+      await signup(formData, "attendee");
       toast.success("Signup successful! Redirecting to login page...");
       navigate("/login");
     } catch (err) {
-      toast.error("Signup failed:", err.message);
+      toast.error("Signup failed:" + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -342,9 +343,9 @@ const AttendeeSignupForm = () => {
                   </div>
                   <input
                     type="text"
-                    id="name"
+                    id="fullname"
                     name="fullname"
-                    value={formData.name}
+                    value={formData.fullname}
                     onChange={handleChange}
                     placeholder="Enter your full name"
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
@@ -451,8 +452,9 @@ const AttendeeSignupForm = () => {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
+                  disabled={loading}
                 >
-                  Join Eventro
+                  {loading ? "Creating account..." : "Join Eventro"}
                 </motion.button>
               </motion.div>
             </form>
