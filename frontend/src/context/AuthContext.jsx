@@ -24,27 +24,37 @@ export const AuthProvider = ({ children }) => {
 
       let userData = null;
 
-      // Determine user role based on email
-      if (email.includes("organizer")) {
+      // Very explicit checking for "organizer" in the email
+      if (email.toLowerCase().includes("organizer")) {
+        console.log("Login as organizer detected");
         userData = {
           id: 1,
           name: "Demo Organizer",
           email: email,
           role: "organizer",
+          // Explicitly setting both properties for compatibility
+          account_type: "organizer"
         };
       } else {
+        console.log("Login as attendee detected");
         userData = {
           id: 2,
           name: "Demo Attendee",
           email: email,
           role: "attendee",
+          // Explicitly setting both properties for compatibility
+          account_type: "attendee"
         };
       }
+
+      // Debug output to ensure role is set correctly
+      console.log("User role set to:", userData.role);
+      console.log("User account_type set to:", userData.account_type);
 
       // Store user data in localStorage with correct keys
       localStorage.setItem("user", JSON.stringify(userData));
       
-      
+      // Create a mock token for authentication check
       localStorage.setItem("token", "mock-auth-token-" + Date.now());
       
       setUser(userData);
@@ -58,11 +68,21 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData, userType) => {
     try {
+      // Make userType explicit and ensure it's set correctly
+      const userRole = userType === "organizer" ? "organizer" : "attendee";
+      
+      console.log("Signup with role:", userRole);
+      console.log("Email used:", userData.email);
+      
       const newUser = {
         ...userData,
         id: Date.now(),
-        role: userType,
+        role: userRole,
+        // Explicitly setting both properties for compatibility
+        account_type: userRole
       };
+
+      console.log("New user object:", newUser);
 
       // Use the same keys as in login
       localStorage.setItem("user", JSON.stringify(newUser));
