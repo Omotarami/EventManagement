@@ -44,26 +44,10 @@ const OrganizerSignupForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // ALWAYS append "organizer" to the email to ensure proper role detection
-      let emailToUse = formData.email;
-      
-      // If email doesn't already contain "organizer", modify it
-      if (!emailToUse.toLowerCase().includes("organizer")) {
-        const parts = emailToUse.split('@');
-        emailToUse = `${parts[0]}.organizer@${parts[1]}`;
-      }
-      
-      console.log("Creating organizer account with email:", emailToUse);
-      
-      const modifiedFormData = {
-        ...formData,
-        email: emailToUse,
-      };
-      
-      // Explicitly pass "organizer" as the userType
-      await signup(modifiedFormData, "organizer");
-      toast.success('Signup successful! Redirecting to login page...');
-      navigate('/login');
+      // Explicitly set the user type as organizer
+      await signup(formData, "organizer");
+      toast.success('Signup successful! Redirecting to organizer login page...');
+      navigate('/login/organizer'); // Direct to organizer-specific login
     } catch (err) {
       toast.error('Signup failed: ' + (err.message || ""));
     } finally {
@@ -315,7 +299,7 @@ const OrganizerSignupForm = () => {
 
           <motion.div variants={itemVariants} className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800">
-              Create an account
+              Create an Organizer Account
             </h2>
             <p className="text-gray-600 mt-2">
               Start organizing amazing events
@@ -375,9 +359,6 @@ const OrganizerSignupForm = () => {
                     required
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Note: Your email will be modified to include "organizer" to identify your account type
-                </p>
               </motion.div>
 
               {/* Password Field with Toggle */}
@@ -455,20 +436,30 @@ const OrganizerSignupForm = () => {
                   whileTap="tap"
                   disabled={loading}
                 >
-                  {loading ? "Creating account..." : "Create Account"}
+                  {loading ? "Creating account..." : "Join as Organizer"}
                 </motion.button>
               </motion.div>
             </form>
+          </motion.div>
+
+          {/* Switch to Attendee Signup */}
+          <motion.div variants={itemVariants} className="text-center mt-4">
+            <a
+              href="/signup/attendee"
+              className="text-sm font-medium text-teal-600 hover:text-teal-500"
+            >
+              Want to attend events? Sign up as Attendee
+            </a>
           </motion.div>
 
           {/* Login Link */}
           <motion.p variants={itemVariants} className="text-center mt-8">
             <span className="text-gray-600">Already have an account?</span>
             <a
-              href="/login"
+              href="/login/organizer"
               className="ml-1 font-medium text-teal-600 hover:text-teal-700"
             >
-              Login
+              Login as Organizer
             </a>
           </motion.p>
         </motion.div>
