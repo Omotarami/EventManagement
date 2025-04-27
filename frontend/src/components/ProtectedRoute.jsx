@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -92,7 +93,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Check roles if allowedRoles is specified
   if (allowedRoles.length > 0) {
-    const userRole = userData.account_type || userData.role;
+    const userRole = userData.role;
 
     if (!allowedRoles.includes(userRole)) {
       return (
