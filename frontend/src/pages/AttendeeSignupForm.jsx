@@ -46,7 +46,7 @@ const AttendeeSignupForm = () => {
     try {
       await signup(formData, "attendee");
       toast.success("Signup successful! Redirecting to login page...");
-      navigate("/login");
+      navigate("/login/attendee"); // Redirect to attendee specific login
     } catch (err) {
       toast.error("Signup failed:" + (err.message || ""));
     } finally {
@@ -317,7 +317,7 @@ const AttendeeSignupForm = () => {
 
           <motion.div variants={itemVariants} className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800">
-              Create an account
+              Create an Attendee Account
             </h2>
             <p className="text-gray-600 mt-2">
               Start discovering amazing events
@@ -454,20 +454,30 @@ const AttendeeSignupForm = () => {
                   whileTap="tap"
                   disabled={loading}
                 >
-                  {loading ? "Creating account..." : "Join Eventro"}
+                  {loading ? "Creating account..." : "Join as Attendee"}
                 </motion.button>
               </motion.div>
             </form>
+          </motion.div>
+
+          {/* Switch to Organizer Signup */}
+          <motion.div variants={itemVariants} className="text-center mt-4">
+            <a
+              href="/signup/organizer"
+              className="text-sm font-medium text-orange-600 hover:text-orange-500"
+            >
+              Want to create events? Sign up as Organizer
+            </a>
           </motion.div>
 
           {/* Login Link */}
           <motion.p variants={itemVariants} className="text-center mt-8">
             <span className="text-gray-600">Already have an account?</span>
             <a
-              href="/login"
+              href="/login/attendee"
               className="ml-1 font-medium text-orange-600 hover:text-orange-700"
             >
-              Login
+              Login as Attendee
             </a>
           </motion.p>
         </motion.div>
