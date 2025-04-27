@@ -19,11 +19,6 @@ const Dashboard = () => {
   const { events, deleteEvent } = useContext(EventContext);
   
   
-  // useEffect(() => {
-  //   if (user?.account_type !== 'organizer') {
-  //     navigate('/no-access');
-  //   }
-  // }, [user, navigate]);
 
  
   const [activeTab, setActiveTab] = useState("planned");

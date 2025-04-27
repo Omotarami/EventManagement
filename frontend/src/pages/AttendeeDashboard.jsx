@@ -31,12 +31,7 @@ const AttendeeDashboard = () => {
   const { user } = useAuth();
   const { events } = useContext(EventContext);
 
-  // Check if user is an attendee
-  useEffect(() => {
-    if (user?.role !== "attendee") {
-      navigate("/no-access");
-    }
-  }, [user, navigate]);
+
 
   const [activeTab, setActiveTab] = useState("discover");
 
