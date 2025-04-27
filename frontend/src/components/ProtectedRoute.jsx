@@ -1,10 +1,12 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// Set to false in production
+const SHOW_DEBUG_INFO = false;
+
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { loading, user } = useAuth();
+  const { loading } = useAuth();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -61,8 +63,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     checkAuthentication();
   }, []);
 
-  // Show debugging information if in development mode
-  if (process.env.NODE_ENV === "development" && authError) {
+  // Show debugging information if debug flag is enabled
+  if (SHOW_DEBUG_INFO && authError) {
     console.error("Authentication error:", authError);
   }
 
@@ -71,7 +73,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-        {process.env.NODE_ENV === "development" && (
+        {SHOW_DEBUG_INFO && (
           <div className="mt-4 text-sm text-gray-500">
             Checking authentication...
           </div>
@@ -93,7 +95,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Check roles if allowedRoles is specified
   if (allowedRoles.length > 0) {
-    const userRole = userData.role;
+    // Check both possible role properties
+    const userRole = userData.account_type || userData.role;
 
     if (!allowedRoles.includes(userRole)) {
       return (
