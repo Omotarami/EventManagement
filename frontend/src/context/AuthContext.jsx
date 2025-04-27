@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
       let userData = null;
 
-      // Very explicit checking for "organizer" in the email
+      
       if (email.toLowerCase().includes("organizer")) {
         console.log("Login as organizer detected");
         userData = {
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           name: "Demo Organizer",
           email: email,
           role: "organizer",
-          // Explicitly setting both properties for compatibility
+          
           account_type: "organizer"
         };
       } else {
@@ -42,19 +42,19 @@ export const AuthProvider = ({ children }) => {
           name: "Demo Attendee",
           email: email,
           role: "attendee",
-          // Explicitly setting both properties for compatibility
+         
           account_type: "attendee"
         };
       }
 
-      // Debug output to ensure role is set correctly
+      
       console.log("User role set to:", userData.role);
       console.log("User account_type set to:", userData.account_type);
 
-      // Store user data in localStorage with correct keys
+     
       localStorage.setItem("user", JSON.stringify(userData));
       
-      // Create a mock token for authentication check
+    
       localStorage.setItem("token", "mock-auth-token-" + Date.now());
       
       setUser(userData);
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData, userType) => {
     try {
-      // Make userType explicit and ensure it's set correctly
+    
       const userRole = userType === "organizer" ? "organizer" : "attendee";
       
       console.log("Signup with role:", userRole);
@@ -78,13 +78,13 @@ export const AuthProvider = ({ children }) => {
         ...userData,
         id: Date.now(),
         role: userRole,
-        // Explicitly setting both properties for compatibility
+       
         account_type: userRole
       };
 
       console.log("New user object:", newUser);
 
-      // Use the same keys as in login
+     
       localStorage.setItem("user", JSON.stringify(newUser));
       localStorage.setItem("token", "mock-auth-token-" + Date.now());
       

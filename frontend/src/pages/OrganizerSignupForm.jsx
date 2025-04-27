@@ -44,16 +44,23 @@ const OrganizerSignupForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Make sure email contains "organizer" to ensure correct role assignment
-      const emailWithRole = formData.email.includes("organizer") 
-        ? formData.email 
-        : formData.email.split("@")[0] + ".organizer@" + (formData.email.split("@")[1] || "example.com");
+      // ALWAYS append "organizer" to the email to ensure proper role detection
+      let emailToUse = formData.email;
+      
+      // If email doesn't already contain "organizer", modify it
+      if (!emailToUse.toLowerCase().includes("organizer")) {
+        const parts = emailToUse.split('@');
+        emailToUse = `${parts[0]}.organizer@${parts[1]}`;
+      }
+      
+      console.log("Creating organizer account with email:", emailToUse);
       
       const modifiedFormData = {
         ...formData,
-        email: emailWithRole
+        email: emailToUse,
       };
       
+      // Explicitly pass "organizer" as the userType
       await signup(modifiedFormData, "organizer");
       toast.success('Signup successful! Redirecting to login page...');
       navigate('/login');

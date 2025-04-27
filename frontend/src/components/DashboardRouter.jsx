@@ -11,17 +11,30 @@ const DashboardRouter = () => {
     if (!loading) {
       if (!user) {
         // No user - redirect to login
+        console.log("No user found, redirecting to login");
         navigate('/login');
         return;
       }
       
+      // Log the user object for debugging
+      console.log("DashboardRouter user:", user);
+      console.log("Role from user object:", user.role);
+      console.log("Account type from user object:", user.account_type);
+      
+      // Check both role properties for maximum compatibility
+      const userRole = user.role || user.account_type;
+      console.log("Determined user role:", userRole);
+      
       // Route based on user role
-      if (user.role === 'organizer') {
+      if (userRole === 'organizer') {
+        console.log("Routing to organizer dashboard");
         navigate('/organizer-dashboard');
-      } else if (user.role === 'attendee') {
+      } else if (userRole === 'attendee') {
+        console.log("Routing to attendee dashboard");
         navigate('/attendee-dashboard');
       } else {
-        // Default fallback
+        // If role is undefined or unknown, default to attendee
+        console.log("Unknown role, defaulting to attendee dashboard");
         navigate('/attendee-dashboard');
       }
     }
