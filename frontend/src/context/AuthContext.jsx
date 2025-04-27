@@ -16,49 +16,38 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Generic login function (kept for compatibility)
   const login = async (email, password) => {
+    // Determine which login function to use based on email
+    if (email.includes("organizer")) {
+      return loginAsOrganizer(email, password);
+    } else {
+      return loginAsAttendee(email, password);
+    }
+  };
+
+  // Specific login for attendees
+  const loginAsAttendee = async (email, password) => {
     try {
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
-      let userData = null;
+      // Create attendee user data
+      const userData = {
+        id: Date.now(),
+        name: email.split('@')[0],
+        email: email,
+        role: "attendee",
+        account_type: "attendee"
+      };
 
-      
-      if (email.toLowerCase().includes("organizer")) {
-        console.log("Login as organizer detected");
-        userData = {
-          id: 1,
-          name: "Demo Organizer",
-          email: email,
-          role: "organizer",
-          
-          account_type: "organizer"
-        };
-      } else {
-        console.log("Login as attendee detected");
-        userData = {
-          id: 2,
-          name: "Demo Attendee",
-          email: email,
-          role: "attendee",
-         
-          account_type: "attendee"
-        };
-      }
-
-      
-      console.log("User role set to:", userData.role);
-      console.log("User account_type set to:", userData.account_type);
-
-     
+      // Store user data in localStorage
       localStorage.setItem("user", JSON.stringify(userData));
-      
-    
       localStorage.setItem("token", "mock-auth-token-" + Date.now());
       
       setUser(userData);
-      toast.success("Welcome back!");
+      toast.success("Welcome back, Attendee!");
       return userData;
     } catch (error) {
       toast.error("Invalid credentials");
@@ -66,25 +55,46 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Specific login for organizers
+  const loginAsOrganizer = async (email, password) => {
+    try {
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+
+      // Create organizer user data
+      const userData = {
+        id: Date.now(),
+        name: email.split('@')[0],
+        email: email,
+        role: "organizer",
+        account_type: "organizer"
+      };
+
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
+      setUser(userData);
+      toast.success("Welcome back, Organizer!");
+      return userData;
+    } catch (error) {
+      toast.error("Invalid credentials");
+      throw error;
+    }
+  };
+
+  // Signup function with role passed explicitly
   const signup = async (userData, userType) => {
     try {
-    
-      const userRole = userType === "organizer" ? "organizer" : "attendee";
-      
-      console.log("Signup with role:", userRole);
-      console.log("Email used:", userData.email);
-      
       const newUser = {
         ...userData,
         id: Date.now(),
-        role: userRole,
-       
-        account_type: userRole
+        role: userType,
+        account_type: userType
       };
 
-      console.log("New user object:", newUser);
-
-     
+      // Use the same keys as in login
       localStorage.setItem("user", JSON.stringify(newUser));
       localStorage.setItem("token", "mock-auth-token-" + Date.now());
       
@@ -108,6 +118,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    loginAsAttendee,
+    loginAsOrganizer,
     signup,
     logout,
   };
