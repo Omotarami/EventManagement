@@ -14,10 +14,11 @@ import {
   FaUsers,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { signupOrganizer } from "../services/Auth"
+import { useAuth } from "../context/AuthContext";
 
 const OrganizerSignupForm = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -43,12 +44,21 @@ const OrganizerSignupForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await signupOrganizer(formData);
+      // Make sure email contains "organizer" to ensure correct role assignment
+      const emailWithRole = formData.email.includes("organizer") 
+        ? formData.email 
+        : formData.email.split("@")[0] + ".organizer@" + (formData.email.split("@")[1] || "example.com");
+      
+      const modifiedFormData = {
+        ...formData,
+        email: emailWithRole
+      };
+      
+      await signup(modifiedFormData, "organizer");
       toast.success('Signup successful! Redirecting to login page...');
       navigate('/login');
-
     } catch (err) {
-      toast.error('Signup failed:', err.message);
+      toast.error('Signup failed: ' + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -324,9 +334,9 @@ const OrganizerSignupForm = () => {
                   </div>
                   <input
                     type="text"
-                    id="name"
+                    id="fullname"
                     name="fullname"
-                    value={formData.name}
+                    value={formData.fullname}
                     onChange={handleChange}
                     placeholder="Enter your full name"
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-black"
@@ -358,6 +368,9 @@ const OrganizerSignupForm = () => {
                     required
                   />
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Note: Your email will be modified to include "organizer" to identify your account type
+                </p>
               </motion.div>
 
               {/* Password Field with Toggle */}
@@ -433,8 +446,9 @@ const OrganizerSignupForm = () => {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
+                  disabled={loading}
                 >
-                  Create Account
+                  {loading ? "Creating account..." : "Create Account"}
                 </motion.button>
               </motion.div>
             </form>
