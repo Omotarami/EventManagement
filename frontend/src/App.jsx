@@ -6,6 +6,7 @@ import OrganizerSignupForm from "./pages/OrganizerSignupForm";
 import OnboardingPage from "./pages/OnboardingPage";
 import AttendeeLoginPage from "./pages/AttendeeLoginPage";
 import OrganizerLoginPage from "./pages/OrganizerLoginPage";
+import LoginRedirect from "./components/LoginRedirect";
 import CategorySelectionPage from "./pages/CategorySelectionPage";
 import { Toaster } from "react-hot-toast";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -45,8 +46,8 @@ const App = () => {
                 <Route path="/login/attendee" element={<AttendeeLoginPage />} />
                 <Route path="/login/organizer" element={<OrganizerLoginPage />} />
                 
-                {/* Keep original login for compatibility */}
-                <Route path="/login" element={<AttendeeLoginPage />} />
+                {/* Redirect generic login to selection page */}
+                <Route path="/login" element={<LoginRedirect />} />
                 
                 <Route path="/no-access" element={<NoAccessPage />} />
 
