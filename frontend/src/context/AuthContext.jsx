@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for stored user on mount
-    const storedUser = localStorage.getItem("eventro_user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -18,14 +18,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Mike login logic, replace am with API call
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
       let userData = null;
 
-      //  Mike this one na check for organizer
+      // Determine user role based on email
       if (email.includes("organizer")) {
         userData = {
           id: 1,
@@ -33,9 +32,7 @@ export const AuthProvider = ({ children }) => {
           email: email,
           role: "organizer",
         };
-      }
-      // Mike this one na check for attendee
-      else {
+      } else {
         userData = {
           id: 2,
           name: "Demo Attendee",
@@ -44,7 +41,12 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      localStorage.setItem("eventro_user", JSON.stringify(userData));
+      // Store user data in localStorage with correct keys
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
       setUser(userData);
       toast.success("Welcome back!");
       return userData;
@@ -56,14 +58,16 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData, userType) => {
     try {
-      // Mike do API call here
       const newUser = {
         ...userData,
         id: Date.now(),
         role: userType,
       };
 
-      localStorage.setItem("eventro_user", JSON.stringify(newUser));
+      // Use the same keys as in login
+      localStorage.setItem("user", JSON.stringify(newUser));
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
       setUser(newUser);
       toast.success("Account created successfully!");
       return newUser;
@@ -74,7 +78,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("eventro_user");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
     toast.success("Logged out successfully");
   };
