@@ -4,7 +4,8 @@ import "./global.css";
 import AttendeeSignupForm from "./pages/AttendeeSignupForm";
 import OrganizerSignupForm from "./pages/OrganizerSignupForm";
 import OnboardingPage from "./pages/OnboardingPage";
-import LoginPage from "./pages/LoginPage";
+import AttendeeLoginPage from "./pages/AttendeeLoginPage";
+import OrganizerLoginPage from "./pages/OrganizerLoginPage";
 import CategorySelectionPage from "./pages/CategorySelectionPage";
 import { Toaster } from "react-hot-toast";
 import CreateEventPage from "./pages/CreateEventPage";
@@ -29,10 +30,7 @@ const App = () => {
   return (
     <AuthProvider>
       <EventProvider>
-
-
         <ProfileProvider>
-
           <TicketProvider>
             <Router>
               <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
@@ -42,7 +40,14 @@ const App = () => {
                 <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/categories" element={<CategorySelectionPage />} />
-                <Route path="/login" element={<LoginPage />} />
+                
+                {/* Separate login routes for different user types */}
+                <Route path="/login/attendee" element={<AttendeeLoginPage />} />
+                <Route path="/login/organizer" element={<OrganizerLoginPage />} />
+                
+                {/* Keep original login for compatibility */}
+                <Route path="/login" element={<AttendeeLoginPage />} />
+                
                 <Route path="/no-access" element={<NoAccessPage />} />
 
                 <Route path="/dashboard" element={<DashboardRouter />} />
@@ -76,9 +81,7 @@ const App = () => {
 
                 <Route
                   path="/calendar"
-                  element={
-
-          
+                  element={          
                     <Calendar />
                   }
                 />
@@ -167,7 +170,6 @@ const App = () => {
             </Router>
           </TicketProvider>
         </ProfileProvider>
-
       </EventProvider>
     </AuthProvider>
   );
