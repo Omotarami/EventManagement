@@ -50,9 +50,9 @@ const App = () => {
                 <Route
                   path="/organizer-dashboard"
                   element={
-                    <ProtectedRoute allowedRoles={["organizer"]}>
+                    // <ProtectedRoute allowedRoles={["organizer"]}>
                       <Dashboard />
-                    </ProtectedRoute>
+                    // </ProtectedRoute>
                   }
                 />
 
@@ -70,7 +70,7 @@ const App = () => {
                   element={
                     <ProtectedRoute allowedRoles={["organizer"]}>
                       <CreateEventPage />
-                    </ProtectedRoute>
+                     </ProtectedRoute>
                   }
                 />
 
@@ -87,9 +87,9 @@ const App = () => {
                 <Route
                   path="/messages"
                   element={
-                    <ProtectedRoute>
+                    // <ProtectedRoute>
                       <Messages /> 
-                    </ProtectedRoute>
+                    // </ProtectedRoute>
                   }
                 />
 
@@ -136,9 +136,9 @@ const App = () => {
                 <Route
                   path="/events/:eventId"
                   element={
-                    <ProtectedRoute allowedRoles={["organizer"]}>
+                    // <ProtectedRoute allowedRoles={["organizer"]}>
                       <EventDetails />
-                    </ProtectedRoute>
+                    // </ProtectedRoute>
                   }
                 />
 
