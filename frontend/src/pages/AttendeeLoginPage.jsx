@@ -1,54 +1,45 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  FaEye,
-  FaEyeSlash,
-  FaUser,
   FaEnvelope,
   FaLock,
+  FaEye,
+  FaEyeSlash,
   FaTicketAlt,
-  FaMusic,
-  FaStar,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 
-const AttendeeSignupForm = () => {
+const AttendeeLoginPage = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
-
-  // Form state
+  const { loginAsAttendee } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullname: "",
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
 
-  // Password visibility toggle
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signup(formData, "attendee");
-      toast.success("Signup successful! Redirecting to login page...");
-      navigate("/login/attendee"); // Redirect to attendee specific login
-    } catch (err) {
-      toast.error("Signup failed:" + (err.message || ""));
+      const user = await loginAsAttendee(formData.email, formData.password);
+      toast.success("Login successful!");
+      navigate("/attendee-dashboard");
+    } catch (error) {
+      toast.error(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -61,7 +52,7 @@ const AttendeeSignupForm = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2,
+        delayChildren: 0.3,
       },
     },
   };
@@ -75,20 +66,11 @@ const AttendeeSignupForm = () => {
     },
   };
 
-  const buttonVariants = {
-    hover: {
-      scale: 1.05,
-      backgroundColor: "#F39C55",
-      transition: { type: "spring", stiffness: 300, damping: 10 },
-    },
-    tap: { scale: 0.98 },
-  };
-
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <div className="flex h-screen bg-gray-50">
       {/* Left side - Animated Illustration */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-400 to-orange-500 p-12 justify-center items-center overflow-hidden relative">
-        {/* Background animated bubbles */}
+        {/* Background animated circles/bubbles */}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(15)].map((_, i) => (
             <motion.div
@@ -116,7 +98,7 @@ const AttendeeSignupForm = () => {
           ))}
         </div>
 
-        {/* Main animated content */}
+        {/* Main animated illustration */}
         <div className="relative z-10 w-full max-w-lg">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -138,14 +120,13 @@ const AttendeeSignupForm = () => {
               Join Events on Even<span style={{ color: "#2A9D8F" }}>tro</span>
             </motion.h1>
 
-            {/* Event attendee illustration */}
+            {/* Ticket illustration */}
             <motion.div
               className="w-full h-64 my-8 relative"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              {/* Ticket illustration */}
               <motion.div
                 className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
                 animate={{
@@ -264,23 +245,7 @@ const AttendeeSignupForm = () => {
                   delay: 1,
                 }}
               >
-                <FaMusic size={34} color="white" />
-              </motion.div>
-
-              <motion.div
-                className="absolute top-12 left-8"
-                animate={{
-                  y: [0, -10, 0],
-                  rotate: [-5, 5, -5],
-                }}
-                transition={{
-                  duration: 3.5,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  delay: 0.5,
-                }}
-              >
-                <FaStar size={24} color="white" />
+                <FaCalendarAlt size={34} color="white" />
               </motion.div>
             </motion.div>
 
@@ -290,13 +255,13 @@ const AttendeeSignupForm = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
             >
-              Discover amazing events near you
+              Login to discover amazing events near you
             </motion.p>
           </motion.div>
         </div>
       </div>
 
-      {/* Right side - Signup Form */}
+      {/* Right side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <motion.div
           className="w-full max-w-md"
@@ -317,168 +282,132 @@ const AttendeeSignupForm = () => {
 
           <motion.div variants={itemVariants} className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800">
-              Create an Attendee Account
+              Attendee Login
             </h2>
             <p className="text-gray-600 mt-2">
-              Start discovering amazing events
+              Sign in to find and attend amazing events
             </p>
           </motion.div>
 
-          <motion.div
+          <motion.form
             variants={itemVariants}
-            className="bg-white p-8 rounded-lg shadow-md border border-gray-200"
+            onSubmit={handleSubmit}
+            className="space-y-6"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Field */}
-              <motion.div variants={itemVariants}>
-                <label
-                  htmlFor="fullname"
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaUser className="text-gray-500" />
-                  </div>
-                  <input
-                    type="text"
-                    id="fullname"
-                    name="fullname"
-                    value={formData.fullname}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
-                    required
-                  />
+            {/* Email Field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block mb-1 text-sm font-medium text-gray-700"
+              >
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <FaEnvelope className="text-gray-500" />
                 </div>
-              </motion.div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email address"
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
+                  required
+                />
+              </div>
+            </div>
 
-              {/* Email Field */}
-              <motion.div variants={itemVariants}>
-                <label
-                  htmlFor="email"
-                  className="block mb-1 text-sm font-medium text-gray-700"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaEnvelope className="text-gray-500" />
-                  </div>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email address"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
-                    required
-                  />
-                </div>
-              </motion.div>
-
-              {/* Password Field with Toggle */}
-              <motion.div variants={itemVariants}>
+            {/* Password Field with Toggle */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
                 <label
                   htmlFor="password"
-                  className="block mb-1 text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700"
                 >
                   Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaLock className="text-gray-500" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Create a password"
-                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
-                    required
-                  />
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash className="text-gray-500 hover:text-gray-700" />
-                    ) : (
-                      <FaEye className="text-gray-500 hover:text-gray-700" />
-                    )}
-                  </div>
+                <a
+                  href="/forgot-password"
+                  className="text-sm font-medium text-orange-600 hover:text-orange-500"
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <FaLock className="text-gray-500" />
                 </div>
-              </motion.div>
-
-              {/* Terms Agreement */}
-              <motion.div variants={itemVariants} className="flex items-center">
                 <input
-                  type="checkbox"
-                  id="terms"
-                  className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
                   required
                 />
-                <label
-                  htmlFor="terms"
-                  className="ml-2 block text-sm text-gray-700"
+                <div
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  I agree to the{" "}
-                  <a
-                    href="/terms"
-                    className="text-orange-600 hover:text-orange-700"
-                  >
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/privacy"
-                    className="text-orange-600 hover:text-orange-700"
-                  >
-                    Privacy Policy
-                  </a>
-                </label>
-              </motion.div>
+                  {showPassword ? (
+                    <FaEyeSlash className="text-gray-500 hover:text-gray-700" />
+                  ) : (
+                    <FaEye className="text-gray-500 hover:text-gray-700" />
+                  )}
+                </div>
+              </div>
+            </div>
 
-              {/* Submit Button */}
-              <motion.div variants={itemVariants} className="pt-4">
-                <motion.button
-                  type="submit"
-                  className="w-full py-3 px-4 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                  style={{ backgroundColor: "#F4A261" }}
-                  variants={buttonVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                  disabled={loading}
-                >
-                  {loading ? "Creating account..." : "Join as Attendee"}
-                </motion.button>
-              </motion.div>
-            </form>
-          </motion.div>
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="remember"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                Remember me
+              </label>
+            </div>
 
-          {/* Switch to Organizer Signup */}
+            {/* Login Button */}
+            <motion.button
+              type="submit"
+              className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Attendee Sign In"}
+            </motion.button>
+          </motion.form>
+
+          {/* Switch to Organizer Login */}
           <motion.div variants={itemVariants} className="text-center mt-4">
-            <a
-              href="/signup/organizer"
+            <Link
+              to="/login/organizer"
               className="text-sm font-medium text-orange-600 hover:text-orange-500"
             >
-              Want to create events? Sign up as Organizer
-            </a>
+              Switch to Organizer Login
+            </Link>
           </motion.div>
 
-          {/* Login Link */}
+          {/* Sign Up Link */}
           <motion.p variants={itemVariants} className="text-center mt-8">
-            <span className="text-gray-600">Already have an account?</span>
-            <a
-              href="/login/attendee"
-              className="ml-1 font-medium text-orange-600 hover:text-orange-700"
+            <span className="text-gray-600">Don't have an account?</span>
+            <Link
+              to="/signup/attendee"
+              className="ml-1 font-medium text-orange-600 hover:text-orange-500"
             >
-              Login as Attendee
-            </a>
+              Sign up as Attendee
+            </Link>
           </motion.p>
         </motion.div>
       </div>
@@ -486,4 +415,4 @@ const AttendeeSignupForm = () => {
   );
 };
 
-export default AttendeeSignupForm;
+export default AttendeeLoginPage;

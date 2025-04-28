@@ -1,5 +1,5 @@
 const App = require("./app");
-// const UserRoute = require("./routes/user");
+// const UserRoute = require("./routes/npm start
 const AuthRoute = require("./routes/auth");
 const EventRoute = require("./routes/event");
 const CategoryRoute = require("./routes/category");

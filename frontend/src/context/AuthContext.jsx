@@ -9,44 +9,45 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for stored user on mount
-    const storedUser = localStorage.getItem("eventro_user");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
 
+  // Generic login function (kept for compatibility)
   const login = async (email, password) => {
+    // Determine which login function to use based on email
+    if (email.includes("organizer")) {
+      return loginAsOrganizer(email, password);
+    } else {
+      return loginAsAttendee(email, password);
+    }
+  };
+
+  // Specific login for attendees
+  const loginAsAttendee = async (email, password) => {
     try {
-      // Mike login logic, replace am with API call
       if (!email || !password) {
         throw new Error("Email and password are required");
       }
 
-      let userData = null;
+      // Create attendee user data
+      const userData = {
+        id: Date.now(),
+        name: email.split('@')[0],
+        email: email,
+        role: "attendee",
+        account_type: "attendee"
+      };
 
-      //  Mike this one na check for organizer
-      if (email.includes("organizer")) {
-        userData = {
-          id: 1,
-          name: "Demo Organizer",
-          email: email,
-          role: "organizer",
-        };
-      }
-      // Mike this one na check for attendee
-      else {
-        userData = {
-          id: 2,
-          name: "Demo Attendee",
-          email: email,
-          role: "attendee",
-        };
-      }
-
-      localStorage.setItem("eventro_user", JSON.stringify(userData));
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
       setUser(userData);
-      toast.success("Welcome back!");
+      toast.success("Welcome back, Attendee!");
       return userData;
     } catch (error) {
       toast.error("Invalid credentials");
@@ -54,16 +55,49 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Specific login for organizers
+  const loginAsOrganizer = async (email, password) => {
+    try {
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+
+      // Create organizer user data
+      const userData = {
+        id: Date.now(),
+        name: email.split('@')[0],
+        email: email,
+        role: "organizer",
+        account_type: "organizer"
+      };
+
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
+      setUser(userData);
+      toast.success("Welcome back, Organizer!");
+      return userData;
+    } catch (error) {
+      toast.error("Invalid credentials");
+      throw error;
+    }
+  };
+
+  // Signup function with role passed explicitly
   const signup = async (userData, userType) => {
     try {
-      // Mike do API call here
       const newUser = {
         ...userData,
         id: Date.now(),
         role: userType,
+        account_type: userType
       };
 
-      localStorage.setItem("eventro_user", JSON.stringify(newUser));
+      // Use the same keys as in login
+      localStorage.setItem("user", JSON.stringify(newUser));
+      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      
       setUser(newUser);
       toast.success("Account created successfully!");
       return newUser;
@@ -74,7 +108,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("eventro_user");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
     toast.success("Logged out successfully");
   };
@@ -83,6 +118,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    loginAsAttendee,
+    loginAsOrganizer,
     signup,
     logout,
   };

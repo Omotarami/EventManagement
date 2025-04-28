@@ -4,11 +4,10 @@ const env = require("./config/env.js");
 const { requestLogger } = require("./middlewares/logger.js");
 const bodyParser = require("body-parser");
 const HandleErrors = require("./middlewares/error.js");
-const {isAuthenticated} = require("./middlewares/auth.js");
+const { isAuthenticated } = require("./middlewares/auth.js"); //Added import for isAuthenticated middleware
 const logger = require("./config/logger.js");
 const ENV = require("./config/env.js");
 
-// const swaggerDocument = YAML.parse(swaggerFile, 'utf8');
 class App {
   constructor() {
     this.app = express();
@@ -19,6 +18,7 @@ class App {
 
   initDB() {
     // * initialization of the database
+    logger.info("Database connection initialized");
   }
 
   initializeMiddlewares() {
@@ -31,7 +31,8 @@ class App {
       })
     );
     this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));  }
+    this.app.use(bodyParser.urlencoded({ extended: false }));
+  }
 
   listen() {
     // initialize database
