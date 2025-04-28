@@ -9,11 +9,47 @@ import { useTickets } from "../../context/TicketContext";
 import PurchaseTicketButton from "../Ticket/PurchaseTicketButton";
 import { useNavigate } from "react-router-dom";
 import EventRevenueSection from "../Ticket/EventRevenueSection";
-import { formatDate } from "../../utils/dateUtils";
+
+// Safe formatting utilities
+const formatDate = (dateString) => {
+  if (!dateString) return 'TBD';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return 'Invalid Date';
+  }
+};
+
+// Function to safely format time objects or strings
+const formatTimeValue = (timeValue) => {
+  if (typeof timeValue === 'string') return timeValue;
+  
+  if (timeValue && typeof timeValue === 'object') {
+    // Handle time objects with time and period properties
+    if (timeValue.time && timeValue.period) {
+      return `${timeValue.time} ${timeValue.period}`;
+    }
+    
+    // Try to convert the object to a string representation
+    try {
+      return JSON.stringify(timeValue);
+    } catch (error) {
+      console.error("Error stringifying time object:", error);
+      return 'Invalid Time Format';
+    }
+  }
+  
+  return 'TBD';
+};
 
 /**
- * 
- * 
+ * Event Overview component
  * 
  * @param {Object} props
  * @param {Object} props.event 
@@ -24,6 +60,17 @@ const EventOverview = ({ event, userRole, eventId }) => {
   const navigate = useNavigate();
   const { hasTicketForEvent, getUserTickets } = useTickets();
   const [showFullDescription, setShowFullDescription] = useState(false);
+  
+  // Add safety check for missing event data
+  if (!event) {
+    console.error("EventOverview: event object is missing");
+    return (
+      <div className="p-8 text-center bg-gray-50 rounded-lg">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Event data not available</h2>
+        <p className="text-gray-600">The event information could not be loaded.</p>
+      </div>
+    );
+  }
   
   // Check if user has a ticket for this event
   const userHasTicket = hasTicketForEvent ? hasTicketForEvent(eventId) : false;
@@ -58,7 +105,7 @@ const EventOverview = ({ event, userRole, eventId }) => {
                 !showFullDescription && "line-clamp-4"
               }`}
             >
-              {event.description}
+              {event.description || "No description available for this event."}
             </p>
 
             {/* Only show toggle button if description is long enough */}
@@ -104,14 +151,14 @@ const EventOverview = ({ event, userRole, eventId }) => {
               <div className="flex items-start">
                 <MapPin size={20} className="text-gray-500 mr-3 mt-1" />
                 <div>
-                  <p className="text-gray-800 font-medium">{event.location}</p>
+                  <p className="text-gray-800 font-medium">{event.location || "Location not specified"}</p>
                   {/* Placeholder for Google Maps embedding */}
                   <div className="mt-4 bg-gray-100 h-48 rounded-lg flex items-center justify-center">
                     <p className="text-gray-500">Map preview would appear here</p>
                   </div>
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(
-                      event.location
+                      event.location || ""
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -166,10 +213,10 @@ const EventOverview = ({ event, userRole, eventId }) => {
                   className="border-l-2 border-orange-200 pl-4 py-2"
                 >
                   <p className="text-sm text-orange-500 font-medium">
-                    {item.time}
+                    {formatTimeValue(item.time)}
                   </p>
                   <h3 className="text-base font-medium text-gray-800 mt-1">
-                    {item.title}
+                    {item.title || "Untitled Session"}
                   </h3>
                   {item.description && (
                     <p className="text-sm text-gray-600 mt-1">
@@ -301,7 +348,7 @@ const EventOverview = ({ event, userRole, eventId }) => {
                 <span>Event Date</span>
               </div>
               <span className="font-medium text-gray-800">
-                {formatDate(event.startDate, { month: 'short', day: 'numeric', year: 'numeric' })}
+                {formatDate(event.startDate)}
               </span>
             </div>
           </div>
