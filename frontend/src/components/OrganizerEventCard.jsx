@@ -149,22 +149,24 @@ const OrganizerEventCard = ({ event, onEdit, onDelete }) => {
             <Calendar size={40} className="text-gray-400" />
           </div>
         )}
+         {/* Image Overlay Gradient */}
+        <div className="absolute inset-0 bg-black opacity-50 "></div>
         
         {/* Status Badge */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-medium ${statusColors.bg} ${statusColors.text}`}>
-          <span className={`inline-block w-2 h-2 rounded-full ${statusColors.dot} mr-1.5`}></span>
+        <div className={`absolute top-3 right-3 px-3 py-1 rounded-lg text-sm font-medium bg-white text-teal-200 ${statusColors.bg} ${statusColors.text}`}>
+          <span className={`inline-block w-2 h-2 rounded-full bg-teal-400 ${statusColors.dot} mr-1.5`}></span>
           {event.status || 'Status'}
         </div>
         
         {/* Category Badge */}
         {event.category && (
-          <div className="absolute top-3 left-3 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs">
+          <div className="absolute top-3 left-3  bg-opacity-70 text-white px-2 py-1 rounded-full text-xs">
             {event.category}
           </div>
         )}
         
-        {/* Image Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+       
+        
       </div>
       
       {/* Event Details */}
@@ -243,12 +245,12 @@ const OrganizerEventCard = ({ event, onEdit, onDelete }) => {
         <div className="flex justify-between mb-3 text-sm">
           <div>
             <div className="text-gray-500">Tickets Sold</div>
-            <div className="font-medium">{event.soldTickets || 0}/{event.totalTickets || 0}</div>
+            <div className="font-medium text-gray-500">{event.soldTickets || 0}/{event.totalTickets || 0}</div>
           </div>
           
           <div>
             <div className="text-gray-500">Revenue</div>
-            <div className="font-medium">
+            <div className="font-medium text-gray-500">
               {formatCurrency(event.grossAmount || 0)}
             </div>
           </div>
@@ -269,7 +271,7 @@ const OrganizerEventCard = ({ event, onEdit, onDelete }) => {
               e.stopPropagation();
               navigate(`/events/${event.id}`);
             }}
-            className="flex-grow bg-orange-500 hover:bg-orange-600 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center"
+            className="flex-grow outline-1 hover:bg-orange-400 text-gray-400 hover:text-white rounded-md py-2 text-sm font-medium flex items-center justify-center"
           >
             <Edit size={14} className="mr-1.5" />
             Manage Event
@@ -277,7 +279,7 @@ const OrganizerEventCard = ({ event, onEdit, onDelete }) => {
           
           <button
             onClick={handleViewAttendeesClick}
-            className="flex-grow bg-blue-500 hover:bg-blue-600 text-white rounded-md py-2 text-sm font-medium flex items-center justify-center"
+            className="flex-grow outline-1 hover:bg-orange-400 text-gray-400 hover:text-white rounded-md py-2 text-sm font-medium flex items-center justify-center"
           >
             <Users size={14} className="mr-1.5" />
             {event.soldTickets || 0} Attendees

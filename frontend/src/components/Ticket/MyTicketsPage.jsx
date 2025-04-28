@@ -50,7 +50,7 @@ const MyTicketsPage = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-6">My Tickets</h1>
 
           {/* Filters and Search */}
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-6 text-gray-600">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="relative flex-grow max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

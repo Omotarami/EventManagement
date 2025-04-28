@@ -205,7 +205,7 @@ const EventCard = ({
         )}
         
         {/* Image Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+        <div className="absolute inset-0 bg-black opacity-70"></div>
       </div>
       
       {/* Event Details */}

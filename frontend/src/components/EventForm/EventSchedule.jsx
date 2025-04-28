@@ -218,15 +218,15 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
     return (
       <div className="mb-6">
         {/* Calendar header with month/year and nav buttons */}
-        <div className="flex justify-between items-center mb-4 px-2">
+        <div className="flex justify-between items-center mb-4 px-2 ">
           <h2 className="text-lg font-medium text-gray-800">
             {monthNames[currentMonth]} {currentYear}
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 ">
             <button
               type="button"
               onClick={prevMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
               aria-label="Previous month"
             >
               <ChevronLeft size={18} />
@@ -234,7 +234,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             <button
               type="button"
               onClick={nextMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
               aria-label="Next month"
             >
               <ChevronRight size={18} />
@@ -255,7 +255,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-2 text-gray">
           {allDays.map((dayObj, index) => {
             const selected = isDateSelected(dayObj);
             const today = isToday(dayObj);
