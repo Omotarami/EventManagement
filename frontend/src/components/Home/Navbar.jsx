@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,22 +21,20 @@ const Navbar = () => {
         
       
         <nav className="hidden md:flex space-x-8 ml-auto">
-          <a href="#" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
-            PLAN EVENTS
+        <Link to="#" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
+            ABOUT US
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-300 group-hover:w-full transition-all duration-300"></span>
-          </a>
-          <a href="#" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
-            ATTEND EVENTS
+          </Link>
+          <Link to="/onboarding" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
+            SIGNUP
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-300 group-hover:w-full transition-all duration-300"></span>
-          </a>
-          <a href="#" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
-            LOG IN
+          </Link>
+          <Link to="/login" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
+            LOGIN
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-300 group-hover:w-full transition-all duration-300"></span>
-          </a>
-          <a href="#" className="group relative text-white hover:text-orange-300 transition-colors duration-300 text-sm tracking-wide">
-            SIGN UP
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-300 group-hover:w-full transition-all duration-300"></span>
-          </a>
+          </Link>
+          
+         
         </nav>
         
        
@@ -69,11 +68,9 @@ const Navbar = () => {
                 ATTEND EVENTS
               </a>
               <a href="#" className="text-white hover:text-orange-300 transition-colors py-2 border-b border-gray-800">
-                LOG IN
+                ABOUT US
               </a>
-              <a href="#" className="text-white hover:text-orange-300 transition-colors py-2 border-b border-gray-800">
-                SIGN UP
-              </a>
+              
             </div>
           </div>
         )}
