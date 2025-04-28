@@ -1,5 +1,5 @@
 const App = require("./app");
-const UserRoute = require("./routes/user");
+// const UserRoute = require("./routes/npm start
 const AuthRoute = require("./routes/auth");
 const EventRoute = require("./routes/event");
 const CategoryRoute = require("./routes/category");
@@ -10,7 +10,7 @@ const ConversationRoute = require("./routes/conversation");
 
 const server = new App();
 server.initializedRoutes([
-  new UserRoute(),
+  // new UserRoute(),
   new AuthRoute(),
   new EventRoute(),
   new CategoryRoute(),

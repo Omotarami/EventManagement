@@ -2,27 +2,54 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Check, Download, ArrowRight, BarChart4 } from 'lucide-react';
-import { QRCode } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 
 const TicketReceiptCard = ({ ticket, showActions = true }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   
-  
+  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'TBD';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short',
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return 'Invalid date';
+    }
   };
   
+  // Format price safely - ensures we have a number we can format
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) return '0.00';
+    
+    // Convert to number if it's a string
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Check if it's a valid number
+    if (isNaN(numPrice)) return '0.00';
+    
+    // Format to 2 decimal places
+    try {
+      return numPrice.toFixed(2);
+    } catch (error) {
+      console.error("Price formatting error:", error);
+      return '0.00';
+    }
+  };
   
+  // Safe getter for price and amount
+  const getTicketPrice = () => formatPrice(ticket.price);
+  const getTicketAmount = () => formatPrice(ticket.totalAmount);
+  
+  // Download ticket as text
   const handleDownload = (e) => {
     e.stopPropagation();
-    
     
     const ticketContent = `
       Event: ${ticket.eventTitle}
@@ -47,6 +74,38 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+  
+  // Render QR code with error handling
+  const renderQRCode = () => {
+    try {
+      const qrValue = `TICKET:${ticket.id}|EVENT:${ticket.eventId}|USER:${ticket.userId}`;
+      
+      return (
+        <QRCode 
+          value={qrValue} 
+          size={80}
+          level="H" 
+          includeMargin={true}
+        />
+      );
+    } catch (error) {
+      console.error("QR Code rendering error:", error);
+      return (
+        <div className="w-20 h-20 bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+          QR Code
+        </div>
+      );
+    }
+  };
+  
+  // Safety check - if ticket is invalid or missing crucial data
+  if (!ticket || !ticket.id) {
+    return (
+      <div className="my-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-600">Ticket data is missing or invalid</p>
+      </div>
+    );
+  }
   
   return (
     <div className="my-4">
@@ -82,7 +141,9 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
             {/* Middle part - Event details */}
             <div className="col-span-2 flex flex-col justify-between">
               <div>
-                <h3 className="font-semibold text-lg text-gray-800 mb-1 line-clamp-1">{ticket.eventTitle}</h3>
+                <h3 className="font-semibold text-lg text-gray-800 mb-1 line-clamp-1">
+                  {ticket.eventTitle || 'Untitled Event'}
+                </h3>
                 
                 <div className="mb-1 text-sm text-gray-600 flex items-center">
                   <Calendar size={14} className="mr-1 flex-shrink-0" />
@@ -91,7 +152,7 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
                 
                 <div className="mb-1 text-sm text-gray-600 flex items-center">
                   <Clock size={14} className="mr-1 flex-shrink-0" />
-                  <span>Event Time</span>
+                  <span>{ticket.eventTime || 'Event Time'}</span>
                 </div>
                 
                 <div className="text-sm text-gray-600 flex items-center">
@@ -117,7 +178,7 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
                 </div>
                 
                 <div className="text-sm text-gray-500">
-                  {ticket.ticketType}
+                  {ticket.ticketType || 'Standard Ticket'}
                 </div>
               </div>
             </div>
@@ -140,14 +201,16 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
           <div className="p-4 flex flex-col h-full">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="font-semibold text-gray-800">Ticket #{ticket.id.slice(-4)}</h3>
+                <h3 className="font-semibold text-gray-800">
+                  Ticket #{ticket.id.toString().slice(-4)}
+                </h3>
                 <p className="text-xs text-gray-500">Order: {ticket.orderId}</p>
               </div>
               
               <div className="text-right">
-                <div className="font-medium text-gray-800">${ticket.totalAmount.toFixed(2)}</div>
+                <div className="font-medium text-gray-800">${getTicketAmount()}</div>
                 <p className="text-xs text-gray-500">
-                  {ticket.quantity} x ${ticket.price.toFixed(2)}
+                  {ticket.quantity || 1} x ${getTicketPrice()}
                 </p>
               </div>
             </div>
@@ -156,28 +219,23 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
               <div className="space-y-1 text-sm">
                 <div>
                   <span className="text-gray-500">Purchased:</span>
-                  <div>{new Date(ticket.purchaseDate).toLocaleDateString()}</div>
+                  <div>{formatDate(ticket.purchaseDate)}</div>
                 </div>
                 
                 <div>
                   <span className="text-gray-500">Attendee:</span>
-                  <div>{ticket.userName}</div>
+                  <div>{ticket.userName || 'Guest'}</div>
                 </div>
                 
                 <div>
                   <span className="text-gray-500">Ticket Type:</span>
-                  <div>{ticket.ticketType}</div>
+                  <div>{ticket.ticketType || 'Standard Ticket'}</div>
                 </div>
               </div>
               
               <div className="flex items-center justify-center">
                 <div className="bg-white p-1 rounded-lg">
-                  <QRCode 
-                    value={`TICKET:${ticket.id}|EVENT:${ticket.eventId}|USER:${ticket.userId}`} 
-                    size={80}
-                    level="H"
-                    includeMargin={true}
-                  />
+                  {renderQRCode()}
                 </div>
               </div>
             </div>

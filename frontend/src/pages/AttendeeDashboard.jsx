@@ -22,21 +22,16 @@ import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
 import SearchBar from "../components/SearchBar";
 import DashboardStatCard from "../components/DashboardStatCard";
-import EventCard from "../components/EventCard";
 import { EventContext } from "../context/EventContext";
 import { useAuth } from "../context/AuthContext";
+import AttendeeEventCard from "../components/AttendeeEventCard";
 
 const AttendeeDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { events } = useContext(EventContext);
 
-  // Check if user is an attendee
-  useEffect(() => {
-    if (user?.role !== "attendee") {
-      navigate("/no-access");
-    }
-  }, [user, navigate]);
+
 
   const [activeTab, setActiveTab] = useState("discover");
 
@@ -312,14 +307,7 @@ const AttendeeDashboard = () => {
                       onClick={() => handleViewEventDetails(event.id)}
                       className="cursor-pointer"
                     >
-                      <EventCard
-                        eventName={event.title}
-                        soldTickets={event.soldTickets}
-                        totalTickets={event.totalTickets}
-                        grossAmount={event.grossAmount}
-                        status={event.status}
-                        imageSrc={event.imageSrc}
-                      />
+                     <AttendeeEventCard event={event} />
                     </motion.div>
                   ))}
                 </div>
@@ -408,23 +396,7 @@ const AttendeeDashboard = () => {
                       onClick={() => handleViewEventDetails(event.id)}
                       className="cursor-pointer"
                     >
-                      <EventCard
-                        eventName={event.title}
-                        soldTickets={event.soldTickets}
-                        totalTickets={event.totalTickets}
-                        grossAmount={event.grossAmount}
-                        status={event.status}
-                        imageSrc={event.imageSrc}
-                        location={event.location}
-                        category={event.category}
-                        onClick={() => handleViewEventDetails(event.id)}
-                        event={event}
-                        userRole="attendee"
-                        eventDate={event.startDate ? new Date(event.startDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric'
-                        }) : ''}
-                      />
+                    <AttendeeEventCard event={event} />
                     </motion.div>
                   ))}
                 </div>
