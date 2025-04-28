@@ -24,7 +24,7 @@ import SearchBar from "../components/SearchBar";
 import DashboardStatCard from "../components/DashboardStatCard";
 import { EventContext } from "../context/EventContext";
 import { useAuth } from "../context/AuthContext";
-import AttendeeEventCard from "../../components/AttendeeEventCard";
+import AttendeeEventCard from "../components/AttendeeEventCard";
 
 const AttendeeDashboard = () => {
   const navigate = useNavigate();

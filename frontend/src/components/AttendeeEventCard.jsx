@@ -6,8 +6,8 @@ import {
   Heart, Share, Users, ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useTickets } from '../../context/TicketContext';
-import PurchaseTicketButton from '../Ticket/PurchaseTicketButton';
+import { useTickets } from '../context/TicketContext';
+import PurchaseTicketButton from '../components/Ticket/PurchaseTicketButton';
 
 /**
  * Event Card Component for Attendees
