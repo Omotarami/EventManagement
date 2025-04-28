@@ -1,5 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const messageService = require('../socket/messageService');
+const logger = require('../config/logger');
 
 class MessageController {
   // Send a message in a conversation
@@ -40,73 +42,67 @@ class MessageController {
         });
       }
 
-      // Create the message
-      const message = await prisma.message.create({
-        data: {
-          conversation_id: parseInt(conversation_id),
-          sender_id: parseInt(sender_id),
-          content,
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              fullname: true,
-              profile_picture: true,
-            },
-          },
-        },
-      });
+      // Create the message using the message service
+      const message = await messageService.createMessage(
+        sender_id,
+        conversation_id,
+        content
+      );
 
-      // Update participant's last read time
-      await prisma.conversationParticipant.update({
-        where: { id: participant.id },
-        data: { last_read_at: new Date() },
-      });
+      // If Socket.IO is available, emit the message to connected clients
+      if (req.app.get('io')) {
+        const roomName = `conversation:${conversation_id}`;
+        req.app.get('io').to(roomName).emit('receive_message', message);
+      }
 
       res.status(201).json({
         message: "Message sent successfully",
         data: message,
       });
     } catch (error) {
-      console.error(error);
+      logger.error(`Error in sendMessage: ${error.message}`);
       res.status(500).json({
         message: "An error occurred while sending message",
       });
     }
   }
 
-  // Get messages from a conversation (added to fix the error)
+  // Get messages from a conversation
   async getConversationMessages(req, res) {
     const { conversation_id } = req.params;
-    const { page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 50, user_id } = req.query;
     const skip = (page - 1) * limit;
 
+    if (!user_id) {
+      return res.status(400).json({
+        message: "Missing required query parameter: user_id",
+      });
+    }
+
     try {
-      // Get messages with pagination
-      const messages = await prisma.message.findMany({
+      // Verify the user is a participant in this conversation
+      const participant = await prisma.conversationParticipant.findFirst({
         where: {
           conversation_id: parseInt(conversation_id),
-          is_deleted: false,
-          sender: {
-            profile_visibility: "public", // Only show messages from public profiles
-          },
+          user_id: parseInt(user_id),
+          is_active: true,
         },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              fullname: true,
-              profile_picture: true,
-            },
-          },
-        },
-        orderBy: {
-          created_at: "desc",
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit),
       });
+
+      if (!participant) {
+        return res.status(403).json({
+          message: "You are not a participant in this conversation",
+        });
+      }
+
+      // Get messages with pagination using the message service
+      const messages = await messageService.getRecentMessages(
+        conversation_id, 
+        parseInt(limit)
+      );
+
+      // Update last read timestamp
+      await messageService.updateLastReadTime(user_id, conversation_id);
 
       // Get total count for pagination
       const total = await prisma.message.count({
@@ -122,7 +118,7 @@ class MessageController {
       res.status(200).json({
         message: "Messages retrieved successfully",
         data: {
-          messages: messages.reverse(), // Return in chronological order
+          messages,
           pagination: {
             current_page: parseInt(page),
             total_pages: Math.ceil(total / limit),
@@ -131,19 +127,11 @@ class MessageController {
         },
       });
     } catch (error) {
-      console.error(error);
+      logger.error(`Error in getConversationMessages: ${error.message}`);
       res.status(500).json({
         message: "An error occurred while fetching messages",
       });
     }
-  }
-
-  // This method has been replaced by getConversationMessages
-  // Keeping this stub for backwards compatibility
-  async getChatMessages(req, res) {
-    return res.status(410).json({
-      message: "This endpoint is deprecated. Please use /conversation/:conversation_id/messages instead.",
-    });
   }
 
   // Delete a message (soft delete)
@@ -158,32 +146,36 @@ class MessageController {
     }
 
     try {
-      // Check if message exists and belongs to the user
-      const message = await prisma.message.findUnique({
-        where: { id: parseInt(id) },
-      });
-
-      if (!message) {
-        return res.status(404).json({ message: "Message not found" });
-      }
-
-      if (message.sender_id !== parseInt(user_id)) {
-        return res.status(403).json({
-          message: "You can only delete your own messages",
+      // Delete message using the message service
+      const success = await messageService.deleteMessage(id, user_id);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          message: "Message not found or you're not authorized to delete it" 
         });
       }
 
-      // Soft delete the message
-      await prisma.message.update({
-        where: { id: parseInt(id) },
-        data: { is_deleted: true },
-      });
+      // If Socket.IO is available, notify connected clients
+      if (req.app.get('io')) {
+        // Get the conversation for this message to emit to the right room
+        const message = await prisma.message.findUnique({
+          where: { id: parseInt(id) },
+          select: { conversation_id: true }
+        });
+        
+        if (message) {
+          const roomName = `conversation:${message.conversation_id}`;
+          req.app.get('io').to(roomName).emit('message_deleted', { 
+            messageId: parseInt(id) 
+          });
+        }
+      }
 
       res.status(200).json({
         message: "Message deleted successfully",
       });
     } catch (error) {
-      console.error(error);
+      logger.error(`Error in deleteMessage: ${error.message}`);
       res.status(500).json({
         message: "An error occurred while deleting message",
       });
@@ -202,22 +194,24 @@ class MessageController {
     }
 
     try {
-      // Update the last_read_at timestamp for the participant
-      await prisma.conversationParticipant.updateMany({
-        where: {
-          conversation_id: parseInt(conversation_id),
-          user_id: parseInt(user_id),
-        },
-        data: {
-          last_read_at: new Date(),
-        },
-      });
+      // Update the last_read_at timestamp using the message service
+      await messageService.updateLastReadTime(user_id, conversation_id);
+
+      // If Socket.IO is available, notify other participants
+      if (req.app.get('io')) {
+        const roomName = `conversation:${conversation_id}`;
+        req.app.get('io').to(roomName).emit('message_read', { 
+          conversationId: parseInt(conversation_id), 
+          userId: parseInt(user_id),
+          timestamp: new Date()
+        });
+      }
 
       res.status(200).json({
         message: "Messages marked as read successfully",
       });
     } catch (error) {
-      console.error(error);
+      logger.error(`Error in markMessagesAsRead: ${error.message}`);
       res.status(500).json({
         message: "An error occurred while marking messages as read",
       });
@@ -229,36 +223,11 @@ class MessageController {
     const { conversation_id, user_id } = req.params;
 
     try {
-      // Get participant's last read time
-      const participant = await prisma.conversationParticipant.findFirst({
-        where: {
-          conversation_id: parseInt(conversation_id),
-          user_id: parseInt(user_id),
-        },
-      });
-
-      if (!participant) {
-        return res.status(404).json({
-          message: "User is not a participant in this conversation",
-        });
-      }
-
-      // Count messages sent after last read time
-      const unreadCount = await prisma.message.count({
-        where: {
-          conversation_id: parseInt(conversation_id),
-          is_deleted: false,
-          sender: {
-            profile_visibility: "public",
-          },
-          created_at: {
-            gt: participant.last_read_at || new Date(0),
-          },
-          sender_id: {
-            not: parseInt(user_id), // Don't count user's own messages
-          },
-        },
-      });
+      // Get unread count using the message service
+      const unreadCount = await messageService.getUnreadCount(
+        user_id, 
+        conversation_id
+      );
 
       res.status(200).json({
         message: "Unread count retrieved successfully",
@@ -267,7 +236,7 @@ class MessageController {
         },
       });
     } catch (error) {
-      console.error(error);
+      logger.error(`Error in getUnreadCount: ${error.message}`);
       res.status(500).json({
         message: "An error occurred while fetching unread count",
       });
