@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -11,7 +10,9 @@ export const TicketProvider = ({ children }) => {
   const [eventTickets, setEventTickets] = useState({});
   const [loading, setLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+  
+  // Hardcode the API URL for now - replace with your actual backend URL
+  const API_URL = 'http://localhost:8080/api';
   
   // Load user tickets when authenticated
   useEffect(() => {

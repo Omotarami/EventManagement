@@ -54,7 +54,7 @@ const formatTimeValue = (timeValue) => {
  * 
  * @param {Object} props
  * @param {Object} props.event 
- * @param {string} props.userRole - Optional: can be provided or determined from auth context
+ * @param {string} props.userRole 
  * @param {string} props.eventId 
  */
 const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
@@ -64,7 +64,8 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
   const { user, isAuthenticated, isOrganizer, isAttendee } = useAuth(); // Get authentication info
   
   // Use the provided userRole prop or determine from auth context
-  const userRole = propUserRole || (isOrganizer ? isOrganizer() : false) ? "organizer" : ((isAttendee ? isAttendee() : false) ? "attendee" : null);
+  const userRole = propUserRole || (isOrganizer && typeof isOrganizer === 'function' && isOrganizer() ? "organizer" : 
+                                   (isAttendee && typeof isAttendee === 'function' && isAttendee() ? "attendee" : null));
   
   // Add safety check for missing event data
   if (!event) {
@@ -77,18 +78,11 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
     );
   }
   
-  // Debug logged to help diagnose issues
-  console.log("EventId:", eventId);
-  console.log("UserRole:", userRole);
-  console.log("hasTicketForEvent function:", typeof hasTicketForEvent);
-  console.log("getUserTickets function:", typeof getUserTickets);
-  
   // Check if user has a ticket for this event with extra safety checks
   const userHasTicket = hasTicketForEvent && typeof hasTicketForEvent === 'function' ? hasTicketForEvent(eventId) : false;
   
   // Get user tickets safely
   const userTicketsArray = getUserTickets && typeof getUserTickets === 'function' ? getUserTickets() : [];
-  console.log("User tickets array:", userTicketsArray);
   
   // Find the specific ticket with proper type checking
   let userTicket = null;
@@ -97,8 +91,6 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
       ticket && ticket.eventId && String(ticket.eventId) === String(eventId)
     );
   }
-  
-  console.log("User ticket for this event:", userTicket);
   
   // Calculate ticket sales percentage
   const ticketPercentage =
