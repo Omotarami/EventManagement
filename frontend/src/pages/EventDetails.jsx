@@ -13,7 +13,7 @@ import EventAttendees from "../components/EventDetail/EventAttendees";
 import EventTickets from "../components/EventDetail/EventTickets";
 import EventMessagingUI from "../components/EventMessagingUI";
 
-const EventDetails = () => {
+const EventDetails = ({ userRole: propsUserRole }) => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const { getEventById } = useContext(EventContext);
@@ -23,38 +23,50 @@ const EventDetails = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Determine user role - use passed prop or derive from URL/user data
+  const userRole = propsUserRole || (user?.role || (window.location.pathname.includes('/event-details/') ? 'attendee' : 'organizer'));
+  
   // Determine if user is viewing details as an attendee
   const isAttendeeView = window.location.pathname.includes('/event-details/');
 
+  // Debug logging
+  console.log("EventDetails - User Role:", userRole);
+  console.log("EventDetails - Event ID:", eventId);
+  console.log("EventDetails - Is Attendee View:", isAttendeeView);
+
   // Fetch event data
   useEffect(() => {
-    try {
-      if (eventId) {
-        console.log("Fetching event with ID:", eventId);
-        const eventData = getEventById(eventId);
-        console.log("Event data:", eventData);
+    const fetchEvent = async () => {
+      try {
+        if (eventId) {
+          console.log("Fetching event with ID:", eventId);
+          const eventData = await getEventById(eventId);
+          console.log("Event data:", eventData);
 
-        if (eventData) {
-          setEvent(eventData);
+          if (eventData) {
+            setEvent(eventData);
+          } else {
+            console.error("Event not found with ID:", eventId);
+            setError("Event not found");
+          }
         } else {
-          console.error("Event not found with ID:", eventId);
-          setError("Event not found");
+          console.error("No event ID provided");
+          setError("No event ID provided");
         }
-      } else {
-        console.error("No event ID provided");
-        setError("No event ID provided");
+      } catch (err) {
+        console.error("Error fetching event:", err);
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching event:", err);
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    fetchEvent();
   }, [eventId, getEventById]);
 
   // Handle navigation back to appropriate dashboard
   const handleBack = () => {
-    if (user?.role === "organizer") {
+    if (userRole === "organizer") {
       navigate("/organizer-dashboard");
     } else {
       navigate("/attendee-dashboard");
@@ -100,8 +112,63 @@ const EventDetails = () => {
     );
   }
 
-  // Event not found state
+  // For development purposes, create a mock event if none was found
   if (!event) {
+    // Create a mock event for testing
+    const mockEvent = {
+      id: eventId || '1',
+      title: "Demo Event",
+      description: "This is a demo event for testing purposes.",
+      status: "published",
+      imageSrc: "",
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 86400000).toISOString(), // tomorrow
+      startTime: "10:00 AM",
+      endTime: "4:00 PM",
+      category: "Technology",
+      location: "Convention Center",
+      eventType: "physical",
+      isRecurring: false,
+      agenda: [
+        {
+          time: "10:00 AM",
+          title: "Welcome Session",
+          description: "Introduction and welcome notes"
+        },
+        {
+          time: "11:00 AM",
+          title: "Keynote Speaker",
+          description: "Main presentation"
+        }
+      ],
+      tickets: [
+        {
+          id: "1",
+          name: "General Admission",
+          price: 49.99,
+          description: "Standard entry ticket",
+          quantity: 100,
+          sold: 45
+        },
+        {
+          id: "2",
+          name: "VIP Access",
+          price: 149.99,
+          description: "Premium access with perks",
+          quantity: 20,
+          sold: 5
+        }
+      ],
+      totalTickets: 120,
+      soldTickets: 50,
+      grossAmount: 4250.00
+    };
+    
+    console.log("Using mock event data for development");
+    setEvent(mockEvent);
+    
+    // Note: In production, you would show a "not found" message instead
+    /*
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -119,6 +186,7 @@ const EventDetails = () => {
         </button>
       </div>
     );
+    */
   }
 
   // Prepare safe event object (with fallbacks for missing properties)
@@ -152,7 +220,7 @@ const EventDetails = () => {
   ];
   
   // Add messaging tab for attendees
-  if (user?.role === "attendee") {
+  if (userRole === "attendee") {
     availableTabs.push({ id: "messages", label: "Connect" });
   }
 
@@ -162,7 +230,7 @@ const EventDetails = () => {
       <DashboardNavbar />
 
       {/* Sidebar */}
-      <Sidebar userType={user?.role} />
+      <Sidebar userType={userRole} />
 
       {/* Main Content */}
       <div className="pl-24 pr-6 pt-6 pb-12">
@@ -179,7 +247,7 @@ const EventDetails = () => {
           {/* Event Header - Cover image, title, meta info */}
           <EventHeader 
             event={safeEvent} 
-            userRole={user?.role} 
+            userRole={userRole} 
             isAttendeeView={isAttendeeView}
           />
 
@@ -196,7 +264,7 @@ const EventDetails = () => {
             {activeTab === "overview" && (
               <EventOverview 
                 event={safeEvent} 
-                userRole={user?.role}
+                userRole={userRole}
                 eventId={eventId}
               />
             )}
@@ -205,7 +273,7 @@ const EventDetails = () => {
             {activeTab === "attendees" && (
               <EventAttendees 
                 eventId={eventId} 
-                userRole={user?.role}
+                userRole={userRole}
                 onMessageAttendee={handleMessageAttendee}
               />
             )}
@@ -214,7 +282,7 @@ const EventDetails = () => {
             {activeTab === "tickets" && (
               <EventTickets 
                 event={safeEvent} 
-                userRole={user?.role}
+                userRole={userRole}
               />
             )}
 

@@ -64,7 +64,7 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
   const { user, isAuthenticated, isOrganizer, isAttendee } = useAuth(); // Get authentication info
   
   // Use the provided userRole prop or determine from auth context
-  const userRole = propUserRole || (isOrganizer() ? "organizer" : (isAttendee() ? "attendee" : null));
+  const userRole = propUserRole || (isOrganizer ? isOrganizer() : false) ? "organizer" : ((isAttendee ? isAttendee() : false) ? "attendee" : null);
   
   // Add safety check for missing event data
   if (!event) {
@@ -77,11 +77,28 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
     );
   }
   
-  // Check if user has a ticket for this event
-  const userHasTicket = hasTicketForEvent ? hasTicketForEvent(eventId) : false;
-  const userTicket = getUserTickets ? getUserTickets().find(
-    (ticket) => ticket.eventId === eventId
-  ) : null;
+  // Debug logged to help diagnose issues
+  console.log("EventId:", eventId);
+  console.log("UserRole:", userRole);
+  console.log("hasTicketForEvent function:", typeof hasTicketForEvent);
+  console.log("getUserTickets function:", typeof getUserTickets);
+  
+  // Check if user has a ticket for this event with extra safety checks
+  const userHasTicket = hasTicketForEvent && typeof hasTicketForEvent === 'function' ? hasTicketForEvent(eventId) : false;
+  
+  // Get user tickets safely
+  const userTicketsArray = getUserTickets && typeof getUserTickets === 'function' ? getUserTickets() : [];
+  console.log("User tickets array:", userTicketsArray);
+  
+  // Find the specific ticket with proper type checking
+  let userTicket = null;
+  if (Array.isArray(userTicketsArray) && userTicketsArray.length > 0) {
+    userTicket = userTicketsArray.find(ticket => 
+      ticket && ticket.eventId && String(ticket.eventId) === String(eventId)
+    );
+  }
+  
+  console.log("User ticket for this event:", userTicket);
   
   // Calculate ticket sales percentage
   const ticketPercentage =
@@ -89,7 +106,7 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
   const remainingTickets = event.totalTickets - event.soldTickets;
 
   // Check if user is authenticated
-  const isUserAuthenticated = isAuthenticated();
+  const isUserAuthenticated = isAuthenticated && typeof isAuthenticated === 'function' ? isAuthenticated() : false;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -257,27 +274,27 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
                     Confirmed
                   </span>
                   <h3 className="font-medium text-gray-800">
-                    {userTicket.ticketType}
+                    {userTicket.ticketType || 'Standard'}
                   </h3>
                 </div>
                 <div className="text-right">
                   <span className="text-sm text-gray-500">Order ID:</span>
-                  <div className="font-mono text-sm">{userTicket.orderId}</div>
+                  <div className="font-mono text-sm">{userTicket.orderId || 'N/A'}</div>
                 </div>
               </div>
               
               <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
                 <div>
                   <span className="block text-gray-500">Purchase Date:</span>
-                  <span>{formatDate(userTicket.purchaseDate)}</span>
+                  <span>{formatDate(userTicket.purchaseDate || new Date())}</span>
                 </div>
                 <div>
                   <span className="block text-gray-500">Quantity:</span>
-                  <span>{userTicket.quantity}</span>
+                  <span>{userTicket.quantity || 1}</span>
                 </div>
                 <div>
                   <span className="block text-gray-500">Total Price:</span>
-                  <span>${userTicket.totalAmount}</span>
+                  <span>${parseFloat(userTicket.totalAmount || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -317,8 +334,8 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
           {/* Progress bar */}
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
-              <span className="font-medium">{event.soldTickets} sold</span>
-              <span className="text-gray-500">{event.totalTickets} total</span>
+              <span className="font-medium">{event.soldTickets || 0} sold</span>
+              <span className="text-gray-500">{event.totalTickets || 0} total</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -346,7 +363,7 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
                 <span>Attendees</span>
               </div>
               <span className="font-medium text-gray-800">
-                {event.soldTickets}
+                {event.soldTickets || 0}
               </span>
             </div>
 
@@ -414,7 +431,7 @@ const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
                   {/* If the user has a ticket, show attendee networking */}
                   {userHasTicket ? (
                     <button
-                      onClick={() => document.querySelector('[data-tab="chat"]')?.click()}
+                      onClick={() => document.querySelector('[data-tab="messages"]')?.click()}
                       className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
                     >
                       <Users size={18} className="mr-2" />
