@@ -69,6 +69,8 @@ class App {
     // handle global errors
     this.app.use(HandleErrors);
   }
+
+
 }
 
 module.exports = App;

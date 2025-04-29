@@ -9,6 +9,8 @@ const FavouriteRoute = require("./routes/favourite");
 const ConversationRoute = require("./routes/conversation");
 const { SocketServer } = require("./socket");
 const logger = require("./config/logger");
+const EventRoute = require('./routes/event');
+
 
 // Initialize Express app
 const app = new App();
@@ -22,6 +24,7 @@ app.initializedRoutes([
   new TicketRoute(),
   new FavouriteRoute(),
   new ConversationRoute(),
+
 ]);
 
 // Create HTTP server
