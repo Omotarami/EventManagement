@@ -16,6 +16,16 @@ class App {
     this.initializeMiddlewares();
   }
 
+  /**
+   * Set the Socket.IO instance so it can be used by controllers
+   * @param {Object} io - Socket.IO instance
+   */
+  setSocketIO(io) {
+    this.io = io;
+    this.app.set('io', io);
+    logger.info("Socket.IO instance set for Express app");
+  }
+
   initDB() {
     // * initialization of the database
     logger.info("Database connection initialized");
