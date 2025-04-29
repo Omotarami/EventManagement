@@ -167,26 +167,7 @@ const EventDetails = ({ userRole: propsUserRole }) => {
     console.log("Using mock event data for development");
     setEvent(mockEvent);
     
-    // Note: In production, you would show a "not found" message instead
-    /*
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Event Not Found
-        </h2>
-        <p className="text-gray-600 mb-6">
-          The event you're looking for doesn't exist or has been removed.
-        </p>
-        <button
-          onClick={handleBack}
-          className="px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition-colors flex items-center"
-        >
-          <ArrowLeft size={18} className="mr-2" />
-          Back to Dashboard
-        </button>
-      </div>
-    );
-    */
+ 
   }
 
   // Prepare safe event object (with fallbacks for missing properties)
