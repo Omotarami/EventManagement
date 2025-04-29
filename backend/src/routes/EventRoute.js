@@ -103,6 +103,41 @@ class EventRoute {
     // Use the full event creation method
     await this.eventController.createFullEvent({ body: eventData }, res);
   }
+
+  async createEvent(req, res) {
+    try {
+      // Log all incoming request data
+      console.log('Incoming Request Body:', req.body);
+      console.log('Incoming Files:', req.files);
+  
+      // Validate required fields
+      const requiredFields = ['title', 'description', 'category'];
+      const missingFields = requiredFields.filter(field => !req.body[field]);
+  
+      if (missingFields.length > 0) {
+        return res.status(400).json({ 
+          message: `Missing required fields: ${missingFields.join(', ')}`,
+          requiredFields
+        });
+      }
+  
+      // Rest of your existing code...
+    } catch (error) {
+      console.error("Detailed Event Creation Error:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      res.status(500).json({ 
+        message: "Failed to create event",
+        error: error.message,
+        // Optionally include stack trace in development
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      });
+    }
+  }
 }
+
+
 
 module.exports = EventRoute;
