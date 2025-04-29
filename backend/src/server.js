@@ -4,7 +4,7 @@ const AuthRoute = require("./routes/auth");
 const EventRoute = require("./routes/event");
 const CategoryRoute = require("./routes/category");
 const ScheduleRoute = require("./routes/event-schedule");
-// const TicketRoute = require("./routes/ticket");
+const TicketRoute = require("./routes/TicketRoute");
 const FavouriteRoute = require("./routes/favourite");
 const ConversationRoute = require("./routes/conversation");
 const { SocketServer } = require("./socket");
@@ -19,7 +19,7 @@ app.initializedRoutes([
   new EventRoute(),
   new CategoryRoute(),
   new ScheduleRoute(),
-  // new TicketRoute(),
+  new TicketRoute(),
   new FavouriteRoute(),
   new ConversationRoute(),
 ]);
