@@ -14,7 +14,7 @@ class TicketController {
     }
 
     try {
-      // Check if ticket exists and is available
+      
       const ticket = await prisma.ticket.findUnique({
         where: { id: parseInt(ticket_id) },
         include: { event: true }
@@ -24,9 +24,9 @@ class TicketController {
         return res.status(404).json({ message: "Ticket not found" });
       }
 
-      // Check if there are enough tickets available (if quantity is set)
+    
       if (ticket.quantity !== null) {
-        // Count existing ticket purchases to check availability
+       
         const ticketsSold = await prisma.orderItem.aggregate({
           where: { ticket_id: parseInt(ticket_id) },
           _sum: { quantity: true },
@@ -130,11 +130,10 @@ class TicketController {
     }
 
     try {
-      // Get all orders for this user
       const orders = await prisma.order.findMany({
         where: {
           user_id: parseInt(user_id),
-          status: "completed", // Only get completed orders
+          status: "completed", 
         },
         include: {
           event: {
