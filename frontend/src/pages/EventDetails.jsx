@@ -6,14 +6,11 @@ import DashboardNavbar from "../components/DashboardNavbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
-
 import EventHeader from "../components/EventDetail/EventHeader";
 import EventTabs from "../components/EventDetail/EventTabs";
 import EventOverview from "../components/EventDetail/EventOverview";
 import EventAttendees from "../components/EventDetail/EventAttendees";
 import EventTickets from "../components/EventDetail/EventTickets";
-
-
 import EventMessagingUI from "../components/EventMessagingUI";
 
 const EventDetails = () => {
@@ -221,8 +218,8 @@ const EventDetails = () => {
               />
             )}
 
-            {/* Messages Tab - Using your existing EventMessagingUI */}
-            {activeTab === "messages" && user?.role === "attendee" && (
+            {/* Messages Tab - Using our EventMessagingUI component */}
+            {activeTab === "messages" && (
               <div className="bg-white rounded-lg shadow-sm overflow-hidden h-[600px]">
                 <EventMessagingUI eventId={eventId} />
               </div>

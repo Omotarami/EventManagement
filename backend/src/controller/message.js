@@ -30,30 +30,37 @@ class MessageController {
         });
       }
 
-      // Check if sender's profile is public
-      const sender = await prisma.user.findUnique({
-        where: { id: parseInt(sender_id) },
-        select: { profile_visibility: true },
+      // Remove profile visibility check - allow all participants to send messages
+
+      // Create the message
+      const message = await prisma.message.create({
+        data: {
+          conversation_id: parseInt(conversation_id),
+          sender_id: parseInt(sender_id),
+          content,
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              fullname: true,
+              profile_picture: true,
+            }
+          }
+        }
       });
-
-      if (sender.profile_visibility !== "public") {
-        return res.status(403).json({
-          message: "You must have a public profile to send messages",
-        });
-      }
-
-      // Create the message using the message service
-      const message = await messageService.createMessage(
-        sender_id,
-        conversation_id,
-        content
-      );
 
       // If Socket.IO is available, emit the message to connected clients
       if (req.app.get('io')) {
         const roomName = `conversation:${conversation_id}`;
         req.app.get('io').to(roomName).emit('receive_message', message);
       }
+
+      // Update last read timestamp for the sender
+      await prisma.conversationParticipant.update({
+        where: { id: participant.id },
+        data: { last_read_at: new Date() },
+      });
 
       res.status(201).json({
         message: "Message sent successfully",
@@ -95,30 +102,51 @@ class MessageController {
         });
       }
 
-      // Get messages with pagination using the message service
-      const messages = await messageService.getRecentMessages(
-        conversation_id, 
-        parseInt(limit)
-      );
+      // Get messages with pagination
+      const messages = await prisma.message.findMany({
+        where: {
+          conversation_id: parseInt(conversation_id),
+          is_deleted: false,
+          // Remove profile visibility filter
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              fullname: true,
+              profile_picture: true,
+            }
+          }
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+        skip,
+        take: parseInt(limit),
+      });
 
       // Update last read timestamp
-      await messageService.updateLastReadTime(user_id, conversation_id);
+      await prisma.conversationParticipant.update({
+        where: { id: participant.id },
+        data: { last_read_at: new Date() },
+      });
 
       // Get total count for pagination
       const total = await prisma.message.count({
         where: {
           conversation_id: parseInt(conversation_id),
           is_deleted: false,
-          sender: {
-            profile_visibility: "public",
-          },
+          // Remove profile visibility filter
         },
       });
+
+      // Return messages in chronological order
+      const orderedMessages = messages.reverse();
 
       res.status(200).json({
         message: "Messages retrieved successfully",
         data: {
-          messages,
+          messages: orderedMessages,
           pagination: {
             current_page: parseInt(page),
             total_pages: Math.ceil(total / limit),
@@ -146,29 +174,31 @@ class MessageController {
     }
 
     try {
-      // Delete message using the message service
-      const success = await messageService.deleteMessage(id, user_id);
+      // Check message exists and is owned by this user
+      const message = await prisma.message.findUnique({
+        where: { id: parseInt(id) },
+      });
       
-      if (!success) {
-        return res.status(404).json({ 
-          message: "Message not found or you're not authorized to delete it" 
-        });
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
       }
+      
+      if (message.sender_id !== parseInt(user_id)) {
+        return res.status(403).json({ message: "Not authorized to delete this message" });
+      }
+      
+      // Soft delete by setting is_deleted to true
+      await prisma.message.update({
+        where: { id: parseInt(id) },
+        data: { is_deleted: true }
+      });
 
       // If Socket.IO is available, notify connected clients
       if (req.app.get('io')) {
-        // Get the conversation for this message to emit to the right room
-        const message = await prisma.message.findUnique({
-          where: { id: parseInt(id) },
-          select: { conversation_id: true }
+        const roomName = `conversation:${message.conversation_id}`;
+        req.app.get('io').to(roomName).emit('message_deleted', { 
+          messageId: parseInt(id) 
         });
-        
-        if (message) {
-          const roomName = `conversation:${message.conversation_id}`;
-          req.app.get('io').to(roomName).emit('message_deleted', { 
-            messageId: parseInt(id) 
-          });
-        }
       }
 
       res.status(200).json({
@@ -194,8 +224,26 @@ class MessageController {
     }
 
     try {
-      // Update the last_read_at timestamp using the message service
-      await messageService.updateLastReadTime(user_id, conversation_id);
+      // Find participant record
+      const participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversation_id: parseInt(conversation_id),
+          user_id: parseInt(user_id),
+          is_active: true,
+        },
+      });
+
+      if (!participant) {
+        return res.status(403).json({
+          message: "You are not a participant in this conversation",
+        });
+      }
+
+      // Update the last_read_at timestamp
+      await prisma.conversationParticipant.update({
+        where: { id: participant.id },
+        data: { last_read_at: new Date() },
+      });
 
       // If Socket.IO is available, notify other participants
       if (req.app.get('io')) {
@@ -223,11 +271,33 @@ class MessageController {
     const { conversation_id, user_id } = req.params;
 
     try {
-      // Get unread count using the message service
-      const unreadCount = await messageService.getUnreadCount(
-        user_id, 
-        conversation_id
-      );
+      // Get participant's last read time
+      const participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversation_id: parseInt(conversation_id),
+          user_id: parseInt(user_id),
+        }
+      });
+      
+      if (!participant) {
+        return res.status(404).json({
+          message: "User is not a participant in this conversation",
+        });
+      }
+      
+      // Count messages after last read time that weren't sent by this user
+      const unreadCount = await prisma.message.count({
+        where: {
+          conversation_id: parseInt(conversation_id),
+          is_deleted: false,
+          created_at: {
+            gt: participant.last_read_at || new Date(0),
+          },
+          sender_id: {
+            not: parseInt(user_id), // Don't count user's own messages
+          }
+        }
+      });
 
       res.status(200).json({
         message: "Unread count retrieved successfully",

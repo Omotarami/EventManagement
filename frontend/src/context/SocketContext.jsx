@@ -1,19 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 
-// Socket.IO event types - must match backend
+// Socket event types
 export const SOCKET_EVENTS = {
   CONNECT: 'connect',
   DISCONNECT: 'disconnect',
-  CONNECT_ERROR: 'connect_error',
-  ERROR: 'error',
-  
-  // Authentication
-  AUTHENTICATE: 'authenticate',
-  AUTHENTICATION_ERROR: 'authentication_error',
-  AUTHENTICATION_SUCCESS: 'authentication_success',
   
   // Conversation
   JOIN_CONVERSATION: 'join_conversation',
@@ -22,8 +14,6 @@ export const SOCKET_EVENTS = {
   // Messages
   SEND_MESSAGE: 'send_message',
   RECEIVE_MESSAGE: 'receive_message',
-  MESSAGES_HISTORY: 'messages_history',
-  MESSAGE_DELIVERED: 'message_delivered',
   MESSAGE_READ: 'message_read',
   
   // Typing Indicators
@@ -35,260 +25,214 @@ export const SOCKET_EVENTS = {
   USER_OFFLINE: 'user_offline',
 };
 
-// Create the socket context
+// Create context
 const SocketContext = createContext(null);
 
-// API URL for socket connection
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
+// Mock socket implementation using localStorage
 export const SocketProvider = ({ children }) => {
   const { user } = useAuth();
-  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState(null);
   
-  // Manage online users per conversation
+  // Online users state
   const [onlineUsers, setOnlineUsers] = useState({});
   
-  // Manage typing indicators per conversation
+  // Typing indicators state
   const [typingUsers, setTypingUsers] = useState({});
   
-  // Connect to socket
-  const connect = useCallback(() => {
-    if (!user || !user.id || isConnecting || isConnected) return;
+  // Message listeners
+  const [messageListeners, setMessageListeners] = useState([]);
+  
+  // Connect to mock socket
+  useEffect(() => {
+    if (!user) return;
     
-    setIsConnecting(true);
-    setError(null);
+    // Set connected status
+    setIsConnected(true);
     
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Authentication token not found');
-        setIsConnecting(false);
-        return;
+    // Set user as online
+    setOnlineUsers(prev => ({
+      ...prev,
+      [user.id]: true
+    }));
+    
+    // Mock online status for some users
+    setOnlineUsers(prev => ({
+      ...prev,
+      'att1': true,
+      'att3': true
+    }));
+    
+    // Cleanup on unmount
+    return () => {
+      setIsConnected(false);
+      
+      // Remove user from online list
+      if (user) {
+        setOnlineUsers(prev => {
+          const newState = { ...prev };
+          delete newState[user.id];
+          return newState;
+        });
       }
+    };
+  }, [user]);
+  
+  // Join a conversation
+  const joinConversation = useCallback((conversationId) => {
+    console.log(`Joined conversation: ${conversationId}`);
+    
+    // Get messages for this conversation
+    const key = `conversation_${conversationId}_messages`;
+    const storedMessages = localStorage.getItem(key);
+    const messages = storedMessages ? JSON.parse(storedMessages) : [];
+    
+    // Notify listeners
+    messageListeners.forEach(listener => {
+      listener({ 
+        type: SOCKET_EVENTS.RECEIVE_MESSAGE, 
+        conversationId, 
+        messages 
+      });
+    });
+  }, [messageListeners]);
+  
+  // Leave a conversation
+  const leaveConversation = useCallback((conversationId) => {
+    console.log(`Left conversation: ${conversationId}`);
+  }, []);
+  
+  // Send a message
+  const sendMessage = useCallback((conversationId, content) => {
+    if (!user) return Promise.reject(new Error('Not authenticated'));
+    
+    return new Promise((resolve) => {
+      // Create message object
+      const newMessage = {
+        id: `msg_${Date.now()}`,
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content,
+        created_at: new Date().toISOString(),
+        sender: {
+          id: user.id,
+          fullname: user.name,
+          profile_picture: null
+        }
+      };
       
-      // Initialize socket connection with auth token
-      const socketInstance = io(SOCKET_URL, {
-        auth: { token },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 20000,
+      // Get existing messages
+      const key = `conversation_${conversationId}_messages`;
+      const storedMessages = localStorage.getItem(key);
+      const messages = storedMessages ? JSON.parse(storedMessages) : [];
+      
+      // Add new message
+      const updatedMessages = [...messages, newMessage];
+      localStorage.setItem(key, JSON.stringify(updatedMessages));
+      
+      // Notify listeners
+      messageListeners.forEach(listener => {
+        listener({ 
+          type: SOCKET_EVENTS.RECEIVE_MESSAGE, 
+          message: newMessage 
+        });
       });
       
-      // Set up event listeners
-      socketInstance.on(SOCKET_EVENTS.CONNECT, () => {
-        setIsConnected(true);
-        setIsConnecting(false);
-        console.log('Socket connected');
-      });
+      // Resolve with the new message
+      resolve(newMessage);
       
-      socketInstance.on(SOCKET_EVENTS.DISCONNECT, () => {
-        setIsConnected(false);
-        console.log('Socket disconnected');
-      });
-      
-      socketInstance.on(SOCKET_EVENTS.CONNECT_ERROR, (err) => {
-        console.error('Socket connection error:', err);
-        setError(`Connection error: ${err.message}`);
-        setIsConnecting(false);
-        setIsConnected(false);
-      });
-      
-      socketInstance.on(SOCKET_EVENTS.ERROR, (err) => {
-        console.error('Socket error:', err);
-        setError(err.message || 'An unknown error occurred');
-        // Don't show toast for every error to avoid spamming the user
-      });
-      
-      // Listen for user online/offline status
-      socketInstance.on(SOCKET_EVENTS.USER_ONLINE, ({ userId }) => {
-        setOnlineUsers(prev => ({
-          ...prev,
-          [userId]: true
-        }));
-      });
-      
-      socketInstance.on(SOCKET_EVENTS.USER_OFFLINE, ({ userId }) => {
-        setOnlineUsers(prev => ({
-          ...prev,
-          [userId]: false
-        }));
-      });
-      
-      // Listen for typing indicators
-      socketInstance.on(SOCKET_EVENTS.TYPING_START, ({ conversationId, userId }) => {
-        setTypingUsers(prev => ({
-          ...prev,
-          [conversationId]: {
-            ...(prev[conversationId] || {}),
-            [userId]: true
+      // Update conversation last message
+      const convKey = `conversations`;
+      const storedConversations = localStorage.getItem(convKey);
+      if (storedConversations) {
+        const conversations = JSON.parse(storedConversations);
+        const updatedConversations = conversations.map(conv => {
+          if (conv.id === conversationId) {
+            return {
+              ...conv,
+              lastMessage: {
+                content,
+                timestamp: new Date().toISOString()
+              }
+            };
           }
-        }));
+          return conv;
+        });
+        
+        localStorage.setItem(convKey, JSON.stringify(updatedConversations));
+      }
+    });
+  }, [user]);
+  
+  // Mark messages as read
+  const markMessagesAsRead = useCallback((conversationId) => {
+    if (!user) return;
+    
+    const key = `conversation_${conversationId}_messages`;
+    const storedMessages = localStorage.getItem(key);
+    
+    if (storedMessages) {
+      const messages = JSON.parse(storedMessages);
+      
+      // Mark all messages from other users as read
+      const updatedMessages = messages.map(msg => {
+        if (msg.sender_id !== user.id) {
+          return { ...msg, read: true };
+        }
+        return msg;
       });
       
-      socketInstance.on(SOCKET_EVENTS.TYPING_STOP, ({ conversationId, userId }) => {
+      localStorage.setItem(key, JSON.stringify(updatedMessages));
+      
+      // Notify other participants
+      messageListeners.forEach(listener => {
+        listener({ 
+          type: SOCKET_EVENTS.MESSAGE_READ, 
+          conversationId, 
+          userId: user.id 
+        });
+      });
+    }
+  }, [user]);
+  
+  // Handle typing indicator
+  const handleTyping = useCallback((conversationId, isTyping) => {
+    if (!user) return;
+    
+    if (isTyping) {
+      // Add user to typing list for this conversation
+      setTypingUsers(prev => ({
+        ...prev,
+        [conversationId]: {
+          ...(prev[conversationId] || {}),
+          [user.id]: true
+        }
+      }));
+      
+      // Auto-clear after 3 seconds
+      setTimeout(() => {
         setTypingUsers(prev => {
           const conversationTypers = { ...(prev[conversationId] || {}) };
-          delete conversationTypers[userId];
+          delete conversationTypers[user.id];
           
           return {
             ...prev,
             [conversationId]: conversationTypers
           };
         });
-      });
-      
-      setSocket(socketInstance);
-    } catch (err) {
-      console.error('Error initializing socket:', err);
-      setError('Failed to initialize socket connection');
-      setIsConnecting(false);
-    }
-  }, [user, isConnecting, isConnected]);
-  
-  // Disconnect from socket
-  const disconnect = useCallback(() => {
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
-      setIsConnected(false);
-    }
-  }, [socket]);
-  
-  // Reconnect to socket
-  const reconnect = useCallback(() => {
-    disconnect();
-    connect();
-  }, [disconnect, connect]);
-  
-  // Connect/disconnect based on auth status
-  useEffect(() => {
-    if (user && !isConnected && !isConnecting) {
-      connect();
-    } else if (!user && socket) {
-      disconnect();
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, [user, socket, isConnected, isConnecting, connect, disconnect]);
-  
-  // Join a conversation
-  const joinConversation = useCallback((conversationId) => {
-    if (!socket || !isConnected) {
-      console.error('Socket not connected');
-      return;
-    }
-    
-    socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, { conversationId });
-  }, [socket, isConnected]);
-  
-  // Leave a conversation
-  const leaveConversation = useCallback((conversationId) => {
-    if (!socket || !isConnected) {
-      console.error('Socket not connected');
-      return;
-    }
-    
-    socket.emit(SOCKET_EVENTS.LEAVE_CONVERSATION, { conversationId });
-  }, [socket, isConnected]);
-  
-  // Send a message
-  const sendMessage = useCallback((conversationId, content) => {
-    if (!socket || !isConnected) {
-      console.error('Socket not connected');
-      return Promise.reject(new Error('Socket not connected'));
-    }
-    
-    return new Promise((resolve, reject) => {
-      // First stop typing indicator
-      socket.emit(SOCKET_EVENTS.TYPING_STOP, { conversationId });
-      
-      // Send the message
-      socket.emit(SOCKET_EVENTS.SEND_MESSAGE, { conversationId, content });
-      
-      // Set up a one-time listener for message delivered confirmation
-      socket.once(SOCKET_EVENTS.MESSAGE_DELIVERED, (data) => {
-        resolve(data);
-      });
-      
-      // Set a timeout for the delivery confirmation
-      setTimeout(() => {
-        reject(new Error('Message delivery confirmation timed out'));
-      }, 5000);
-    });
-  }, [socket, isConnected]);
-  
-  // Mark messages as read
-  const markMessagesAsRead = useCallback((conversationId) => {
-    if (!socket || !isConnected) {
-      console.error('Socket not connected');
-      return;
-    }
-    
-    socket.emit(SOCKET_EVENTS.MESSAGE_READ, { conversationId });
-  }, [socket, isConnected]);
-  
-  // Send typing indicator
-  const sendTypingStart = useCallback((conversationId) => {
-    if (!socket || !isConnected) return;
-    
-    socket.emit(SOCKET_EVENTS.TYPING_START, { conversationId });
-  }, [socket, isConnected]);
-  
-  // Send typing stopped indicator
-  const sendTypingStop = useCallback((conversationId) => {
-    if (!socket || !isConnected) return;
-    
-    socket.emit(SOCKET_EVENTS.TYPING_STOP, { conversationId });
-  }, [socket, isConnected]);
-  
-  // Handle debounced typing indicator
-  const [typingTimeouts, setTypingTimeouts] = useState({});
-  
-  const handleTyping = useCallback((conversationId, isTyping) => {
-    if (!socket || !isConnected) return;
-    
-    // Clear any existing timeout for this conversation
-    if (typingTimeouts[conversationId]) {
-      clearTimeout(typingTimeouts[conversationId]);
-    }
-    
-    if (isTyping) {
-      // Send typing start
-      sendTypingStart(conversationId);
-      
-      // Set a timeout to automatically stop typing indicator after 3 seconds
-      const timeout = setTimeout(() => {
-        sendTypingStop(conversationId);
-        
-        // Remove this timeout from state
-        setTypingTimeouts(prev => {
-          const newTimeouts = { ...prev };
-          delete newTimeouts[conversationId];
-          return newTimeouts;
-        });
       }, 3000);
-      
-      // Save timeout ID
-      setTypingTimeouts(prev => ({
-        ...prev,
-        [conversationId]: timeout
-      }));
     } else {
-      // Send typing stop
-      sendTypingStop(conversationId);
+      // Remove user from typing list
+      setTypingUsers(prev => {
+        const conversationTypers = { ...(prev[conversationId] || {}) };
+        delete conversationTypers[user.id];
+        
+        return {
+          ...prev,
+          [conversationId]: conversationTypers
+        };
+      });
     }
-  }, [socket, isConnected, typingTimeouts, sendTypingStart, sendTypingStop]);
+  }, [user]);
   
   // Check if a user is online
   const isUserOnline = useCallback((userId) => {
@@ -300,44 +244,42 @@ export const SocketProvider = ({ children }) => {
     return !!(typingUsers[conversationId] && typingUsers[conversationId][userId]);
   }, [typingUsers]);
   
-  // Get list of typing users in a conversation
+  // Get typing users for a conversation
   const getTypingUsers = useCallback((conversationId) => {
     return Object.keys(typingUsers[conversationId] || {}).map(Number);
   }, [typingUsers]);
   
-  // Add listener for receiving messages
+  // Add message listener
   const addMessageListener = useCallback((callback) => {
-    if (!socket) return () => {};
+    setMessageListeners(prev => [...prev, callback]);
     
-    socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, callback);
-    return () => socket.off(SOCKET_EVENTS.RECEIVE_MESSAGE, callback);
-  }, [socket]);
+    return () => {
+      setMessageListeners(prev => prev.filter(cb => cb !== callback));
+    };
+  }, []);
   
-  // Add listener for message history
+  // Message history listener (same implementation for simplicity)
   const addMessageHistoryListener = useCallback((callback) => {
-    if (!socket) return () => {};
+    setMessageListeners(prev => [...prev, callback]);
     
-    socket.on(SOCKET_EVENTS.MESSAGES_HISTORY, callback);
-    return () => socket.off(SOCKET_EVENTS.MESSAGES_HISTORY, callback);
-  }, [socket]);
+    return () => {
+      setMessageListeners(prev => prev.filter(cb => cb !== callback));
+    };
+  }, []);
   
-  // Add listener for read receipts
+  // Read receipt listener (same implementation for simplicity)
   const addReadReceiptListener = useCallback((callback) => {
-    if (!socket) return () => {};
+    setMessageListeners(prev => [...prev, callback]);
     
-    socket.on(SOCKET_EVENTS.MESSAGE_READ, callback);
-    return () => socket.off(SOCKET_EVENTS.MESSAGE_READ, callback);
-  }, [socket]);
+    return () => {
+      setMessageListeners(prev => prev.filter(cb => cb !== callback));
+    };
+  }, []);
   
-  // Provide value to context consumers
+  // Provide context value
   const value = {
-    socket,
     isConnected,
-    isConnecting,
-    error,
-    connect,
-    disconnect,
-    reconnect,
+    error: null,
     joinConversation,
     leaveConversation,
     sendMessage,
@@ -348,7 +290,7 @@ export const SocketProvider = ({ children }) => {
     getTypingUsers,
     addMessageListener,
     addMessageHistoryListener,
-    addReadReceiptListener,
+    addReadReceiptListener
   };
   
   return (
@@ -358,7 +300,7 @@ export const SocketProvider = ({ children }) => {
   );
 };
 
-// Custom hook for using socket context
+// Custom hook for using the socket context
 export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {

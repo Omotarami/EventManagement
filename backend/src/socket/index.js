@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
 const ENV = require('../config/env');
 const logger = require('../config/logger');
+const messageService = require('./messageService');
 
 // Socket.IO Event Types
 const EVENTS = {
@@ -87,7 +88,6 @@ class SocketServer {
           id: true,
           fullname: true,
           email: true,
-          profile_visibility: true,
           profile_picture: true,
         }
       });
@@ -166,13 +166,13 @@ class SocketServer {
         logger.info(`User ${userId} joined conversation ${conversationId}`);
         
         // Get the most recent messages for this conversation
-        const messages = await this.getRecentMessages(conversationId);
+        const messages = await messageService.getRecentMessages(conversationId);
         
         // Send messages history to the user
         socket.emit(EVENTS.MESSAGES_HISTORY, { conversationId, messages });
         
         // Update last read timestamp for this user
-        await this.markMessagesAsRead(userId, conversationId);
+        await messageService.updateLastReadTime(userId, conversationId);
       } catch (error) {
         logger.error(`Error joining conversation: ${error.message}`);
         this.emitError(socket, 'Failed to join conversation');
@@ -208,15 +208,15 @@ class SocketServer {
           return this.emitError(socket, 'Conversation ID and content are required');
         }
         
-        // Verify user is a participant and has public profile
-        const canSendMessage = await this.canSendMessage(userId, conversationId);
+        // Verify user is a participant
+        const isParticipant = await this.verifyConversationParticipant(userId, conversationId);
         
-        if (!canSendMessage) {
+        if (!isParticipant) {
           return this.emitError(socket, 'Not authorized to send messages in this conversation');
         }
         
         // Save message to database
-        const message = await this.saveMessage(userId, conversationId, content);
+        const message = await messageService.createMessage(userId, conversationId, content);
         
         // Broadcast message to all participants in the conversation
         const roomName = `conversation:${conversationId}`;
@@ -226,7 +226,7 @@ class SocketServer {
         socket.emit(EVENTS.MESSAGE_DELIVERED, { messageId: message.id });
         
         // Update sender's last read timestamp
-        await this.markMessagesAsRead(userId, conversationId);
+        await messageService.updateLastReadTime(userId, conversationId);
       } catch (error) {
         logger.error(`Error sending message: ${error.message}`);
         this.emitError(socket, 'Failed to send message');
@@ -250,7 +250,7 @@ class SocketServer {
         }
         
         // Update last read timestamp
-        await this.markMessagesAsRead(userId, conversationId);
+        await messageService.updateLastReadTime(userId, conversationId);
         
         // Notify other participants
         const roomName = `conversation:${conversationId}`;
@@ -331,58 +331,12 @@ class SocketServer {
     }
   }
   
-  // Helper to check if a user can send messages (is participant + has public profile)
-  async canSendMessage(userId, conversationId) {
-    try {
-      // First check if user is a participant
-      const isParticipant = await this.verifyConversationParticipant(userId, conversationId);
-      
-      if (!isParticipant) {
-        return false;
-      }
-      
-      // Check if user has public profile
-      const user = await prisma.user.findUnique({
-        where: { id: parseInt(userId) },
-        select: { profile_visibility: true }
-      });
-      
-      return user?.profile_visibility === 'public';
-    } catch (error) {
-      logger.error(`Error checking message permissions: ${error.message}`);
-      return false;
-    }
-  }
-  
-  // Import message service
-  messageService = require('./messageService');
-  
-  // Helper to save a message to the database
+  // Save a message using the message service
   async saveMessage(userId, conversationId, content) {
     try {
-      return await this.messageService.createMessage(userId, conversationId, content);
+      return await messageService.createMessage(userId, conversationId, content);
     } catch (error) {
       logger.error(`Error saving message: ${error.message}`);
-      throw error;
-    }
-  }
-  
-  // Helper to fetch recent messages for a conversation
-  async getRecentMessages(conversationId, limit = 50) {
-    try {
-      return await this.messageService.getRecentMessages(conversationId, limit);
-    } catch (error) {
-      logger.error(`Error fetching messages: ${error.message}`);
-      return [];
-    }
-  }
-  
-  // Helper to mark messages as read for a user
-  async markMessagesAsRead(userId, conversationId) {
-    try {
-      await this.messageService.updateLastReadTime(userId, conversationId);
-    } catch (error) {
-      logger.error(`Error marking messages as read: ${error.message}`);
       throw error;
     }
   }

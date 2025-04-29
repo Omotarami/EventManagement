@@ -53,9 +53,7 @@ class MessageService {
         where: {
           conversation_id: parseInt(conversationId),
           is_deleted: false,
-          sender: {
-            profile_visibility: 'public',
-          }
+          // Removed profile visibility filter
         },
         include: {
           sender: {
