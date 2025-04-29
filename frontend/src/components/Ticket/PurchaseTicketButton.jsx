@@ -1,22 +1,43 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ticket, X, Check, CreditCard, Calendar, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { v4 as uuidv4 } from 'uuid';
+import { useTickets } from '../../context/TicketContext';
 
-const PurchaseTicketButton = ({ event }) => {
+const PurchaseTicketButton = ({ event, buttonStyle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [purchasedTicket, setPurchasedTicket] = useState(null);
+  const [availableTickets, setAvailableTickets] = useState([]);
   
   const { isAuthenticated, user } = useAuth();
+  const { purchaseTicket, getEventTickets } = useTickets();
   const navigate = useNavigate();
+  
+  // Load available tickets when modal opens
+  useEffect(() => {
+    if (isModalOpen && event?.id) {
+      fetchAvailableTickets();
+    }
+  }, [isModalOpen, event?.id]);
+  
+  const fetchAvailableTickets = async () => {
+    if (event?.id) {
+      const tickets = await getEventTickets(event.id);
+      setAvailableTickets(tickets);
+      
+      // Set default selected ticket
+      if (tickets && tickets.length > 0) {
+        setSelectedTicketId(tickets[0].id);
+      }
+    }
+  };
   
   const handleClickBuy = () => {
     // Check if user is logged in first
@@ -26,10 +47,6 @@ const PurchaseTicketButton = ({ event }) => {
       return;
     }
     
-    // Set default selected ticket
-    if (event.tickets && event.tickets.length > 0) {
-      setSelectedTicket(event.tickets[0].name);
-    }
     setIsModalOpen(true);
   };
   
@@ -44,8 +61,8 @@ const PurchaseTicketButton = ({ event }) => {
     }
   };
   
-  const handleSelectTicket = (ticketType) => {
-    setSelectedTicket(ticketType);
+  const handleSelectTicket = (ticketId) => {
+    setSelectedTicketId(ticketId);
   };
   
   const handleQuantityChange = (e) => {
@@ -55,67 +72,29 @@ const PurchaseTicketButton = ({ event }) => {
     }
   };
   
-  // Local implementation of purchaseTicket
-  const purchaseTicket = async (event, ticketType, quantity) => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Find the selected ticket from event tickets
-    const selectedTicket = event.tickets?.find(t => t.name === ticketType) || {
-      name: ticketType || 'General Admission',
-      price: event.price || 29.99
-    };
-    
-    // Create a new ticket object
-    const newTicket = {
-      id: 'ticket-' + uuidv4().slice(0, 8),
-      orderId: 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
-      eventId: event.id,
-      eventTitle: event.title,
-      eventDate: event.startDate || new Date().toISOString(),
-      eventTime: event.startTime || '19:00',
-      eventLocation: event.location || 'Venue',
-      eventImage: event.imageSrc || 'https://via.placeholder.com/300',
-      userId: user?.id || 'user-1',
-      userName: user?.name || 'Guest User',
-      userEmail: user?.email || 'guest@example.com',
-      ticketType: selectedTicket.name,
-      price: selectedTicket.price,
-      quantity: quantity,
-      totalAmount: selectedTicket.price * quantity,
-      purchaseDate: new Date().toISOString(),
-      checkInStatus: 'not-checked-in'
-    };
-
-    // Save ticket to localStorage
-    const storedTickets = localStorage.getItem('userTickets');
-    const existingTickets = storedTickets ? JSON.parse(storedTickets) : [];
-    const updatedTickets = [...existingTickets, newTicket];
-    localStorage.setItem('userTickets', JSON.stringify(updatedTickets));
-    
-    return newTicket;
-  };
-  
   const handleCompletePurchase = async () => {
+    if (!selectedTicketId) {
+      toast.error('Please select a ticket');
+      return;
+    }
+    
     setIsProcessing(true);
     
     try {
-      // Call the purchaseTicket method
+      // Call the purchaseTicket method from TicketContext
       const ticket = await purchaseTicket(
-        event, 
-        selectedTicket || 'General Admission', 
+        event.id, 
+        selectedTicketId, 
         quantity
       );
       
-      // Update local state with the purchased ticket
-      setPurchasedTicket(ticket);
-      setIsSuccess(true);
-      
-      // Show success notification
-      toast.success('Ticket purchased successfully!');
-      
-      // Log receipt info
-      console.log('Purchase complete! Receipt sent to:', ticket.userEmail);
+      if (ticket) {
+        // Update local state with the purchased ticket
+        setPurchasedTicket(ticket);
+        setIsSuccess(true);
+      } else {
+        throw new Error('Failed to complete purchase');
+      }
     } catch (error) {
       console.error('Error purchasing ticket:', error);
       toast.error('Failed to purchase ticket. Please try again.');
@@ -124,22 +103,32 @@ const PurchaseTicketButton = ({ event }) => {
     }
   };
   
+  const getSelectedTicket = () => {
+    return availableTickets.find(t => t.id === selectedTicketId);
+  };
+  
   const getTicketPrice = () => {
-    if (!event.tickets || event.tickets.length === 0) {
-      return event.price || 29.99;
-    }
-    
-    const ticket = event.tickets.find(t => t.name === selectedTicket);
-    return ticket ? ticket.price : event.price || 29.99;
+    const ticket = getSelectedTicket();
+    return ticket ? ticket.price : 0;
   };
 
   const totalAmount = getTicketPrice() * quantity;
+  
+  // If no tickets are available for this event, don't show the button
+  if (availableTickets.length === 0 && isModalOpen) {
+    return (
+      <button className={buttonStyle || "w-full text-center py-2 bg-gray-400 text-white rounded-md"} disabled>
+        <Ticket size={16} className="mr-2" />
+        No Tickets Available
+      </button>
+    );
+  }
   
   return (
     <>
       <button
         onClick={handleClickBuy}
-        className="w-full text-center py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors flex items-center justify-center"
+        className={buttonStyle || "w-full text-center py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors flex items-center justify-center"}
       >
         <Ticket size={16} className="mr-2" />
         Buy Ticket
@@ -190,7 +179,7 @@ const PurchaseTicketButton = ({ event }) => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Ticket Type:</span>
-                        <span>{purchasedTicket?.ticketType}</span>
+                        <span>{purchasedTicket?.ticket_type}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Quantity:</span>
@@ -198,11 +187,11 @@ const PurchaseTicketButton = ({ event }) => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Order ID:</span>
-                        <span>{purchasedTicket?.orderId}</span>
+                        <span>{purchasedTicket?.order_number}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Total Amount:</span>
-                        <span className="font-semibold">${purchasedTicket?.totalAmount}</span>
+                        <span className="font-semibold">${purchasedTicket?.total_price}</span>
                       </div>
                     </div>
                   </div>
@@ -247,39 +236,56 @@ const PurchaseTicketButton = ({ event }) => {
                     </div>
                     
                     {/* Ticket Options */}
-                    {event.tickets && event.tickets.length > 0 ? (
+                    {availableTickets.length > 0 ? (
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Select Ticket Type
                         </label>
                         <div className="space-y-2">
-                          {event.tickets.map((ticket) => (
-                            <div
-                              key={ticket.name}
-                              className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                                selectedTicket === ticket.name 
-                                  ? 'border-orange-500 bg-orange-50' 
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              onClick={() => handleSelectTicket(ticket.name)}
-                            >
-                              <div className="flex justify-between">
-                                <div>
-                                  <h5 className="font-medium text-gray-800">{ticket.name}</h5>
-                                  {ticket.description && (
-                                    <p className="text-xs text-gray-500">{ticket.description}</p>
-                                  )}
+                          {availableTickets.map((ticket) => {
+                            // Calculate available count
+                            const available = ticket.quantity !== null 
+                              ? ticket.quantity - ticket.sold 
+                              : 'Unlimited';
+                            
+                            // Disable if sold out
+                            const isSoldOut = ticket.quantity !== null && ticket.sold >= ticket.quantity;
+                            
+                            return (
+                              <div
+                                key={ticket.id}
+                                className={`p-3 border rounded-md ${isSoldOut ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'} transition-colors ${
+                                  selectedTicketId === ticket.id 
+                                    ? 'border-orange-500 bg-orange-50' 
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                onClick={() => !isSoldOut && handleSelectTicket(ticket.id)}
+                              >
+                                <div className="flex justify-between">
+                                  <div>
+                                    <h5 className="font-medium text-gray-800">{ticket.ticket_name}</h5>
+                                    {ticket.description && (
+                                      <p className="text-xs text-gray-500">{ticket.description}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {isSoldOut ? (
+                                        <span className="text-red-500">Sold Out</span>
+                                      ) : (
+                                        <>Available: {available}</>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <span className="font-semibold">${ticket.price}</span>
                                 </div>
-                                <span className="font-semibold">${ticket.price}</span>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     ) : (
-                      <div className="mb-4">
+                      <div className="mb-4 text-center p-4 bg-gray-50 rounded-lg">
                         <p className="text-gray-700">
-                          General Admission: ${event.price || 29.99}
+                          Loading available tickets...
                         </p>
                       </div>
                     )}
@@ -305,7 +311,7 @@ const PurchaseTicketButton = ({ event }) => {
                       <h5 className="font-medium text-gray-700 mb-2">Order Summary</h5>
                       <div className="flex justify-between mb-1 text-sm">
                         <span>
-                          {selectedTicket || 'General Admission'} x {quantity}
+                          {getSelectedTicket()?.ticket_name || 'Selected Ticket'} x {quantity}
                         </span>
                         <span>${getTicketPrice() * quantity}</span>
                       </div>
@@ -332,9 +338,9 @@ const PurchaseTicketButton = ({ event }) => {
                   <div className="p-4 border-t border-gray-200">
                     <button
                       onClick={handleCompletePurchase}
-                      disabled={isProcessing}
+                      disabled={isProcessing || !selectedTicketId}
                       className={`w-full py-2 text-white rounded-md transition-colors ${
-                        isProcessing 
+                        isProcessing || !selectedTicketId
                           ? 'bg-gray-400 cursor-not-allowed' 
                           : 'bg-orange-500 hover:bg-orange-600'
                       }`}
