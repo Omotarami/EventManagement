@@ -9,6 +9,7 @@ import { useTickets } from "../../context/TicketContext";
 import PurchaseTicketButton from "../Ticket/PurchaseTicketButton";
 import { useNavigate } from "react-router-dom";
 import EventRevenueSection from "../Ticket/EventRevenueSection";
+import { useAuth } from "../../context/AuthContext"; 
 
 // Safe formatting utilities
 const formatDate = (dateString) => {
@@ -18,7 +19,7 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 
-      year: 'numeric' 
+      year: 'numeric'
     });
   } catch (error) {
     console.error("Error formatting date:", error);
@@ -53,13 +54,17 @@ const formatTimeValue = (timeValue) => {
  * 
  * @param {Object} props
  * @param {Object} props.event 
- * @param {string} props.userRole 
+ * @param {string} props.userRole - Optional: can be provided or determined from auth context
  * @param {string} props.eventId 
  */
-const EventOverview = ({ event, userRole, eventId }) => {
+const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
   const navigate = useNavigate();
   const { hasTicketForEvent, getUserTickets } = useTickets();
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const { user, isAuthenticated, isOrganizer, isAttendee } = useAuth(); // Get authentication info
+  
+  // Use the provided userRole prop or determine from auth context
+  const userRole = propUserRole || (isOrganizer() ? "organizer" : (isAttendee() ? "attendee" : null));
   
   // Add safety check for missing event data
   if (!event) {
@@ -82,6 +87,9 @@ const EventOverview = ({ event, userRole, eventId }) => {
   const ticketPercentage =
     event.totalTickets > 0 ? (event.soldTickets / event.totalTickets) * 100 : 0;
   const remainingTickets = event.totalTickets - event.soldTickets;
+
+  // Check if user is authenticated
+  const isUserAuthenticated = isAuthenticated();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -353,8 +361,8 @@ const EventOverview = ({ event, userRole, eventId }) => {
             </div>
           </div>
 
-          {/* Purchase Ticket Button - Only for attendees who don't have tickets */}
-          {userRole === "attendee" && !userHasTicket && (
+          {/* Purchase Ticket Button - Show for attendees who don't have tickets or non-authenticated users */}
+          {((userRole === "attendee" && !userHasTicket) || (!isUserAuthenticated)) && (
             <div className="mt-4">
               <PurchaseTicketButton 
                 event={event} 
@@ -365,65 +373,67 @@ const EventOverview = ({ event, userRole, eventId }) => {
         </motion.div>
 
         {/* Quick Actions - Different for each role */}
-        <motion.div
-          className="bg-white rounded-lg shadow-sm p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Quick Actions
-          </h2>
+        {isUserAuthenticated && (
+          <motion.div
+            className="bg-white rounded-lg shadow-sm p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              Quick Actions
+            </h2>
 
-          <div className="space-y-3">
-            {/* Organizer Actions */}
-            {userRole === "organizer" && (
-              <>
-                <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
-                  <Ticket size={18} className="mr-2" />
-                  <span>Sell Tickets</span>
-                </button>
+            <div className="space-y-3">
+              {/* Organizer Actions */}
+              {userRole === "organizer" && (
+                <>
+                  <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
+                    <Ticket size={18} className="mr-2" />
+                    <span>Sell Tickets</span>
+                  </button>
 
-                <button
-                  className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
-                  onClick={() => document.querySelector('[data-tab="attendees"]')?.click()}
-                >
-                  <Users size={18} className="mr-2" />
-                  <span>Manage Attendees</span>
-                </button>
-
-                <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
-                  <Download size={18} className="mr-2" />
-                  <span>Download Report</span>
-                </button>
-              </>
-            )}
-
-            {/* Attendee Actions */}
-            {userRole === "attendee" && (
-              <>
-                {/* If the user has a ticket, show attendee networking */}
-                {userHasTicket ? (
                   <button
-                    onClick={() => document.querySelector('[data-tab="chat"]')?.click()}
-                    className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    onClick={() => document.querySelector('[data-tab="attendees"]')?.click()}
                   >
                     <Users size={18} className="mr-2" />
-                    <span>Connect with Attendees</span>
+                    <span>Manage Attendees</span>
                   </button>
-                ) : (
-                  <button
-                    onClick={() => navigate('/attendee-dashboard')}
-                    className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
-                  >
-                    <ArrowRight size={18} className="mr-2" />
-                    <span>Explore Other Events</span>
+
+                  <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
+                    <Download size={18} className="mr-2" />
+                    <span>Download Report</span>
                   </button>
-                )}
-              </>
-            )}
-          </div>
-        </motion.div>
+                </>
+              )}
+
+              {/* Attendee Actions */}
+              {userRole === "attendee" && (
+                <>
+                  {/* If the user has a ticket, show attendee networking */}
+                  {userHasTicket ? (
+                    <button
+                      onClick={() => document.querySelector('[data-tab="chat"]')?.click()}
+                      className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <Users size={18} className="mr-2" />
+                      <span>Connect with Attendees</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate('/attendee-dashboard')}
+                      className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <ArrowRight size={18} className="mr-2" />
+                      <span>Explore Other Events</span>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Event Schedule Card (for recurring events) */}
         {event.isRecurring && event.dates && event.dates.length > 1 && (

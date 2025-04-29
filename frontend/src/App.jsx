@@ -65,37 +65,39 @@ const App = () => {
 
                   <Route path="/no-access" element={<NoAccessPage />} />
 
-                  <Route path="/dashboard" element={<DashboardRouter />} />
+                {/* Dashboard Router */}
+                <Route path="/dashboard" element={<DashboardRouter />} />
+                
+                {/* Calendar route - keeping it as it is in your current setup */}
+                <Route path="/calendar" element={<Calendar />} />
 
-                  <Route
-                    path="/organizer-dashboard"
-                    element={
-                      <ProtectedRoute allowedRoles={["organizer"]}>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
+                {/* Organizer Protected Routes */}
+                <Route
+                  path="/organizer-dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-                  <Route
-                    path="/attendee-dashboard"
-                    element={
-                      <ProtectedRoute allowedRoles={["attendee"]}>
-                        <AttendeeDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
+                <Route
+                  path="/create-event"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <CreateEventPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-                  <Route
-                    path="/create-event"
-                    element={
-                      <ProtectedRoute allowedRoles={["organizer"]}>
-                        <CreateEventPage />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route path="/calendar" element={<Calendar />} />
-
+                <Route
+                  path="/events/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <EventDetails userRole="organizer" />
+                    </ProtectedRoute>
+                  }
+                />
                   <Route
                     path="/messages"
                     element={
@@ -114,15 +116,43 @@ const App = () => {
                     }
                   />
 
-                  {/* Tickets Page */}
-                  <Route
-                    path="/tickets"
-                    element={
-                      <ProtectedRoute>
-                        <MyTicketsPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                {/* Attendee Protected Routes */}
+                <Route
+                  path="/attendee-dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["attendee"]}>
+                      <AttendeeDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/event-details/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["attendee"]}>
+                      <EventDetails userRole="attendee" />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Routes for any authenticated user */}
+                <Route
+                  path="/messages"
+                  element={
+                    <ProtectedRoute>
+                      <Messages />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/tickets"
+                  element={
+                    <ProtectedRoute>
+                      <MyTicketsPage />
+                    </ProtectedRoute>
+                  }
+                />
 
                   <Route
                     path="/settings"
@@ -133,34 +163,14 @@ const App = () => {
                     }
                   />
 
-                  {/* Profile Page */}
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/events/:eventId"
-                    element={
-                      <ProtectedRoute allowedRoles={["organizer"]}>
-                        <EventDetails userRole="organizer" />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  {/* For attendees - to view event details and purchase */}
-                  <Route
-                    path="/event-details/:eventId"
-                    element={
-                      <ProtectedRoute allowedRoles={["attendee"]}>
-                        <EventDetails userRole="attendee" />
-                      </ProtectedRoute>
-                    }
-                  />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
 
                   {/* 404/Under Construction page */}
                   <Route path="*" element={<UnderConstruction />} />

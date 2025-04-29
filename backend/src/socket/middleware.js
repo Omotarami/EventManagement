@@ -52,19 +52,19 @@ async function verifyBothUsersHaveTickets(user1Id, user2Id, eventId) {
  * @param {number} userId - The user's ID
  * @returns {Promise<boolean>} - Whether the user has a public profile
  */
-async function verifyPublicProfile(userId) {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(userId) },
-      select: { profile_visibility: true }
-    });
+// async function verifyPublicProfile(userId) {
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { id: parseInt(userId) },
+//       select: { profile_visibility: true }
+//     });
     
-    return user?.profile_visibility === 'public';
-  } catch (error) {
-    logger.error(`Error verifying public profile: ${error.message}`);
-    return false;
-  }
-}
+//     return user?.profile_visibility === 'public';
+//   } catch (error) {
+//     logger.error(`Error verifying public profile: ${error.message}`);
+//     return false;
+//   }
+// }
 
 /**
  * Verifies that both users have public profiles
@@ -72,23 +72,23 @@ async function verifyPublicProfile(userId) {
  * @param {number} user2Id - Second user's ID
  * @returns {Promise<boolean>} - Whether both users have public profiles
  */
-async function verifyBothUsersHavePublicProfiles(user1Id, user2Id) {
-  try {
-    const [user1Public, user2Public] = await Promise.all([
-      verifyPublicProfile(user1Id),
-      verifyPublicProfile(user2Id)
-    ]);
+// async function verifyBothUsersHavePublicProfiles(user1Id, user2Id) {
+//   try {
+//     const [user1Public, user2Public] = await Promise.all([
+//       verifyPublicProfile(user1Id),
+//       verifyPublicProfile(user2Id)
+//     ]);
     
-    return user1Public && user2Public;
-  } catch (error) {
-    logger.error(`Error verifying both users have public profiles: ${error.message}`);
-    return false;
-  }
-}
+//     return user1Public && user2Public;
+//   } catch (error) {
+//     logger.error(`Error verifying both users have public profiles: ${error.message}`);
+//     return false;
+//   }
+// }
 
 module.exports = {
   verifyTicketOwnership,
   verifyBothUsersHaveTickets,
-  verifyPublicProfile,
-  verifyBothUsersHavePublicProfiles
+  // verifyPublicProfile,
+  // verifyBothUsersHavePublicProfiles
 };
