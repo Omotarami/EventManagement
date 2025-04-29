@@ -26,6 +26,7 @@ import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardRouter from "./components/DashboardRouter";
 import Messages from "./pages/Messages";
+import { SocketProvider } from "./context/SocketContext"; // Import the SocketProvider
 
 const App = () => {
   return (
@@ -33,22 +34,36 @@ const App = () => {
       <EventProvider>
         <ProfileProvider>
           <TicketProvider>
-            <Router>
-              <Toaster
-                position="top-center"
-                toastOptions={{ duration: 3000 }}
-              />
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<HomePage />} />
-                <Route path="/signup/attendee" element={<AttendeeSignupForm />} />
-                <Route path="/signup/organizer" element={<OrganizerSignupForm />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/categories" element={<CategorySelectionPage />} />
-                <Route path="/login/attendee" element={<AttendeeLoginPage />} />
-                <Route path="/login/organizer" element={<OrganizerLoginPage />} />
-                <Route path="/login" element={<LoginRedirect />} />
-                <Route path="/no-access" element={<NoAccessPage />} />
+            <SocketProvider> {/* Add SocketProvider */}
+              <Router>
+                <Toaster
+                  position="top-center"
+                  toastOptions={{ duration: 3000 }}
+                />
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route
+                    path="/signup/attendee"
+                    element={<AttendeeSignupForm />}
+                  />
+                  <Route
+                    path="/signup/organizer"
+                    element={<OrganizerSignupForm />}
+                  />
+                  <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/categories" element={<CategorySelectionPage />} />
+
+                  {/* Separate login routes for different user types */}
+                  <Route path="/login/attendee" element={<AttendeeLoginPage />} />
+                  <Route
+                    path="/login/organizer"
+                    element={<OrganizerLoginPage />}
+                  />
+
+                  {/* Redirect generic login to selection page */}
+                  <Route path="/login" element={<LoginRedirect />} />
+
+                  <Route path="/no-access" element={<NoAccessPage />} />
 
                 {/* Dashboard Router */}
                 <Route path="/dashboard" element={<DashboardRouter />} />
@@ -83,15 +98,23 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
+                  <Route
+                    path="/messages"
+                    element={
+                      <ProtectedRoute>
+                        <Messages />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                <Route
-                  path="/revenue"
-                  element={
-                    <ProtectedRoute allowedRoles={["organizer"]}>
-                      <UnderConstruction />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/revenue"
+                    element={
+                      <ProtectedRoute allowedRoles={["organizer"]}>
+                        <UnderConstruction />
+                      </ProtectedRoute>
+                    }
+                  />
 
                 {/* Attendee Protected Routes */}
                 <Route
@@ -131,14 +154,14 @@ const App = () => {
                   }
                 />
 
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute>
-                      <UnderConstruction />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <UnderConstruction />
+                      </ProtectedRoute>
+                    }
+                  />
 
                 <Route
                   path="/profile"
@@ -149,10 +172,11 @@ const App = () => {
                   }
                 />
 
-                {/* 404/Under Construction page */}
-                <Route path="*" element={<UnderConstruction />} />
-              </Routes>
-            </Router>
+                  {/* 404/Under Construction page */}
+                  <Route path="*" element={<UnderConstruction />} />
+                </Routes>
+              </Router>
+            </SocketProvider>
           </TicketProvider>
         </ProfileProvider>
       </EventProvider>

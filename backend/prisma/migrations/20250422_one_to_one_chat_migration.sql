@@ -43,3 +43,4 @@ ALTER TABLE "Message" ADD CONSTRAINT "Message_conversation_id_fkey"
 -- Create unique constraint for conversation participants
 CREATE UNIQUE INDEX "ConversationParticipant_conversation_id_user_id_key" 
     ON "ConversationParticipant"("conversation_id", "user_id");
+
