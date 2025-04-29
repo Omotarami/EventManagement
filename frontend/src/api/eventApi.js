@@ -3,7 +3,7 @@ import api from './axios';
 export const eventApi = {
   // Create a new event
   createEvent: (eventData) => {
-    return api.post('/event/create', eventData, {
+    return api.post('api/event/create', eventData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

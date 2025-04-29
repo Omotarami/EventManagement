@@ -3,10 +3,14 @@ const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const path = require('path');
 const { isAuthenticated } = require("../middlewares/auth");
+const useCatchErrors = require("../error/catchErrors");
 
 class EventRoute {
   router = express.Router();
   prisma = new PrismaClient();
+  
+  // Define path prefix
+  path = "/event";
 
   // Configure multer for file uploads
   upload = multer({
@@ -33,67 +37,101 @@ class EventRoute {
   });
 
   constructor() {
+    console.log('Event Route Initializing');
     this.initializeRoutes();
+    
+    // Log registered routes
+    if (this.router.stack) {
+      console.log('Registered Event Routes:');
+      this.router.stack.forEach((r) => {
+        if (r.route) {
+          console.log(`Route: ${r.route.path}, Methods: ${Object.keys(r.route.methods)}`);
+        }
+      });
+    }
   }
 
   initializeRoutes() {
     // Create a new event (with optional file uploads)
     this.router.post(
-      "/event/create", 
+      `${this.path}/create`, 
       isAuthenticated,
       this.upload.array('images', 5),
-      this.createEvent.bind(this)
+      useCatchErrors(this.createEvent.bind(this))
     );
 
     // Get all events
     this.router.get(
-      "/event/all", 
+      `${this.path}/all`, 
       isAuthenticated,
-      this.getAllEvents.bind(this)
+      useCatchErrors(this.getAllEvents.bind(this))
     );
 
     // Get events for a specific user
     this.router.get(
-      "/event/user/:userId", 
+      `${this.path}/user/:userId`, 
       isAuthenticated,
-      this.getUserEvents.bind(this)
+      useCatchErrors(this.getUserEvents.bind(this))
     );
 
     // Get a specific event by ID
     this.router.get(
-      "/event/detail/:id", 
+      `${this.path}/detail/:id`, 
       isAuthenticated,
-      this.getEventById.bind(this)
+      useCatchErrors(this.getEventById.bind(this))
     );
 
     // Update an event
     this.router.put(
-      "/event/update/:id", 
+      `${this.path}/update/:id`, 
       isAuthenticated,
-      this.updateEvent.bind(this)
+      useCatchErrors(this.updateEvent.bind(this))
     );
 
     // Delete an event
     this.router.delete(
-      "/event/delete/:id", 
+      `${this.path}/delete/:id`, 
       isAuthenticated,
-      this.deleteEvent.bind(this)
+      useCatchErrors(this.deleteEvent.bind(this))
     );
   }
 
   // Create a new event
   async createEvent(req, res) {
     try {
+      // Extensive logging for debugging
+      console.log('Create Event Request Received');
+      console.log('Request Body:', req.body);
+      console.log('Request Files:', req.files);
+      console.log('Authenticated User:', req.user);
+
       const {
         title,
         description,
         schedule_type = "one-time",
         category,
         capacity,
-        schedules = [],
-        agendas = [],
-        tickets = []
+        schedules = '[]',
+        agendas = '[]',
+        tickets = '[]'
       } = req.body;
+
+      // Parse stringified arrays
+      let parsedSchedules = [];
+      let parsedAgendas = [];
+      let parsedTickets = [];
+
+      try {
+        parsedSchedules = JSON.parse(schedules);
+        parsedAgendas = JSON.parse(agendas);
+        parsedTickets = JSON.parse(tickets);
+      } catch (parseError) {
+        console.error('JSON Parsing Error:', parseError);
+        return res.status(400).json({
+          message: 'Invalid data format',
+          error: parseError.message
+        });
+      }
 
       // Ensure user ID is taken from authenticated user
       const userId = req.user.id;
@@ -108,7 +146,7 @@ class EventRoute {
             description,
             schedule_type,
             category,
-            capacity
+            capacity: capacity ? parseInt(capacity) : null
           }
         });
 
@@ -124,9 +162,9 @@ class EventRoute {
         }
 
         // Create event schedules
-        if (schedules && schedules.length > 0) {
+        if (parsedSchedules && parsedSchedules.length > 0) {
           await prisma.eventSchedule.createMany({
-            data: schedules.map(schedule => ({
+            data: parsedSchedules.map(schedule => ({
               event_id: event.id,
               day: schedule.day,
               start_time: schedule.start_time,
@@ -139,9 +177,9 @@ class EventRoute {
         }
 
         // Create event agendas
-        if (agendas && agendas.length > 0) {
+        if (parsedAgendas && parsedAgendas.length > 0) {
           await prisma.eventAgenda.createMany({
-            data: agendas.map(agenda => ({
+            data: parsedAgendas.map(agenda => ({
               event_id: event.id,
               name: agenda.name,
               description: agenda.description || null,
@@ -152,9 +190,9 @@ class EventRoute {
         }
 
         // Create tickets
-        if (tickets && tickets.length > 0) {
+        if (parsedTickets && parsedTickets.length > 0) {
           await prisma.ticket.createMany({
-            data: tickets.map(ticket => ({
+            data: parsedTickets.map(ticket => ({
               event_id: event.id,
               ticket_type: ticket.type || 'standard',
               ticket_name: ticket.name,
@@ -169,15 +207,23 @@ class EventRoute {
         return event;
       });
 
+      console.log('Event Created Successfully:', result);
+
       res.status(201).json({
         message: "Event created successfully",
         event: result
       });
     } catch (error) {
-      console.error("Event creation error:", error);
+      console.error("Detailed Event Creation Error:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+
       res.status(500).json({ 
         message: "Failed to create event",
-        error: error.message 
+        error: error.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }
   }
