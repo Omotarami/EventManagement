@@ -1,179 +1,192 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from '../api/axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from './AuthContext';
 
 const TicketContext = createContext();
 
 export const TicketProvider = ({ children }) => {
-  const [tickets, setTickets] = useState([]);
+  const [userTickets, setUserTickets] = useState([]);
+  const [eventTickets, setEventTickets] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const { user, isAuthenticated } = useAuth();
+  const API_URL = 'http://localhost:8080/api';
 
-  // Fetch user tickets when authenticated
+  // Load user tickets when authenticated
   useEffect(() => {
-    if (isAuthenticated() && user?.id) {
-      fetchUserTickets();
-    } else {
-      setTickets([]);
+    if (isAuthenticated() && user) {
+      fetchUserTickets(user.id);
     }
   }, [user, isAuthenticated]);
 
-  // Get all tickets for the current user
-  const fetchUserTickets = async () => {
-    if (!user?.id) return;
+  // Fetch tickets purchased by the user
+  const fetchUserTickets = async (userId) => {
+    if (!userId) return;
     
     setLoading(true);
-    setError(null);
-    
     try {
-      const response = await api.get(`/ticket/user/${user.id}`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/ticket/user/${userId}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : ''
+        }
+      });
       
-      if (response.data && response.data.data) {
-        setTickets(response.data.data);
-      } else {
-        setTickets([]);
-      }
-    } catch (err) {
-      console.error('Error fetching user tickets:', err);
-      setError(err.response?.data?.error || 'Failed to fetch tickets');
-      setTickets([]);
+      setUserTickets(response.data);
+      
+      // Also store in localStorage for faster access
+      localStorage.setItem('userTickets', JSON.stringify(response.data));
+      
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user tickets:', error);
+      toast.error('Could not load your tickets');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  // Get tickets for a specific event
+  // Get available tickets for an event
   const getEventTickets = async (eventId) => {
+    if (!eventId) return [];
+    
+    // Check if we already have tickets for this event
+    if (eventTickets[eventId]) {
+      return eventTickets[eventId];
+    }
+    
     try {
-      const response = await api.get(`/ticket/event/${eventId}`);
-      return response.data.data || [];
-    } catch (err) {
-      console.error('Error fetching event tickets:', err);
+      const response = await axios.get(`${API_URL}/ticket/event/${eventId}`);
+      
+      // Save to state
+      setEventTickets(prev => ({
+        ...prev,
+        [eventId]: response.data
+      }));
+      
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch event tickets:', error);
+      toast.error('Could not load ticket information');
       return [];
     }
   };
 
   // Purchase a ticket
   const purchaseTicket = async (eventId, ticketId, quantity = 1) => {
-    if (!user?.id) {
+    if (!isAuthenticated()) {
       toast.error('Please log in to purchase tickets');
       return null;
     }
     
     setLoading(true);
-    setError(null);
-    
     try {
-      const response = await api.post('/ticket/purchase', {
-        event_id: eventId,
-        user_id: user.id,
-        ticket_id: ticketId,
-        quantity
-      });
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/ticket/purchase`,
+        {
+          user_id: user.id,
+          event_id: eventId,
+          ticket_id: ticketId,
+          quantity
+        },
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        }
+      );
       
-      if (response.data && response.data.data) {
-        // Refresh user tickets after purchase
-        await fetchUserTickets();
-        
-        toast.success('Ticket purchased successfully!');
-        return response.data.data;
-      }
-      return null;
-    } catch (err) {
-      console.error('Error purchasing ticket:', err);
-      const errorMessage = err.response?.data?.error || 'Failed to purchase ticket';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      // Refresh user tickets
+      fetchUserTickets(user.id);
+      
+      toast.success('Ticket purchased successfully!');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to purchase ticket:', error);
+      toast.error(error.response?.data?.error || 'Failed to purchase ticket');
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  // Get attendees for an event
-  const getEventAttendees = async (eventId) => {
-    try {
-      const response = await api.get(`/ticket/attendees/${eventId}`);
-      return response.data.data || [];
-    } catch (err) {
-      console.error('Error fetching event attendees:', err);
-      return [];
-    }
-  };
-
-  // Check in an attendee
-  const checkInAttendee = async (attendeeId, checkIn = true) => {
-    try {
-      const response = await api.post(`/ticket/check-in/${attendeeId}`, {
-        check_in: checkIn
-      });
-      
-      if (response.data && response.data.data) {
-        toast.success(checkIn ? 'Attendee checked in successfully!' : 'Check-in reverted');
-        return response.data.data;
-      }
-      return null;
-    } catch (err) {
-      console.error('Error checking in attendee:', err);
-      toast.error(err.response?.data?.error || 'Failed to update check-in status');
-      return null;
-    }
-  };
-
-  // Check if user has tickets for an event
+  // Check if user has a ticket for a specific event
   const hasTicketForEvent = (eventId) => {
-    if (!eventId || !tickets.length) return false;
-    
-    return tickets.some(ticket => 
-      ticket.eventId === eventId || 
-      ticket.eventId === parseInt(eventId)
-    );
+    if (!userTickets.length || !eventId) return false;
+    return userTickets.some(ticket => parseInt(ticket.eventId) === parseInt(eventId));
   };
 
-  // Get user tickets for a specific event
-  const getTicketsByEvent = (eventId) => {
-    if (!eventId || !tickets.length) return [];
-    
-    return tickets.filter(ticket => 
-      ticket.eventId === eventId || 
-      ticket.eventId === parseInt(eventId)
-    );
+  // Get all tickets purchased by the user
+  const getUserTickets = () => {
+    return userTickets;
   };
 
-  // Calculate total revenue for an event (organizer view)
+  // Calculate event revenue (for organizers)
   const calculateEventRevenue = (eventId) => {
-    const eventTickets = getTicketsByEvent(eventId);
+    if (!eventId || !userTickets.length) return 0;
     
-    return eventTickets.reduce((total, ticket) => 
-      total + (ticket.totalAmount || 0), 0
-    );
+    return userTickets
+      .filter(ticket => parseInt(ticket.eventId) === parseInt(eventId))
+      .reduce((total, ticket) => total + parseFloat(ticket.totalAmount || 0), 0);
   };
 
-  // Get all user tickets
-  const getUserTickets = () => tickets;
+  // Get tickets by event ID
+  const getTicketsByEvent = (eventId) => {
+    if (!eventId || !userTickets.length) return [];
+    return userTickets.filter(ticket => parseInt(ticket.eventId) === parseInt(eventId));
+  };
+
+  // Check in an attendee (for organizers)
+  const checkInAttendee = async (attendeeId, checkInStatus) => {
+    if (!isAuthenticated()) {
+      toast.error('Please log in to perform check-in');
+      return null;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${API_URL}/ticket/check-in/${attendeeId}`,
+        { check_in_status: checkInStatus },
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        }
+      );
+      
+      toast.success('Check-in status updated!');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update check-in status:', error);
+      toast.error('Failed to update check-in status');
+      return null;
+    }
+  };
+
+  const contextValue = {
+    userTickets,
+    loading,
+    fetchUserTickets,
+    getEventTickets,
+    purchaseTicket,
+    hasTicketForEvent,
+    getUserTickets,
+    calculateEventRevenue,
+    getTicketsByEvent,
+    checkInAttendee
+  };
 
   return (
-    <TicketContext.Provider value={{
-      tickets,
-      loading,
-      error,
-      fetchUserTickets,
-      purchaseTicket,
-      getEventTickets,
-      getEventAttendees,
-      checkInAttendee,
-      hasTicketForEvent,
-      getTicketsByEvent,
-      calculateEventRevenue,
-      getUserTickets
-    }}>
+    <TicketContext.Provider value={contextValue}>
       {children}
     </TicketContext.Provider>
   );
 };
 
+// Hook for easy context use
 export const useTickets = () => useContext(TicketContext);
 
 export default TicketProvider;
