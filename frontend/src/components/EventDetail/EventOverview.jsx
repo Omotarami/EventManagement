@@ -19,7 +19,7 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 
-      year: 'numeric' 
+      year: 'numeric'
     });
   } catch (error) {
     console.error("Error formatting date:", error);
