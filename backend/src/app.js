@@ -1,12 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const env = require("./config/env.js");
 const { requestLogger } = require("./middlewares/logger.js");
 const bodyParser = require("body-parser");
 const HandleErrors = require("./middlewares/error.js");
 const { isAuthenticated } = require("./middlewares/auth.js");
 const logger = require("./config/logger.js");
-const ENV = require("./config/env.js");
+const multer = require("multer");
 
 class App {
   constructor() {
@@ -41,7 +42,10 @@ class App {
       })
     );
     this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
+    this.app.use(bodyParser.urlencoded({ extended: true }));
+    
+    // Serve static files for uploads
+    this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   }
 
   listen() {

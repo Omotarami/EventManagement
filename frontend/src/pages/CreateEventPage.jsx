@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import toast from "react-hot-toast";
 import StepProgress from "../components/EventForm/StepProgress";
 import EventDetailsStep from "../components/EventForm/EventDetailsStep";
@@ -60,65 +62,126 @@ const CreateEventPage = () => {
   };
 
   // Handle form submission - called from preview step
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      // Create a new event object formatted for the event context
-      const newEvent = {
-        id: Date.now().toString(), // Generate a unique ID
+      // Log the entire payload before sending
+      console.log('Full Event Data:', {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        startDate: formData.dates[0], // Use first selected date as start date
-        endDate: formData.dates[formData.dates.length - 1], // Last date if recurring
-
-        // Calculate start and end times based on first time slot
-        startTime:
-          formData.times.length > 0
-            ? `${formData.times[0].startTime} ${formData.times[0].startPeriod}`
-            : "",
-        endTime:
-          formData.times.length > 0
-            ? `${formData.times[0].endTime} ${formData.times[0].endPeriod}`
-            : "",
-
-        location: formData.location,
-        eventType: formData.eventType,
-        isRecurring: formData.isRecurring,
-        agenda: formData.agenda,
-
-        // Calculate total capacity from input
-        totalTickets: parseInt(formData.capacity) || 0,
-        soldTickets: 0, // New events start with 0 tickets sold
-
-        // Calculate initial gross amount (0 for new events)
-        grossAmount: 0,
-
-        // Set initial status to published
-        status: "published",
-
-        // Get first image if available
-        imageSrc:
-          formData.images.length > 0
-            ? formData.images[0].preview || formData.images[0].url
-            : "",
-
-        // Add tickets information
-        tickets: formData.tickets.map((ticket) => ({
-          ...ticket,
-          sold: 0, // Initialize sold count to 0
+        schedule_type: formData.isRecurring ? 'recurring' : 'one-time',
+        capacity: formData.capacity,
+        images: formData.images,
+        schedules: formData.dates.map((date, index) => ({
+          day: date,
+          start_time: formData.times[index]?.startTime || '',
+          end_time: formData.times[index]?.endTime || '',
+          location_type: formData.eventType,
+          location_details: formData.location
         })),
-      };
-
-      // Add event to context
-      addEvent(newEvent);
-
-      toast.success("Event created successfully!");
-
-      // Navigate to dashboard after successful creation
-      navigate("/organizer-dashboard");
+        agendas: formData.agenda.map(item => ({
+          name: item.name,
+          description: item.description,
+          speakers: item.speakers,
+          time: `${item.time.time} ${item.time.period}`
+        })),
+        tickets: formData.tickets.map(ticket => ({
+          type: ticket.type,
+          name: ticket.name,
+          price: ticket.type === 'paid' ? ticket.price : '0',
+          description: ticket.description,
+          quantity: ticket.quantity
+        }))
+      });
+  
+      // Create FormData and log it as well
+      const formDataToSubmit = new FormData();
+      formDataToSubmit.append('user_id', localStorage.getItem('userId') || '1');
+      formDataToSubmit.append('title', formData.title);
+      formDataToSubmit.append('description', formData.description);
+      formDataToSubmit.append('category', formData.category);
+      formDataToSubmit.append('schedule_type', formData.isRecurring ? 'recurring' : 'one-time');
+      formDataToSubmit.append('capacity', formData.capacity);
+  
+      // Log FormData contents
+      for (let [key, value] of formDataToSubmit.entries()) {
+        console.log(`${key}: `, value);
+      }
+  
+      // Add images
+      formData.images.forEach((image, index) => {
+        if (image.file) {
+          formDataToSubmit.append('images', image.file);
+        }
+      });
+  
+      // Add schedules, agendas, tickets as JSON strings
+      formDataToSubmit.append('schedules', JSON.stringify(
+        formData.dates.map((date, index) => ({
+          day: date,
+          start_time: formData.times[index]?.startTime || '',
+          end_time: formData.times[index]?.endTime || '',
+          location_type: formData.eventType,
+          location_details: formData.location
+        }))
+      ));
+  
+      formDataToSubmit.append('agendas', JSON.stringify(
+        formData.agenda.map(item => ({
+          name: item.name,
+          description: item.description,
+          speakers: item.speakers,
+          time: `${item.time.time} ${item.time.period}`
+        }))
+      ));
+  
+      formDataToSubmit.append('tickets', JSON.stringify(
+        formData.tickets.map(ticket => ({
+          type: ticket.type,
+          name: ticket.name,
+          price: ticket.type === 'paid' ? ticket.price : '0',
+          description: ticket.description,
+          quantity: ticket.quantity
+        }))
+      ));
+  
+      // Submit to API with additional logging
+      try {
+        const response = await axios.post('/api/event/create', formDataToSubmit, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          // Add error interceptor to log full error response
+          validateStatus: function (status) {
+            return status >= 200 && status < 300; // Default
+          }
+        });
+        console.log('Server Response:', response.data);
+      } catch (error) {
+        console.error('Full Error Response:', error.response ? error.response.data : error.message);
+        console.error('Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers
+        });
+        
+        // Detailed error handling
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          toast.error(error.response.data.message || "Failed to create event");
+        } else if (error.request) {
+          // The request was made but no response was received
+          toast.error("No response received from server");
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          toast.error("Error setting up the request");
+        }
+        throw error;
+      }
     } catch (error) {
-      toast.error("Failed to create event. Please try again.");
-      console.error("Error creating event:", error);
+      console.error("Event creation error:", error);
+      toast.error("Failed to create event. Please check the details.");
     }
   };
 

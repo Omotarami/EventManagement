@@ -3,14 +3,63 @@ const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const path = require('path');
 const { isAuthenticated } = require("../middlewares/auth");
-const useCatchErrors = require("../error/catchErrors");
 
 class EventRoute {
   router = express.Router();
   prisma = new PrismaClient();
-  
-  // Define path prefix
-  path = "/event";
+
+  // Validation middleware for event creation
+  validateEventData = (req, res, next) => {
+    // Parse the body - this is crucial for multipart/form-data
+    const { 
+      title, 
+      description, 
+      category, 
+      schedule_type, 
+      capacity 
+    } = req.body;
+
+    const errors = [];
+
+    // Validate title
+    if (!title || title.trim() === '') {
+      errors.push('Title is required and cannot be empty');
+    }
+
+    // Validate description
+    if (!description || description.trim() === '') {
+      errors.push('Description is required and cannot be empty');
+    }
+
+    // Validate category
+    if (!category || category.trim() === '') {
+      errors.push('Category is required');
+    }
+
+    // Optional: Additional validations
+    if (schedule_type && !['one-time', 'recurring'].includes(schedule_type)) {
+      errors.push('Invalid schedule type');
+    }
+
+    // Validate capacity (if provided)
+    if (capacity) {
+      const parsedCapacity = parseInt(capacity);
+      if (isNaN(parsedCapacity) || parsedCapacity < 0) {
+        errors.push('Capacity must be a non-negative number');
+      }
+    }
+
+    // If there are validation errors, return them
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: 'Validation Failed',
+        errors
+      });
+    }
+
+    // If all validations pass, proceed to next middleware
+    next();
+  };
 
   // Configure multer for file uploads
   upload = multer({
@@ -37,73 +86,61 @@ class EventRoute {
   });
 
   constructor() {
-    console.log('Event Route Initializing');
     this.initializeRoutes();
-    
-    // Log registered routes
-    if (this.router.stack) {
-      console.log('Registered Event Routes:');
-      this.router.stack.forEach((r) => {
-        if (r.route) {
-          console.log(`Route: ${r.route.path}, Methods: ${Object.keys(r.route.methods)}`);
-        }
-      });
-    }
   }
 
   initializeRoutes() {
     // Create a new event (with optional file uploads)
     this.router.post(
-      `${this.path}/create`, 
+      "/event/create", 
       isAuthenticated,
+      this.validateEventData,
       this.upload.array('images', 5),
-      useCatchErrors(this.createEvent.bind(this))
+      this.createEvent.bind(this)
     );
 
     // Get all events
     this.router.get(
-      `${this.path}/all`, 
+      "/event/all", 
       isAuthenticated,
-      useCatchErrors(this.getAllEvents.bind(this))
+      this.getAllEvents.bind(this)
     );
 
     // Get events for a specific user
     this.router.get(
-      `${this.path}/user/:userId`, 
+      "/event/user/:userId", 
       isAuthenticated,
-      useCatchErrors(this.getUserEvents.bind(this))
+      this.getUserEvents.bind(this)
     );
 
     // Get a specific event by ID
     this.router.get(
-      `${this.path}/detail/:id`, 
+      "/event/detail/:id", 
       isAuthenticated,
-      useCatchErrors(this.getEventById.bind(this))
+      this.getEventById.bind(this)
     );
 
     // Update an event
     this.router.put(
-      `${this.path}/update/:id`, 
+      "/event/update/:id", 
       isAuthenticated,
-      useCatchErrors(this.updateEvent.bind(this))
+      this.updateEvent.bind(this)
     );
 
     // Delete an event
     this.router.delete(
-      `${this.path}/delete/:id`, 
+      "/event/delete/:id", 
       isAuthenticated,
-      useCatchErrors(this.deleteEvent.bind(this))
+      this.deleteEvent.bind(this)
     );
   }
 
   // Create a new event
   async createEvent(req, res) {
     try {
-      // Extensive logging for debugging
-      console.log('Create Event Request Received');
-      console.log('Request Body:', req.body);
-      console.log('Request Files:', req.files);
-      console.log('Authenticated User:', req.user);
+      // Log incoming request for debugging
+      console.log('Incoming Request Body:', req.body);
+      console.log('Incoming Files:', req.files);
 
       const {
         title,
@@ -116,7 +153,7 @@ class EventRoute {
         tickets = '[]'
       } = req.body;
 
-      // Parse stringified arrays
+      // Parse stringified arrays (from FormData)
       let parsedSchedules = [];
       let parsedAgendas = [];
       let parsedTickets = [];
@@ -126,7 +163,6 @@ class EventRoute {
         parsedAgendas = JSON.parse(agendas);
         parsedTickets = JSON.parse(tickets);
       } catch (parseError) {
-        console.error('JSON Parsing Error:', parseError);
         return res.status(400).json({
           message: 'Invalid data format',
           error: parseError.message
@@ -207,8 +243,6 @@ class EventRoute {
         return event;
       });
 
-      console.log('Event Created Successfully:', result);
-
       res.status(201).json({
         message: "Event created successfully",
         event: result
@@ -224,125 +258,6 @@ class EventRoute {
         message: "Failed to create event",
         error: error.message,
         ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-      });
-    }
-  }
-
-  // Get all events
-  async getAllEvents(req, res) {
-    try {
-      const events = await this.prisma.event.findMany({
-        include: {
-          images: true,
-          tickets: true
-        }
-      });
-      res.status(200).json(events);
-    } catch (error) {
-      console.error("Get all events error:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch events",
-        error: error.message 
-      });
-    }
-  }
-
-  // Get events for a specific user
-  async getUserEvents(req, res) {
-    try {
-      const { userId } = req.params;
-      const events = await this.prisma.event.findMany({
-        where: { user_id: parseInt(userId) },
-        include: {
-          images: true,
-          tickets: true
-        }
-      });
-      res.status(200).json(events);
-    } catch (error) {
-      console.error("Get user events error:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch user events",
-        error: error.message 
-      });
-    }
-  }
-
-  // Get a specific event by ID
-  async getEventById(req, res) {
-    try {
-      const { id } = req.params;
-      const event = await this.prisma.event.findUnique({
-        where: { id: parseInt(id) },
-        include: {
-          images: true,
-          tickets: true,
-          schedules: true,
-          agendas: true
-        }
-      });
-
-      if (!event) {
-        return res.status(404).json({ message: "Event not found" });
-      }
-
-      res.status(200).json(event);
-    } catch (error) {
-      console.error("Get event by ID error:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch event details",
-        error: error.message 
-      });
-    }
-  }
-
-  // Update an event
-  async updateEvent(req, res) {
-    try {
-      const { id } = req.params;
-      const {
-        title,
-        description,
-        schedule_type,
-        category,
-        capacity
-      } = req.body;
-
-      const updatedEvent = await this.prisma.event.update({
-        where: { id: parseInt(id) },
-        data: {
-          title,
-          description,
-          schedule_type,
-          category,
-          capacity
-        }
-      });
-
-      res.status(200).json(updatedEvent);
-    } catch (error) {
-      console.error("Update event error:", error);
-      res.status(500).json({ 
-        message: "Failed to update event",
-        error: error.message 
-      });
-    }
-  }
-
-  // Delete an event
-  async deleteEvent(req, res) {
-    try {
-      const { id } = req.params;
-      await this.prisma.event.delete({
-        where: { id: parseInt(id) }
-      });
-
-      res.status(200).json({ message: "Event deleted successfully" });
-    } catch (error) {
-      console.error("Delete event error:", error);
-      res.status(500).json({ 
-        message: "Failed to delete event",
-        error: error.message 
       });
     }
   }
