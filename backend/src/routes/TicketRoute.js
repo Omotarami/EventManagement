@@ -1,51 +1,43 @@
-const express = require("express");
-const TicketController = require("../controller/TicketController");
-const { isAuthenticated } = require("../middlewares/auth");
+const express = require('express');
+const { isAuthenticated } = require('../middlewares/auth');
+const TicketController = require('../controller/TicketController');
 
 class TicketRoute {
-    router = express.Router();
-    ticketController = new TicketController();
-    path = "/ticket";
+  router = express.Router();
+  ticketController = new TicketController();
 
-    constructor() {
-        this.initializeRoutes();
-    }
+  constructor() {
+    this.initializeRoutes();
+  }
 
-    initializeRoutes() {
-        // Get all tickets for an event
-        this.router.get(
-            `${this.path}/event/:event_id`,
-            this.ticketController.getEventTickets.bind(this.ticketController)
-        );
-        
-        // Purchase a ticket
-        this.router.post(
-            `${this.path}/purchase`,
-            isAuthenticated,
-            this.ticketController.purchaseTicket.bind(this.ticketController)
-        );
-        
-        // Get user tickets
-        this.router.get(
-            `${this.path}/user/:user_id`,
-            isAuthenticated,
-            this.ticketController.getUserTickets.bind(this.ticketController)
-        );
-        
-        // Get event attendees
-        this.router.get(
-            `${this.path}/attendees/:event_id`,
-            isAuthenticated,
-            this.ticketController.getEventAttendees.bind(this.ticketController)
-        );
-        
-        // Check in attendee
-        this.router.post(
-            `${this.path}/check-in/:attendee_id`,
-            isAuthenticated,
-            this.ticketController.checkInAttendee.bind(this.ticketController)
-        );
-    }
+  initializeRoutes() {
+    // Purchase a ticket
+    this.router.post(
+      '/ticket/purchase',
+      isAuthenticated,
+      this.ticketController.purchaseTicket.bind(this.ticketController)
+    );
+
+    // Get user's tickets
+    this.router.get(
+      '/ticket/user/:user_id',
+      isAuthenticated,
+      this.ticketController.getUserTickets.bind(this.ticketController)
+    );
+
+    // Get event's tickets
+    this.router.get(
+      '/ticket/event/:event_id',
+      this.ticketController.getEventTickets.bind(this.ticketController)
+    );
+
+    // Update attendee check-in status
+    this.router.put(
+      '/ticket/check-in/:attendee_id',
+      isAuthenticated,
+      this.ticketController.checkInAttendee.bind(this.ticketController)
+    );
+  }
 }
 
 module.exports = TicketRoute;
