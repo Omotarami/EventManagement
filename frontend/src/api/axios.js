@@ -1,7 +1,7 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-
+// Create an axios instance with default config
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
   headers: {
@@ -39,9 +39,7 @@ api.interceptors.response.use(
     if (error.response) {
       // Token expired or invalid
       if (error.response.status === 401 && !originalRequest._retry) {
-        // Handle token expiration - could add token refresh logic here
-        
-        // For now, just log the user out
+        // Handle token expiration
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         
@@ -49,7 +47,7 @@ api.interceptors.response.use(
         toast.error("Your session has expired. Please log in again.");
         
         // Redirect to login page
-        window.location.href = "/login/attendee";
+        window.location.href = "/login";
       }
       
       // Show error messages from server

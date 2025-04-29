@@ -1,12 +1,20 @@
 import React from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ requiredRole }) => {
-  const { isAuthenticated, isOrganizer, isAttendee, loading, initialized } = useAuth();
+/**
+ * ProtectedRoute - Component to protect routes based on authentication and user roles
+ * 
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Child components to render if authorized
+ * @param {Array} [props.allowedRoles] - Optional array of roles allowed to access the route
+ * @returns {React.ReactNode}
+ */
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { user, isAuthenticated, loading, initialized } = useAuth();
   const location = useLocation();
 
-  // Show loading state if auth is still initializing
+  // Show loading indicator while authentication is initializing
   if (!initialized || loading) {
     return (
       <div className="flex min-h-screen justify-center items-center">
@@ -23,40 +31,34 @@ const ProtectedRoute = ({ requiredRole }) => {
         to="/no-access" 
         state={{ 
           from: location, 
-          error: `You need to be logged in${requiredRole ? ` as ${requiredRole}` : ""} to access this page` 
+          error: `You need to be logged in to access this page` 
         }} 
         replace 
       />
     );
   }
 
-  if (requiredRole === "organizer" && !isOrganizer()) {
-    return (
-      <Navigate 
-        to="/no-access" 
-        state={{ 
-          from: location, 
-          error: "You need to be logged in as an organizer to access this page" 
-        }} 
-        replace 
-      />
-    );
+  // If allowedRoles is specified, check if user has required role
+  if (allowedRoles.length > 0) {
+    const userRole = user.account_type || "attendee"; // Default to attendee if not specified
+    
+    if (!allowedRoles.includes(userRole)) {
+      // User doesn't have the required role
+      return (
+        <Navigate 
+          to="/no-access" 
+          state={{ 
+            from: location, 
+            error: `You need to be logged in as ${allowedRoles.join(" or ")} to access this page` 
+          }} 
+          replace 
+        />
+      );
+    }
   }
 
-  if (requiredRole === "attendee" && !isAttendee()) {
-    return (
-      <Navigate 
-        to="/no-access" 
-        state={{ 
-          from: location, 
-          error: "You need to be logged in as an attendee to access this page" 
-        }} 
-        replace 
-      />
-    );
-  }
-
-  return <Outlet />;
+  // If user is authenticated and has the required role, render the protected component
+  return children;
 };
 
 export default ProtectedRoute;

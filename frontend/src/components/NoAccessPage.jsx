@@ -2,16 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
-import toast from "react-hot-toast";
+import { FaLock, FaTicketAlt, FaCalendarAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 const NoAccessPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [loginType, setLoginType] = useState("attendee"); // Default to attendee
+  const [loginType, setLoginType] = useState("attendee"); 
   
   // Detect which role the user might be trying to access
   useEffect(() => {
@@ -88,9 +86,8 @@ const NoAccessPage = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          This area is locked tighter than a treasure chest! 🔒
-          <br />
-          You need to be logged in as a{loginType === "organizer" ? " an organizer" : "n attendee"} to access this area.
+          {location.state?.error || `This area is locked tighter than a treasure chest! 🔒
+          You need to be logged in as a${loginType === "organizer" ? "n organizer" : "n attendee"} to access this area.`}
         </motion.p>
 
         {/* Floating emojis */}

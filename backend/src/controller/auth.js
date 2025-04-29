@@ -122,20 +122,18 @@ class AuthController {
         { expiresIn: "24h" }
       );
 
-      // Create or update user session
+      // Create or update user session - updated to match your schema
       await prisma.session.upsert({
         where: {
-          userId_token: {
-            userId: user.id,
-            token: token,
-          }
+          // Use token as unique identifier
+          token: token,
         },
         update: {
           is_active: true,
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
         },
         create: {
-          userId: user.id,
+          user_id: user.id, // Changed from userId to user_id
           token: token,
           is_active: true,
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
