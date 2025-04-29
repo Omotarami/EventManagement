@@ -9,6 +9,24 @@ const { isAuthenticated } = require("./middlewares/auth.js");
 const logger = require("./config/logger.js");
 const multer = require("multer");
 
+// CORS preflight request handler
+const handleCorsPreflightRequests = (req, res, next) => {
+  // Check if this is a preflight request
+  if (req.method === 'OPTIONS') {
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Respond with 204 No Content
+    return res.status(204).end();
+  }
+  
+  // Continue to the next middleware for non-OPTIONS requests
+  next();
+};
+
 class App {
   constructor() {
     this.app = express();
@@ -33,14 +51,22 @@ class App {
   }
 
   initializeMiddlewares() {
-    // initialize server middlewares
+    // Handle OPTIONS requests first
+    this.app.use(handleCorsPreflightRequests);
+
+    // Initialize server middlewares
     this.app.use(requestLogger);
+    
+    // Enhanced CORS configuration
     this.app.use(
       cors({
         origin: 'http://localhost:5173',
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
       })
     );
+    
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     
@@ -63,13 +89,20 @@ class App {
       this.app.use("/api", route.router);
     });
 
+    // Handle 404 errors, but skip for OPTIONS requests
     this.app.all("*", (req, res) => {
+      // Skip 404 handling for OPTIONS requests
+      if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+      }
+      
       return res.status(404).json({
         errorStatus: true,
         code: "--route/route-not-found",
         message: "The requested route was not found.",
       });
     });
+    
     // handle global errors
     this.app.use(HandleErrors);
   }

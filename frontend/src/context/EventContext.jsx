@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { eventApi } from '../api/eventApi'; 
 import toast from 'react-hot-toast';
+import { useAuth } from './AuthContext';
 
 export const EventContext = createContext();
 
@@ -9,16 +10,51 @@ export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { user, isAuthenticated, initialized } = useAuth();
 
-  // Fetch events for a user
+  // Auto-fetch events when user is authenticated
+  useEffect(() => {
+    // Only fetch when auth is initialized and user is logged in
+    if (initialized && isAuthenticated() && user) {
+      console.log('User authenticated, fetching events for user ID:', user.id);
+      if (user.account_type === 'organizer') {
+        // Organizers see their own events
+        fetchUserEvents(user.id);
+      } else {
+        // Attendees see all published events
+        fetchPublicEvents();
+      }
+    }
+  }, [initialized, user, isAuthenticated]);
+
+  // Fetch events for a user (organizer)
   const fetchUserEvents = async (userId) => {
     setLoading(true);
     try {
       const response = await eventApi.getUserEvents(userId);
       setEvents(response.data);
+      console.log('Organizer events fetched successfully:', response.data);
       setError(null);
     } catch (err) {
       setError(err.message);
+      console.error('Failed to fetch organizer events:', err);
+      toast.error('Failed to fetch your events');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch public events for attendees
+  const fetchPublicEvents = async () => {
+    setLoading(true);
+    try {
+      const response = await eventApi.getAllEvents();
+      setEvents(response.data);
+      console.log('Public events fetched successfully:', response.data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      console.error('Failed to fetch public events:', err);
       toast.error('Failed to fetch events');
     } finally {
       setLoading(false);
@@ -37,6 +73,7 @@ export const EventProvider = ({ children }) => {
 
       const response = await eventApi.createEvent(formData);
       setEvents(prevEvents => [...prevEvents, response.data.event]);
+      toast.success('Event created successfully!');
       setError(null);
       return response.data.event;
     } catch (err) {
@@ -58,6 +95,7 @@ export const EventProvider = ({ children }) => {
           event.id === eventId ? response.data : event
         )
       );
+      toast.success('Event updated successfully!');
       setError(null);
       return response.data;
     } catch (err) {
@@ -134,6 +172,7 @@ export const EventProvider = ({ children }) => {
     loading,
     error,
     fetchUserEvents,
+    fetchPublicEvents,
     addEvent,
     updateEvent,
     deleteEvent,

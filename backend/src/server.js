@@ -1,16 +1,14 @@
-const http = require('http');
+const http = require("http");
 const App = require("./app");
 const AuthRoute = require("./routes/auth");
 const EventRoute = require("./routes/event");
 const CategoryRoute = require("./routes/category");
 const ScheduleRoute = require("./routes/event-schedule");
-const TicketRoute = require("./routes/ticket");
+// const TicketRoute = require("./routes/ticket");
 const FavouriteRoute = require("./routes/favourite");
 const ConversationRoute = require("./routes/conversation");
 const { SocketServer } = require("./socket");
 const logger = require("./config/logger");
-const EventRoute = require('./routes/event');
-
 
 // Initialize Express app
 const app = new App();
@@ -21,10 +19,9 @@ app.initializedRoutes([
   new EventRoute(),
   new CategoryRoute(),
   new ScheduleRoute(),
-  new TicketRoute(),
+  // new TicketRoute(),
   new FavouriteRoute(),
   new ConversationRoute(),
-
 ]);
 
 // Create HTTP server

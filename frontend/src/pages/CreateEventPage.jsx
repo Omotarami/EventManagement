@@ -13,6 +13,8 @@ import { EventContext } from "../context/EventContext";
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
+  const API_URL = "http://localhost:8080/api";
+
   const { addEvent } = useContext(EventContext);
 
   // Track the current step
@@ -64,124 +66,116 @@ const CreateEventPage = () => {
   // Handle form submission - called from preview step
   const handleSubmit = async () => {
     try {
-      // Log the entire payload before sending
-      console.log('Full Event Data:', {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        schedule_type: formData.isRecurring ? 'recurring' : 'one-time',
-        capacity: formData.capacity,
-        images: formData.images,
-        schedules: formData.dates.map((date, index) => ({
-          day: date,
-          start_time: formData.times[index]?.startTime || '',
-          end_time: formData.times[index]?.endTime || '',
-          location_type: formData.eventType,
-          location_details: formData.location
-        })),
-        agendas: formData.agenda.map(item => ({
-          name: item.name,
-          description: item.description,
-          speakers: item.speakers,
-          time: `${item.time.time} ${item.time.period}`
-        })),
-        tickets: formData.tickets.map(ticket => ({
-          type: ticket.type,
-          name: ticket.name,
-          price: ticket.type === 'paid' ? ticket.price : '0',
-          description: ticket.description,
-          quantity: ticket.quantity
-        }))
-      });
-  
-      // Create FormData and log it as well
+      // Add better logging to track form data
+      console.log("Submitting event data:", formData);
+
+      // Create FormData for file uploads
       const formDataToSubmit = new FormData();
-      formDataToSubmit.append('user_id', localStorage.getItem('userId') || '1');
-      formDataToSubmit.append('title', formData.title);
-      formDataToSubmit.append('description', formData.description);
-      formDataToSubmit.append('category', formData.category);
-      formDataToSubmit.append('schedule_type', formData.isRecurring ? 'recurring' : 'one-time');
-      formDataToSubmit.append('capacity', formData.capacity);
-  
-      // Log FormData contents
-      for (let [key, value] of formDataToSubmit.entries()) {
-        console.log(`${key}: `, value);
-      }
-  
-      // Add images
+
+      // IMPORTANT FIX: Add user_id from localStorage or use a default
+      // Make sure to stringify if needed to match what server expects
+      formDataToSubmit.append("user_id", localStorage.getItem("userId") || "1");
+
+      // Add basic text fields
+      formDataToSubmit.append("title", formData.title || "");
+      formDataToSubmit.append("description", formData.description || "");
+      formDataToSubmit.append("category", formData.category || "");
+      formDataToSubmit.append(
+        "schedule_type",
+        formData.isRecurring ? "recurring" : "one-time"
+      );
+
+      // CRITICAL FIX: Convert capacity to string before appending
+      formDataToSubmit.append(
+        "capacity",
+        formData.capacity ? String(formData.capacity) : ""
+      );
+
+      // Add files if present
       formData.images.forEach((image, index) => {
         if (image.file) {
-          formDataToSubmit.append('images', image.file);
+          formDataToSubmit.append("images", image.file);
         }
       });
-  
-      // Add schedules, agendas, tickets as JSON strings
-      formDataToSubmit.append('schedules', JSON.stringify(
-        formData.dates.map((date, index) => ({
-          day: date,
-          start_time: formData.times[index]?.startTime || '',
-          end_time: formData.times[index]?.endTime || '',
-          location_type: formData.eventType,
-          location_details: formData.location
-        }))
-      ));
-  
-      formDataToSubmit.append('agendas', JSON.stringify(
-        formData.agenda.map(item => ({
-          name: item.name,
-          description: item.description,
-          speakers: item.speakers,
-          time: `${item.time.time} ${item.time.period}`
-        }))
-      ));
-  
-      formDataToSubmit.append('tickets', JSON.stringify(
-        formData.tickets.map(ticket => ({
-          type: ticket.type,
-          name: ticket.name,
-          price: ticket.type === 'paid' ? ticket.price : '0',
-          description: ticket.description,
-          quantity: ticket.quantity
-        }))
-      ));
-  
-      // Submit to API with additional logging
-      try {
-        const response = await axios.post('/api/event/create', formDataToSubmit, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          // Add error interceptor to log full error response
-          validateStatus: function (status) {
-            return status >= 200 && status < 300; // Default
-          }
-        });
-        console.log('Server Response:', response.data);
-      } catch (error) {
-        console.error('Full Error Response:', error.response ? error.response.data : error.message);
-        console.error('Error Details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers
-        });
-        
-        // Detailed error handling
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          toast.error(error.response.data.message || "Failed to create event");
-        } else if (error.request) {
-          // The request was made but no response was received
-          toast.error("No response received from server");
+
+      // Properly stringify complex objects
+      formDataToSubmit.append(
+        "schedules",
+        JSON.stringify(
+          formData.dates.map((date, index) => ({
+            day: date,
+            start_time: formData.times[index]?.startTime || "",
+            end_time: formData.times[index]?.endTime || "",
+            location_type: formData.eventType,
+            location_details: formData.location,
+            comment: "",
+          }))
+        )
+      );
+
+      formDataToSubmit.append(
+        "agendas",
+        JSON.stringify(
+          formData.agenda.map((item) => ({
+            name: item.name || "",
+            description: item.description || "",
+            speakers: item.speakers || [],
+            time: item.time ? `${item.time.time} ${item.time.period}` : "",
+          }))
+        )
+      );
+
+      formDataToSubmit.append(
+        "tickets",
+        JSON.stringify(
+          formData.tickets.map((ticket) => ({
+            type: ticket.type || "standard",
+            name: ticket.name || "",
+            price: ticket.type === "paid" ? ticket.price : "0",
+            description: ticket.description || "",
+            quantity: ticket.quantity || "10",
+          }))
+        )
+      );
+
+      // Log form data for debugging
+      for (let [key, value] of formDataToSubmit.entries()) {
+        // Don't try to log File objects directly
+        if (key === "images") {
+          console.log(`${key}: [File object]`);
         } else {
-          // Something happened in setting up the request that triggered an Error
-          toast.error("Error setting up the request");
+          console.log(`${key}: ${value}`);
         }
-        throw error;
       }
+
+      // Add auth token to request
+      const token = localStorage.getItem("token");
+
+      // Submit the data
+      const response = await axios.post(
+        "http://localhost:8080/api/event/create",
+        formDataToSubmit,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      console.log("Server Response:", response.data);
+      toast.success("Event created successfully!");
+      navigate("/organizer-dashboard");
     } catch (error) {
+      console.error("Full Error Response:", error.response?.data);
+      console.error("Error Details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
       console.error("Event creation error:", error);
-      toast.error("Failed to create event. Please check the details.");
+
+      toast.error(error.response?.data?.message || "Failed to create event");
     }
   };
 

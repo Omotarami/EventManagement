@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTickets } from '../../context/TicketContext';
 import { DollarSign, Users, Ticket, ArrowUpRight, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,52 +7,80 @@ import { motion, AnimatePresence } from 'framer-motion';
 const EventRevenueSection = ({ eventId, event }) => {
   const { getTicketsByEvent, calculateEventRevenue } = useTickets();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   
-
-  const tickets = getTicketsByEvent(eventId);
-  const totalRevenue = calculateEventRevenue(eventId);
+  useEffect(() => {
+    if (eventId) {
+      // Safely fetch tickets
+      const eventTickets = getTicketsByEvent(eventId) || [];
+      setTickets(eventTickets);
+      
+      // Calculate revenue
+      const revenue = calculateEventRevenue(eventId);
+      setTotalRevenue(revenue);
+    }
+  }, [eventId, getTicketsByEvent, calculateEventRevenue]);
+  
   const ticketsSold = tickets.length;
   
-  
+  // Safely calculate ticket type breakdown
   const ticketTypeBreakdown = tickets.reduce((acc, ticket) => {
-    if (!acc[ticket.ticketType]) {
-      acc[ticket.ticketType] = {
+    const ticketType = ticket.ticketType || 'Standard';
+    const quantity = parseInt(ticket.quantity) || 1;
+    const price = parseFloat(ticket.price) || 0;
+    const totalAmount = parseFloat(ticket.totalAmount) || price * quantity;
+    
+    if (!acc[ticketType]) {
+      acc[ticketType] = {
         count: 0,
         revenue: 0,
-        price: ticket.price 
+        price: price 
       };
     }
     
-    acc[ticket.ticketType].count += ticket.quantity;
-    acc[ticket.ticketType].revenue += ticket.totalAmount;
+    acc[ticketType].count += quantity;
+    acc[ticketType].revenue += totalAmount;
     
     return acc;
   }, {});
   
-  //Mikey this one suppose come from backend
+  // Safely calculate revenue by day
   const revenueByDay = tickets.reduce((acc, ticket) => {
-    const date = new Date(ticket.purchaseDate).toLocaleDateString();
+    if (!ticket.purchaseDate) return acc;
     
-    if (!acc[date]) {
-      acc[date] = 0;
+    try {
+      const date = new Date(ticket.purchaseDate).toLocaleDateString();
+      const amount = parseFloat(ticket.totalAmount) || 0;
+      
+      if (!acc[date]) {
+        acc[date] = 0;
+      }
+      
+      acc[date] += amount;
+      return acc;
+    } catch (error) {
+      console.error('Error processing date:', error);
+      return acc;
     }
-    
-    acc[date] += ticket.totalAmount;
-    return acc;
   }, {});
   
-  
+  // Safely extract attendee information
   const attendees = tickets.map(ticket => ({
-    name: ticket.userName,
-    email: ticket.userEmail,
-    ticketType: ticket.ticketType,
-    purchaseDate: ticket.purchaseDate,
-    amount: ticket.totalAmount,
-    orderId: ticket.orderId
+    name: ticket.userName || 'Guest',
+    email: ticket.userEmail || 'No email provided',
+    ticketType: ticket.ticketType || 'Standard',
+    purchaseDate: ticket.purchaseDate || new Date().toISOString(),
+    amount: parseFloat(ticket.totalAmount) || 0,
+    orderId: ticket.orderId || 'N/A'
   }));
   
-
+  // Export attendee data as CSV
   const exportData = () => {
+    if (!attendees.length) {
+      return;
+    }
+    
     const headers = ['Name', 'Email', 'Ticket Type', 'Purchase Date', 'Amount', 'Order ID'];
     
     const csvContent = [
@@ -73,7 +101,7 @@ const EventRevenueSection = ({ eventId, event }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${event.title}-attendees.csv`;
+    a.download = `${event?.title || 'event'}-attendees.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -88,6 +116,7 @@ const EventRevenueSection = ({ eventId, event }) => {
         <button 
           onClick={exportData}
           className="flex items-center text-sm text-gray-600 hover:text-gray-800"
+          disabled={!attendees.length}
         >
           <Download size={16} className="mr-1" />
           Export Data
@@ -106,10 +135,10 @@ const EventRevenueSection = ({ eventId, event }) => {
           </div>
           <div className="flex items-baseline">
             <span className="text-2xl font-bold text-gray-800">${totalRevenue.toFixed(2)}</span>
-            {totalRevenue > 0 && (
+            {totalRevenue > 0 && ticketsSold > 0 && (
               <span className="ml-2 text-xs text-green-600 flex items-center">
                 <ArrowUpRight size={12} className="mr-0.5" />
-                +{((ticketsSold / (event.totalTickets || 100)) * 100).toFixed(1)}%
+                +{((ticketsSold / (event?.totalTickets || 100)) * 100).toFixed(1)}%
               </span>
             )}
           </div>
@@ -129,13 +158,13 @@ const EventRevenueSection = ({ eventId, event }) => {
           <div className="flex items-baseline">
             <span className="text-2xl font-bold text-gray-800">{ticketsSold}</span>
             <span className="ml-2 text-xs text-gray-600">
-              of {event.totalTickets || 'unlimited'}
+              of {event?.totalTickets || 'unlimited'}
             </span>
           </div>
           <div className="mt-2 bg-gray-200 h-1.5 rounded-full overflow-hidden">
             <div 
               className="h-full bg-blue-500" 
-              style={{ width: `${event.totalTickets ? (ticketsSold / event.totalTickets) * 100 : 0}%` }}
+              style={{ width: `${event?.totalTickets ? (ticketsSold / event.totalTickets) * 100 : 0}%` }}
             ></div>
           </div>
         </div>
@@ -194,95 +223,107 @@ const EventRevenueSection = ({ eventId, event }) => {
               {/* Ticket Type Breakdown */}
               <h3 className="text-md font-semibold text-gray-700 mb-3">Ticket Sales Breakdown</h3>
               
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ticket Type
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity Sold
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Revenue
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.entries(ticketTypeBreakdown).map(([type, data]) => (
-                      <tr key={type}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {type}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ${data.price.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {data.count}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ${data.revenue.toFixed(2)}
-                        </td>
+              {Object.keys(ticketTypeBreakdown).length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ticket Type
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quantity Sold
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Revenue
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {Object.entries(ticketTypeBreakdown).map(([type, data]) => (
+                        <tr key={type}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {type}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${data.price.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {data.count}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${data.revenue.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No ticket sales data available
+                </div>
+              )}
               
               {/* Recent Transactions */}
               <h3 className="text-md font-semibold text-gray-700 mt-6 mb-3">Recent Purchases</h3>
               
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Attendee
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ticket Type
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {attendees.slice(0, 5).map((attendee, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {attendee.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {attendee.email}
+              {attendees.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Attendee
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ticket Type
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Amount
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {attendees.slice(0, 5).map((attendee, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {attendee.name}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {attendee.email}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(attendee.purchaseDate).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {attendee.ticketType}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ${attendee.amount.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(attendee.purchaseDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {attendee.ticketType}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${attendee.amount.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No purchase data available
+                </div>
+              )}
               
               {attendees.length > 5 && (
                 <div className="mt-4 text-center">

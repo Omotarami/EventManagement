@@ -1,40 +1,96 @@
-/* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Ticket, Search, Filter, Calendar, ArrowRight } from 'lucide-react';
+import { Ticket, Search, Filter, Calendar, ArrowRight, Loader } from 'lucide-react';
 import DashboardNavbar from '../DashboardNavbar';
 import Sidebar from '../Sidebar';
-import { useTickets } from '../../context/TicketContext';
+import { useAuth } from '../../context/AuthContext';
 import TicketReceiptCard from '../Ticket/TicketReceiptCard';
 
 const MyTicketsPage = () => {
-  const { getUserTickets } = useTickets();
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const { isAuthenticated } = useAuth();
   
-  const allTickets = getUserTickets();
-  
- 
-  const filteredTickets = allTickets.filter(ticket => {
-    const matchesSearch = ticket.eventTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.orderId.toLowerCase().includes(searchTerm.toLowerCase());
+  // Load tickets from localStorage
+  useEffect(() => {
+    const fetchLocalTickets = async () => {
+      if (isAuthenticated()) {
+        try {
+          setLoading(true);
+          // Simulate network delay
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          const storedTickets = localStorage.getItem('userTickets');
+          if (storedTickets) {
+            setTickets(JSON.parse(storedTickets));
+          }
+          setError(null);
+        } catch (err) {
+          console.error('Failed to fetch tickets:', err);
+          setError('Failed to load tickets');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
     
-    const matchesFilter = filterStatus === 'all' || 
-                         (filterStatus === 'checked-in' && ticket.checkInStatus === 'checked-in') ||
-                         (filterStatus === 'not-checked-in' && ticket.checkInStatus === 'not-checked-in');
+    fetchLocalTickets();
+  }, [isAuthenticated]);
+  
+  // Function to retry loading tickets
+  const fetchUserTickets = async () => {
+    try {
+      setLoading(true);
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const storedTickets = localStorage.getItem('userTickets');
+      if (storedTickets) {
+        setTickets(JSON.parse(storedTickets));
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch tickets:', err);
+      setError('Failed to load tickets');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Filter tickets based on search term and status
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = 
+      (ticket.eventTitle?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (ticket.orderId?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = 
+      filterStatus === 'all' || 
+      (filterStatus === 'checked-in' && ticket.checkInStatus === 'checked-in') ||
+      (filterStatus === 'not-checked-in' && ticket.checkInStatus === 'not-checked-in');
     
     return matchesSearch && matchesFilter;
   });
   
-  
+  // Separate tickets into upcoming and past
   const currentDate = new Date();
-  const upcomingTickets = filteredTickets.filter(ticket => 
-    new Date(ticket.eventDate) >= currentDate
-  );
+  const upcomingTickets = filteredTickets.filter(ticket => {
+    try {
+      return new Date(ticket.eventDate) >= currentDate;
+    } catch (e) {
+      return true; // If date parsing fails, default to upcoming
+    }
+  });
   
-  const pastTickets = filteredTickets.filter(ticket => 
-    new Date(ticket.eventDate) < currentDate
-  );
+  const pastTickets = filteredTickets.filter(ticket => {
+    try {
+      return new Date(ticket.eventDate) < currentDate;
+    } catch (e) {
+      return false; // If date parsing fails, default to not past
+    }
+  });
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,20 +140,47 @@ const MyTicketsPage = () => {
             </div>
           </div>
 
-          {allTickets.length === 0 ? (
+          {/* Loading State */}
+          {loading && (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <Loader size={40} className="mx-auto text-orange-400 animate-spin mb-4" />
+              <h2 className="text-xl font-semibold text-gray-700 mb-2">Loading Tickets...</h2>
+              <p className="text-gray-500">Please wait while we fetch your tickets.</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center border-2 border-red-100">
+              <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Tickets</h2>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={fetchUserTickets}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* No Tickets State */}
+          {!loading && !error && tickets.length === 0 && (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
               <Ticket size={48} className="mx-auto text-gray-300 mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 mb-2">No Tickets Found</h2>
               <p className="text-gray-500 mb-4">You haven't purchased any tickets yet.</p>
               <button
-                onClick={() => window.location.href = '/attendee-dashboard'}
+                onClick={() => window.location.href = '/events'}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors inline-flex items-center"
               >
                 Explore Events
                 <ArrowRight size={16} className="ml-1" />
               </button>
             </div>
-          ) : (
+          )}
+
+          {/* Tickets Display */}
+          {!loading && !error && tickets.length > 0 && (
             <div className="space-y-6">
               {/* Upcoming Events Section */}
               <div>

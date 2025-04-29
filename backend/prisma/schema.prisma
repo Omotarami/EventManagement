@@ -70,7 +70,7 @@ model EventSchedule {
   day               String
   start_time        String
   end_time          String
-  comment           String
+  comment           String?
   location_type     String?
   location_details  String?
 

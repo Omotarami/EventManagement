@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ import {
   Star,
   Clock,
   Users,
+  Loader
 } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
@@ -26,11 +28,18 @@ import OrganizerEventCard from "../../components/OrganizerEventCard";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { events, deleteEvent } = useContext(EventContext);
+  const { events, loading, error, fetchUserEvents } = useContext(EventContext);
 
   const [activeTab, setActiveTab] = useState("planned");
   const [viewType, setViewType] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Ensure events are loaded for this user
+  useEffect(() => {
+    if (user && user.id) {
+      fetchUserEvents(user.id);
+    }
+  }, [user]);
 
   // Handle search input
   const handleSearch = (term) => {
@@ -61,7 +70,9 @@ const Dashboard = () => {
   // Delete an event
   const handleDeleteEvent = (eventId) => {
     console.log("Deleting event with ID:", eventId);
-    deleteEvent(eventId);
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      deleteEvent(eventId);
+    }
   };
 
   // Navigate to event details page
@@ -75,10 +86,26 @@ const Dashboard = () => {
     navigate(`/events/${eventId}`);
   };
 
-  // Filter events based on search term
-  const filteredEvents = events.filter((event) =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter events based on search term and active tab
+  const filteredEvents = events
+    .filter((event) => {
+      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Filter based on active tab
+      if (activeTab === "planned") {
+        // "Planned" includes upcoming and ongoing events
+        return matchesSearch && (
+          !event.status || 
+          event.status === "published" || 
+          event.status === "draft"
+        );
+      } else if (activeTab === "attended") {
+        // "Past Events" includes completed/ended events
+        return matchesSearch && event.status === "ended";
+      }
+      
+      return matchesSearch;
+    });
 
   // Calculate dashboard statistics
   const totalRevenue = events.reduce(
@@ -93,16 +120,9 @@ const Dashboard = () => {
 
   // Get upcoming events for the quick view section
   const upcomingEvents = [...events]
+    .filter(event => !event.status || event.status === "published")
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     .slice(0, 3);
-
-  // Log event IDs to help with debugging
-  useEffect(() => {
-    console.log(
-      "Available events:",
-      events.map((e) => ({ id: e.id, title: e.title }))
-    );
-  }, [events]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -281,8 +301,34 @@ const Dashboard = () => {
               />
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <Loader size={40} className="animate-spin text-orange-400" />
+                <span className="ml-3 text-gray-600">Loading your events...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="mt-8 text-center p-10 border-2 border-red-200 rounded-lg bg-red-50">
+                <h3 className="text-xl font-medium text-red-600 mb-2">
+                  Error Loading Events
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  {error}
+                </p>
+                <button
+                  onClick={() => fetchUserEvents(user.id)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {/* Events Grid */}
-            {events.length > 0 ? (
+            {!loading && !error && events.length > 0 ? (
               <div className="mt-8">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">
                   Your Events
@@ -309,12 +355,13 @@ const Dashboard = () => {
                         event={event}
                         onEdit={() => handleEditEvent(event.id)}
                         onDelete={() => handleDeleteEvent(event.id)}
+                        onClick={() => handleViewEventDetails(event.id)}
                       />
                     </motion.div>
                   ))}
                 </div>
               </div>
-            ) : (
+            ) : !loading && !error ? (
               <div className="mt-8 text-center p-10 border-2 border-dashed border-gray-200 rounded-lg">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -337,10 +384,10 @@ const Dashboard = () => {
                   </button>
                 </motion.div>
               </div>
-            )}
+            ) : null}
 
             {/* Upcoming Events List (if we have any events) */}
-            {events.length > 0 && (
+            {!loading && !error && upcomingEvents.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">
                   Upcoming Events

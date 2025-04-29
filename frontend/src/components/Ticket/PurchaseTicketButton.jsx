@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTickets } from '../../context/TicketContext';
-import { Ticket, X, Check, CreditCard, Calendar } from 'lucide-react';
+import { Ticket, X, Check, CreditCard, Calendar, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
+import { v4 as uuidv4 } from 'uuid';
 
 const PurchaseTicketButton = ({ event }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,22 +15,26 @@ const PurchaseTicketButton = ({ event }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [purchasedTicket, setPurchasedTicket] = useState(null);
   
-  const { purchaseTicket } = useTickets();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   
-
   const handleClickBuy = () => {
+    // Check if user is logged in first
+    if (!isAuthenticated()) {
+      toast.error('Please log in to purchase tickets');
+      navigate('/login');
+      return;
+    }
     
+    // Set default selected ticket
     if (event.tickets && event.tickets.length > 0) {
       setSelectedTicket(event.tickets[0].name);
     }
     setIsModalOpen(true);
   };
   
-
   const handleClose = () => {
     if (isSuccess) {
-    
       navigate('/tickets');
     } else {
       setIsModalOpen(false);
@@ -39,12 +44,10 @@ const PurchaseTicketButton = ({ event }) => {
     }
   };
   
-  
   const handleSelectTicket = (ticketType) => {
     setSelectedTicket(ticketType);
   };
   
- 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0 && value <= 10) { 
@@ -52,48 +55,83 @@ const PurchaseTicketButton = ({ event }) => {
     }
   };
   
-  
-  const handleCompletePurchase = () => {
-    setIsProcessing(true);
+  // Local implementation of purchaseTicket
+  const purchaseTicket = async (event, ticketType, quantity) => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Find the selected ticket from event tickets
+    const selectedTicket = event.tickets?.find(t => t.name === ticketType) || {
+      name: ticketType || 'General Admission',
+      price: event.price || 29.99
+    };
     
-   
-    setTimeout(() => {
-      try {
-       
-        const ticket = purchaseTicket(
-          event, 
-          selectedTicket || 'General Admission', 
-          quantity
-        );
-        
-        
-        setPurchasedTicket(ticket);
-        setIsSuccess(true);
-        setIsProcessing(false);
-        
-       
-        toast.success('Ticket purchased successfully!');
-        
-       
-        console.log('Email receipt sent to:', ticket.userEmail);
-      } catch (error) {
-        console.error('Error purchasing ticket:', error);
-        toast.error('Failed to purchase ticket. Please try again.');
-        setIsProcessing(false);
-      }
-    }, 1500);
+    // Create a new ticket object
+    const newTicket = {
+      id: 'ticket-' + uuidv4().slice(0, 8),
+      orderId: 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
+      eventId: event.id,
+      eventTitle: event.title,
+      eventDate: event.startDate || new Date().toISOString(),
+      eventTime: event.startTime || '19:00',
+      eventLocation: event.location || 'Venue',
+      eventImage: event.imageSrc || 'https://via.placeholder.com/300',
+      userId: user?.id || 'user-1',
+      userName: user?.name || 'Guest User',
+      userEmail: user?.email || 'guest@example.com',
+      ticketType: selectedTicket.name,
+      price: selectedTicket.price,
+      quantity: quantity,
+      totalAmount: selectedTicket.price * quantity,
+      purchaseDate: new Date().toISOString(),
+      checkInStatus: 'not-checked-in'
+    };
+
+    // Save ticket to localStorage
+    const storedTickets = localStorage.getItem('userTickets');
+    const existingTickets = storedTickets ? JSON.parse(storedTickets) : [];
+    const updatedTickets = [...existingTickets, newTicket];
+    localStorage.setItem('userTickets', JSON.stringify(updatedTickets));
+    
+    return newTicket;
   };
   
- 
+  const handleCompletePurchase = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // Call the purchaseTicket method
+      const ticket = await purchaseTicket(
+        event, 
+        selectedTicket || 'General Admission', 
+        quantity
+      );
+      
+      // Update local state with the purchased ticket
+      setPurchasedTicket(ticket);
+      setIsSuccess(true);
+      
+      // Show success notification
+      toast.success('Ticket purchased successfully!');
+      
+      // Log receipt info
+      console.log('Purchase complete! Receipt sent to:', ticket.userEmail);
+    } catch (error) {
+      console.error('Error purchasing ticket:', error);
+      toast.error('Failed to purchase ticket. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
   const getTicketPrice = () => {
     if (!event.tickets || event.tickets.length === 0) {
-      return event.price || 0;
+      return event.price || 29.99;
     }
     
     const ticket = event.tickets.find(t => t.name === selectedTicket);
-    return ticket ? ticket.price : event.price || 0;
+    return ticket ? ticket.price : event.price || 29.99;
   };
-  
 
   const totalAmount = getTicketPrice() * quantity;
   
@@ -199,11 +237,11 @@ const PurchaseTicketButton = ({ event }) => {
                       <div>
                         <h4 className="font-medium text-gray-800">{event.title}</h4>
                         <p className="text-sm text-gray-500">
-                          {new Date(event.startDate).toLocaleDateString('en-US', {
+                          {event.startDate ? new Date(event.startDate).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
-                          })}
+                          }) : 'Date TBD'}
                         </p>
                       </div>
                     </div>
@@ -241,7 +279,7 @@ const PurchaseTicketButton = ({ event }) => {
                     ) : (
                       <div className="mb-4">
                         <p className="text-gray-700">
-                          General Admission: ${event.price || 0}
+                          General Admission: ${event.price || 29.99}
                         </p>
                       </div>
                     )}
@@ -303,10 +341,7 @@ const PurchaseTicketButton = ({ event }) => {
                     >
                       {isProcessing ? (
                         <span className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
+                          <Loader size={16} className="animate-spin mr-2" />
                           Processing...
                         </span>
                       ) : (
