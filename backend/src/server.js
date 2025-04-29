@@ -12,6 +12,8 @@ const logger = require("./config/logger");
 
 // Initialize Express app
 const app = new App();
+
+// Initialize routes
 app.initializedRoutes([
   new AuthRoute(),
   new EventRoute(),
@@ -28,8 +30,12 @@ const server = http.createServer(app.app);
 // Initialize Socket.IO
 const socketServer = new SocketServer(server);
 
+// Make Socket.IO instance available to Express controllers
+app.setSocketIO(socketServer.io);
+
 // Start server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   logger.info(`Server started at http://localhost:${PORT}`);
+  logger.info(`WebSocket server running on the same port`);
 });
