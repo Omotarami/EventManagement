@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -10,8 +11,7 @@ export const TicketProvider = ({ children }) => {
   const [eventTickets, setEventTickets] = useState({});
   const [loading, setLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
-  const API_URL = 'http://localhost:8080/api';
-
+  
   // Load user tickets when authenticated
   useEffect(() => {
     if (isAuthenticated() && user) {
@@ -25,19 +25,35 @@ export const TicketProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/ticket/user/${userId}`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : ''
-        }
-      });
+      // For now, mock the data - replace with actual API call later
+      // const response = await axios.get(`/api/ticket/user/${userId}`);
+      const mockTickets = [
+        {
+          id: '1',
+          eventId: '1',
+          eventTitle: 'Tech Conference 2025',
+          eventDate: '2025-06-15',
+          eventTime: '09:00 AM',
+          eventLocation: 'Convention Center',
+          ticketType: 'VIP Pass',
+          price: 149.99,
+          quantity: 1,
+          totalAmount: 149.99,
+          purchaseDate: '2025-04-01',
+          orderId: 'ORD-12345',
+          checkInStatus: 'not-checked-in',
+          userName: user?.name || 'Guest',
+          userEmail: user?.email || 'guest@example.com'
+        },
+        // Add more mock tickets as needed
+      ];
       
-      setUserTickets(response.data);
+      setUserTickets(mockTickets);
       
       // Also store in localStorage for faster access
-      localStorage.setItem('userTickets', JSON.stringify(response.data));
+      localStorage.setItem('userTickets', JSON.stringify(mockTickets));
       
-      return response.data;
+      return mockTickets;
     } catch (error) {
       console.error('Failed to fetch user tickets:', error);
       toast.error('Could not load your tickets');
@@ -57,15 +73,36 @@ export const TicketProvider = ({ children }) => {
     }
     
     try {
-      const response = await axios.get(`${API_URL}/ticket/event/${eventId}`);
+      // For development, create mock data
+      // const response = await axios.get(`/api/ticket/event/${eventId}`);
+      const mockEventTickets = [
+        {
+          id: '1',
+          ticket_name: 'Early Bird',
+          ticket_type: 'standard',
+          price: 49.99,
+          description: 'Limited early access tickets',
+          quantity: 100,
+          sold: 45
+        },
+        {
+          id: '2',
+          ticket_name: 'VIP Access',
+          ticket_type: 'vip',
+          price: 149.99,
+          description: 'Full access including workshops',
+          quantity: 50,
+          sold: 10
+        }
+      ];
       
       // Save to state
       setEventTickets(prev => ({
         ...prev,
-        [eventId]: response.data
+        [eventId]: mockEventTickets
       }));
       
-      return response.data;
+      return mockEventTickets;
     } catch (error) {
       console.error('Failed to fetch event tickets:', error);
       toast.error('Could not load ticket information');
@@ -82,30 +119,46 @@ export const TicketProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/ticket/purchase`,
-        {
-          user_id: user.id,
-          event_id: eventId,
-          ticket_id: ticketId,
-          quantity
-        },
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : ''
-          }
-        }
-      );
+      // In development, simulate a successful purchase
+      // const response = await axios.post('/api/ticket/purchase', {...});
       
-      // Refresh user tickets
-      fetchUserTickets(user.id);
+      // Create a mock purchased ticket
+      const selectedTicket = eventTickets[eventId]?.find(ticket => ticket.id === ticketId);
+      
+      if (!selectedTicket) {
+        throw new Error('Selected ticket not found');
+      }
+      
+      const purchasedTicket = {
+        id: `ticket-${Date.now()}`,
+        eventId: eventId,
+        eventTitle: 'Event Title', // You'll need to get this from your EventContext
+        eventDate: new Date().toISOString(),
+        eventTime: '10:00 AM',
+        eventLocation: 'Event Location',
+        ticketType: selectedTicket.ticket_name,
+        price: selectedTicket.price,
+        quantity: quantity,
+        totalAmount: selectedTicket.price * quantity,
+        purchaseDate: new Date().toISOString(),
+        orderId: `ORD-${Date.now()}`,
+        checkInStatus: 'not-checked-in',
+        userName: user?.name || 'Guest',
+        userEmail: user?.email || 'guest@example.com'
+      };
+      
+      // Add to user tickets
+      const updatedTickets = [...userTickets, purchasedTicket];
+      setUserTickets(updatedTickets);
+      
+      // Update localStorage
+      localStorage.setItem('userTickets', JSON.stringify(updatedTickets));
       
       toast.success('Ticket purchased successfully!');
-      return response.data;
+      return purchasedTicket;
     } catch (error) {
       console.error('Failed to purchase ticket:', error);
-      toast.error(error.response?.data?.error || 'Failed to purchase ticket');
+      toast.error(error.message || 'Failed to purchase ticket');
       return null;
     } finally {
       setLoading(false);
@@ -114,56 +167,28 @@ export const TicketProvider = ({ children }) => {
 
   // Check if user has a ticket for a specific event
   const hasTicketForEvent = (eventId) => {
-    if (!userTickets.length || !eventId) return false;
-    return userTickets.some(ticket => parseInt(ticket.eventId) === parseInt(eventId));
+    if (!userTickets || !userTickets.length || !eventId) return false;
+    return userTickets.some(ticket => String(ticket.eventId) === String(eventId));
   };
 
-  // Get all tickets purchased by the user
+  // Get all tickets purchased by the user - ALWAYS return an array
   const getUserTickets = () => {
-    return userTickets;
+    return Array.isArray(userTickets) ? userTickets : [];
   };
 
   // Calculate event revenue (for organizers)
   const calculateEventRevenue = (eventId) => {
-    if (!eventId || !userTickets.length) return 0;
+    if (!eventId || !userTickets || !userTickets.length) return 0;
     
     return userTickets
-      .filter(ticket => parseInt(ticket.eventId) === parseInt(eventId))
+      .filter(ticket => String(ticket.eventId) === String(eventId))
       .reduce((total, ticket) => total + parseFloat(ticket.totalAmount || 0), 0);
   };
 
   // Get tickets by event ID
   const getTicketsByEvent = (eventId) => {
-    if (!eventId || !userTickets.length) return [];
-    return userTickets.filter(ticket => parseInt(ticket.eventId) === parseInt(eventId));
-  };
-
-  // Check in an attendee (for organizers)
-  const checkInAttendee = async (attendeeId, checkInStatus) => {
-    if (!isAuthenticated()) {
-      toast.error('Please log in to perform check-in');
-      return null;
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `${API_URL}/ticket/check-in/${attendeeId}`,
-        { check_in_status: checkInStatus },
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : ''
-          }
-        }
-      );
-      
-      toast.success('Check-in status updated!');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update check-in status:', error);
-      toast.error('Failed to update check-in status');
-      return null;
-    }
+    if (!eventId || !userTickets || !userTickets.length) return [];
+    return userTickets.filter(ticket => String(ticket.eventId) === String(eventId));
   };
 
   const contextValue = {
@@ -175,8 +200,7 @@ export const TicketProvider = ({ children }) => {
     hasTicketForEvent,
     getUserTickets,
     calculateEventRevenue,
-    getTicketsByEvent,
-    checkInAttendee
+    getTicketsByEvent
   };
 
   return (
