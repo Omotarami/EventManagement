@@ -26,7 +26,7 @@ import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardRouter from "./components/DashboardRouter";
 import Messages from "./pages/Messages";
-import { SocketProvider } from "./context/SocketContext"; // Import the SocketProvider
+import { SocketProvider } from "./context/SocketContext";
 
 const App = () => {
   return (

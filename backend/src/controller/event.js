@@ -4,42 +4,86 @@ const prisma = new PrismaClient();
 
 class EventController {    
     // Create a new event
-    async createEvent (req, res) {
+    async createEvent(req, res) {
         try {
-            const {
-                user_id,
-                title,
-                description,
-                schedule_type = "one-time",
-                schedule_details,
-                capacity,
-                category
-            } = req.body;
-    
-            // Validate required fields
-            if (!user_id || !title || !description) {
-                return res.status(400).json({ error: "Missing required fields: user_id, title, and description are required" });
+          console.log('Create Event Request Received');
+          console.log('Request Body:', req.body);
+          
+          const {
+            title,
+            description,
+            schedule_type = "one-time",
+            category,
+            capacity,
+            schedules = '[]',
+            agendas = '[]',
+            tickets = '[]'
+          } = req.body;
+      
+          // Explicitly handle types
+          const eventData = {
+            user_id: req.user.id,
+            title: String(title || ''),
+            description: String(description || ''),
+            schedule_type: String(schedule_type || 'one-time'),
+            category: category ? String(category) : null,
+            capacity: capacity ? String(capacity) : null
+          };
+      
+          console.log('Prepared Event Data:', eventData);
+      
+          // Parse JSON strings properly
+          let parsedSchedules = [];
+          let parsedAgendas = [];
+          let parsedTickets = [];
+      
+          try {
+            if (schedules && typeof schedules === 'string') {
+              parsedSchedules = JSON.parse(schedules);
             }
-    
-            // Create the event in the database
-            const event = await prisma.event.create({
-                data: {
-                    user_id,
-                    title,
-                    description,
-                    schedule_type,
-                    schedule_details,
-                    capacity,
-                    category
-                },
+            
+            if (agendas && typeof agendas === 'string') {
+              parsedAgendas = JSON.parse(agendas);
+            }
+            
+            if (tickets && typeof tickets === 'string') {
+              parsedTickets = JSON.parse(tickets);
+            }
+          } catch (parseError) {
+            console.error('JSON Parsing Error:', parseError);
+            return res.status(400).json({
+              message: 'Invalid data format',
+              error: parseError.message
             });
-            // Return the created event
-            res.status(201).json(event);
+          }
+      
+          // Start transaction with explicit type handling
+          const result = await this.prisma.$transaction(async (prisma) => {
+            // Create the main event with properly typed data
+            const event = await prisma.event.create({
+              data: eventData
+            });
+      
+            // Process additional data...
+            return event;
+          });
+      
+          res.status(201).json({
+            message: "Event created successfully",
+            event: result
+          });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "An error occurred while creating the event" });
+          console.error("Detailed Event Creation Error:", {
+            message: error.message,
+            stack: error.stack
+          });
+      
+          res.status(500).json({ 
+            message: "Failed to create event",
+            error: error.message
+          });
         }
-    };
+      }
     
     // Update an existing event
     async updateEvent (req, res) {
