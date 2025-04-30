@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import toast from "react-hot-toast";
 import StepProgress from "../components/EventForm/StepProgress";
 import EventDetailsStep from "../components/EventForm/EventDetailsStep";
@@ -11,11 +13,13 @@ import { EventContext } from "../context/EventContext";
 
 const CreateEventPage = () => {
   const navigate = useNavigate();
+  const API_URL = "http://localhost:8080/api";
+
   const { addEvent } = useContext(EventContext);
-  
+
   // Track the current step
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // Initialize form data state
   const [formData, setFormData] = useState({
     // Event Details
@@ -23,30 +27,30 @@ const CreateEventPage = () => {
     title: "",
     description: "",
     category: "",
-    eventType: "physical", 
+    eventType: "physical",
     isRecurring: false,
     dates: [],
     times: [],
     capacity: "",
     location: "",
     agenda: [],
-    
+
     // Tickets
-    tickets: [], 
+    tickets: [],
   });
 
   // Handle form data updates - this will be passed to each step component
   const updateFormData = (newData) => {
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      ...newData
+      ...newData,
     }));
   };
 
   // Navigate to next step
   const nextStep = () => {
     if (currentStep < 3) {
-      setCurrentStep(prevStep => prevStep + 1);
+      setCurrentStep((prevStep) => prevStep + 1);
       window.scrollTo(0, 0); // Scroll to top on step change
     }
   };
@@ -54,68 +58,124 @@ const CreateEventPage = () => {
   // Navigate to previous step
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(prevStep => prevStep - 1);
+      setCurrentStep((prevStep) => prevStep - 1);
       window.scrollTo(0, 0); // Scroll to top on step change
     }
   };
 
   // Handle form submission - called from preview step
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      // Create a new event object formatted for the event context
-      const newEvent = {
-        id: Date.now().toString(), // Generate a unique ID
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        startDate: formData.dates[0], // Use first selected date as start date
-        endDate: formData.dates[formData.dates.length - 1], // Last date if recurring
-        
-        // Calculate start and end times based on first time slot
-        startTime: formData.times.length > 0 
-          ? `${formData.times[0].startTime} ${formData.times[0].startPeriod}` 
-          : "",
-        endTime: formData.times.length > 0 
-          ? `${formData.times[0].endTime} ${formData.times[0].endPeriod}` 
-          : "",
-        
-        location: formData.location,
-        eventType: formData.eventType,
-        isRecurring: formData.isRecurring,
-        agenda: formData.agenda,
-        
-        // Calculate total capacity from input
-        totalTickets: parseInt(formData.capacity) || 0,
-        soldTickets: 0, // New events start with 0 tickets sold
-        
-        // Calculate initial gross amount (0 for new events)
-        grossAmount: 0,
-        
-        // Set initial status to published
-        status: "published",
-        
-        // Get first image if available
-        imageSrc: formData.images.length > 0 
-          ? formData.images[0].preview || formData.images[0].url 
-          : "",
-          
-        // Add tickets information
-        tickets: formData.tickets.map(ticket => ({
-          ...ticket,
-          sold: 0 // Initialize sold count to 0
-        }))
-      };
-      
-      // Add event to context
-      addEvent(newEvent);
-      
+      // Add better logging to track form data
+      console.log("Submitting event data:", formData);
+
+      // Create FormData for file uploads
+      const formDataToSubmit = new FormData();
+
+      // IMPORTANT FIX: Add user_id from localStorage or use a default
+      // Make sure to stringify if needed to match what server expects
+      formDataToSubmit.append("user_id", localStorage.getItem("userId") || "1");
+
+      // Add basic text fields
+      formDataToSubmit.append("title", formData.title || "");
+      formDataToSubmit.append("description", formData.description || "");
+      formDataToSubmit.append("category", formData.category || "");
+      formDataToSubmit.append(
+        "schedule_type",
+        formData.isRecurring ? "recurring" : "one-time"
+      );
+
+      // CRITICAL FIX: Convert capacity to string before appending
+      formDataToSubmit.append(
+        "capacity",
+        formData.capacity ? String(formData.capacity) : ""
+      );
+
+      // Add files if present
+      formData.images.forEach((image, index) => {
+        if (image.file) {
+          formDataToSubmit.append("images", image.file);
+        }
+      });
+
+      // Properly stringify complex objects
+      formDataToSubmit.append(
+        "schedules",
+        JSON.stringify(
+          formData.dates.map((date, index) => ({
+            day: date,
+            start_time: formData.times[index]?.startTime || "",
+            end_time: formData.times[index]?.endTime || "",
+            location_type: formData.eventType,
+            location_details: formData.location,
+            comment: "",
+          }))
+        )
+      );
+
+      formDataToSubmit.append(
+        "agendas",
+        JSON.stringify(
+          formData.agenda.map((item) => ({
+            name: item.name || "",
+            description: item.description || "",
+            speakers: item.speakers || [],
+            time: item.time ? `${item.time.time} ${item.time.period}` : "",
+          }))
+        )
+      );
+
+      formDataToSubmit.append(
+        "tickets",
+        JSON.stringify(
+          formData.tickets.map((ticket) => ({
+            type: ticket.type || "standard",
+            name: ticket.name || "",
+            price: ticket.type === "paid" ? ticket.price : "0",
+            description: ticket.description || "",
+            quantity: ticket.quantity || "10",
+          }))
+        )
+      );
+
+      // Log form data for debugging
+      for (let [key, value] of formDataToSubmit.entries()) {
+        // Don't try to log File objects directly
+        if (key === "images") {
+          console.log(`${key}: [File object]`);
+        } else {
+          console.log(`${key}: ${value}`);
+        }
+      }
+
+      // Add auth token to request
+      const token = localStorage.getItem("token");
+
+      // Submit the data
+      const response = await axios.post(
+        "http://localhost:8080/api/event/create",
+        formDataToSubmit,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        }
+      );
+
+      console.log("Server Response:", response.data);
       toast.success("Event created successfully!");
-      
-      // Navigate to dashboard after successful creation
-      navigate("/dashboard");
+      navigate("/organizer-dashboard");
     } catch (error) {
-      toast.error("Failed to create event. Please try again.");
-      console.error("Error creating event:", error);
+      console.error("Full Error Response:", error.response?.data);
+      console.error("Error Details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+      console.error("Event creation error:", error);
+
+      toast.error(error.response?.data?.message || "Failed to create event");
     }
   };
 
@@ -148,14 +208,14 @@ const CreateEventPage = () => {
           return false;
         }
         return true;
-        
+
       case 2: // Tickets
         if (formData.tickets.length === 0) {
           toast.error("Please add at least one ticket type");
           return false;
         }
         return true;
-        
+
       default:
         return true;
     }
@@ -173,28 +233,28 @@ const CreateEventPage = () => {
     switch (currentStep) {
       case 1:
         return (
-          <EventDetailsStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={handleNext} 
+          <EventDetailsStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
           />
         );
       case 2:
         return (
-          <TicketsStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onNext={handleNext} 
-            onPrev={prevStep} 
+          <TicketsStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
+            onPrev={prevStep}
           />
         );
       case 3:
         return (
-          <PreviewStep 
-            formData={formData} 
-            updateFormData={updateFormData} 
-            onPrev={prevStep} 
-            onSubmit={handleSubmit} 
+          <PreviewStep
+            formData={formData}
+            updateFormData={updateFormData}
+            onPrev={prevStep}
+            onSubmit={handleSubmit}
           />
         );
       default:
@@ -216,12 +276,14 @@ const CreateEventPage = () => {
           {/* Header */}
           <div className="bg-orange-400 text-white p-4 rounded-t-lg">
             <h1 className="text-xl font-bold">Create New Event</h1>
-            <p className="text-sm opacity-90">Fill In The Details To Create Your Event</p>
+            <p className="text-sm opacity-90">
+              Fill In The Details To Create Your Event
+            </p>
           </div>
 
           {/* Step Progress */}
           <StepProgress currentStep={currentStep} />
-          
+
           {/* Form Content */}
           <div className="bg-white rounded-b-lg shadow p-6 mb-8">
             {renderStep()}

@@ -178,6 +178,7 @@ export const FormSelect = ({
 /**
  * ToggleButton - For toggling between two options (like Physical/Virtual, One-time/Recurring)
  */
+
 export const ToggleButton = ({
   options = [],
   value,
@@ -185,6 +186,9 @@ export const ToggleButton = ({
   name,
   className = "",
 }) => {
+  // Handle both string and boolean values
+  const stringValue = typeof value === 'boolean' ? String(value) : value;
+  
   return (
     <div className={`flex ${className}`}>
       {options.map((option) => (
@@ -192,7 +196,7 @@ export const ToggleButton = ({
           key={option.value}
           type="button"
           className={`px-5 py-2 text-sm font-medium ${
-            value === option.value
+            stringValue === option.value
               ? "bg-orange-100 text-orange-600"
               : "bg-white text-gray-700 hover:bg-gray-50"
           } ${
@@ -210,7 +214,6 @@ export const ToggleButton = ({
     </div>
   );
 };
-
 /**
  * ActionButton - Button for actions like Add Speaker, Add Description, etc.
  */

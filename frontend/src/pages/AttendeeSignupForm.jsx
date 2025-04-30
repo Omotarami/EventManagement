@@ -12,8 +12,8 @@ import {
   FaMusic,
   FaStar,
 } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext"; 
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const AttendeeSignupForm = () => {
   const navigate = useNavigate();
@@ -21,10 +21,11 @@ const AttendeeSignupForm = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: "",
+    fullname: "",
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   // Password visibility toggle
   const [showPassword, setShowPassword] = useState(false);
@@ -41,17 +42,15 @@ const AttendeeSignupForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
-      // Use the signup function from AuthContext with 'attendee' role Mikeylele you hear
-      const user = await signup(formData, "attendee");
-
-      toast.success("Account created successfully!");
-
-      // Redirect to attendee dashboard
-      navigate("/attendee-dashboard");
-    } catch (error) {
-      toast.error(error.message || "Error creating account");
+      await signup(formData, "attendee");
+      toast.success("Signup successful! Redirecting to login page...");
+      navigate("/login/attendee"); // Redirect to attendee specific login
+    } catch (err) {
+      toast.error("Signup failed:" + (err.message || ""));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -318,7 +317,7 @@ const AttendeeSignupForm = () => {
 
           <motion.div variants={itemVariants} className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800">
-              Create an account
+              Create an Attendee Account
             </h2>
             <p className="text-gray-600 mt-2">
               Start discovering amazing events
@@ -333,7 +332,7 @@ const AttendeeSignupForm = () => {
               {/* Name Field */}
               <motion.div variants={itemVariants}>
                 <label
-                  htmlFor="name"
+                  htmlFor="fullname"
                   className="block mb-1 text-sm font-medium text-gray-700"
                 >
                   Full Name
@@ -344,9 +343,9 @@ const AttendeeSignupForm = () => {
                   </div>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="fullname"
+                    name="fullname"
+                    value={formData.fullname}
                     onChange={handleChange}
                     placeholder="Enter your full name"
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
@@ -453,21 +452,32 @@ const AttendeeSignupForm = () => {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
+                  disabled={loading}
                 >
-                  Join Eventro
+                  {loading ? "Creating account..." : "Join as Attendee"}
                 </motion.button>
               </motion.div>
             </form>
+          </motion.div>
+
+          {/* Switch to Organizer Signup */}
+          <motion.div variants={itemVariants} className="text-center mt-4">
+            <a
+              href="/signup/organizer"
+              className="text-sm font-medium text-orange-600 hover:text-orange-500"
+            >
+              Want to create events? Sign up as Organizer
+            </a>
           </motion.div>
 
           {/* Login Link */}
           <motion.p variants={itemVariants} className="text-center mt-8">
             <span className="text-gray-600">Already have an account?</span>
             <a
-              href="/login"
+              href="/login/attendee"
               className="ml-1 font-medium text-orange-600 hover:text-orange-700"
             >
-              Login
+              Login as Attendee
             </a>
           </motion.p>
         </motion.div>

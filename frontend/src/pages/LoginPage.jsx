@@ -3,18 +3,18 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,24 +26,24 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const user = await login(formData.email, formData.password);
-
+      toast.success("Login successful!");
+      
       // Redirect based on user role
-      const from = location.state?.from?.pathname;
-      if (from) {
-        navigate(from);
+      if (user.role === "organizer") {
+        navigate("/organizer-dashboard");
+      } else if (user.role === "attendee") {
+        navigate("/attendee-dashboard");
       } else {
-        if (user.role === "organizer") {
-          navigate("/dashboard");
-        } else if (user.role === "attendee") {
-          navigate("/attendee-dashboard");
-        } else {
-          navigate("/");
-        }
+        // Fallback to dashboard router
+        navigate("/dashboard");
       }
     } catch (error) {
       toast.error(error.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -433,6 +433,15 @@ const LoginPage = () => {
               </div>
             </div>
 
+            {/* Helper text for testing */}
+            <div className="text-sm text-gray-500">
+              <p>
+                Hint: Use an email with "organizer" to login as an organizer.
+              </p>
+              <p>Example: organizer@example.com / anypassword</p>
+              <p>Or use any other email to login as an attendee.</p>
+            </div>
+
             {/* Remember Me Checkbox */}
             <div className="flex items-center">
               <input
@@ -454,8 +463,9 @@ const LoginPage = () => {
               className="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </motion.button>
           </motion.form>
 
