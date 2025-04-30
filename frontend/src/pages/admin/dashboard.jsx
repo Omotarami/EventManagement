@@ -393,7 +393,7 @@ const Dashboard = () => {
                   Upcoming Events
                 </h2>
 
-                <div className="space-y-3">
+                <div className="space-y-3 ">
                   {upcomingEvents.map((event) => {
                     // Format the date safely
                     const formattedDate = event.startDate

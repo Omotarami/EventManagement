@@ -98,7 +98,7 @@ const CreateEventPage = () => {
         }
       });
 
-      // Properly stringify complex objects
+      
       formDataToSubmit.append(
         "schedules",
         JSON.stringify(
