@@ -6,8 +6,7 @@ import { FormSection, ToggleButton } from "./FormComponents";
 import TimeSelector from "../EventForm/TimeSelector";
 
 /**
- * EventSchedule component
- * Handles event schedule selection (one-time vs recurring, dates, times)
+)
  * 
  * @param {Object} props
  * @param {boolean} props.isRecurring 
@@ -16,13 +15,13 @@ import TimeSelector from "../EventForm/TimeSelector";
  * @param {Function} props.onChange 
  */
 const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
-  // Current month and year for calendar
+
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   
-  // Format dates array properly on component mount
+
   useEffect(() => {
-    // Ensure all dates are in full ISO format
+   
     if (dates.length > 0) {
       const formattedDates = dates.map(date => {
         if (typeof date === 'string' && !date.includes('T')) {
@@ -36,7 +35,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         onChange({ dates: formattedDates });
       }
     }
-  }, []);
+  }, [dates, onChange]);
 
   // Event type options (one-time vs recurring)
   const eventTypeOptions = [
@@ -218,11 +217,11 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
     return (
       <div className="mb-6">
         {/* Calendar header with month/year and nav buttons */}
-        <div className="flex justify-between items-center mb-4 px-2 ">
+        <div className="flex justify-between items-center mb-4 px-2 text-gray-600">
           <h2 className="text-lg font-medium text-gray-800">
             {monthNames[currentMonth]} {currentYear}
           </h2>
-          <div className="flex space-x-2 ">
+          <div className="flex space-x-2">
             <button
               type="button"
               onClick={prevMonth}
@@ -234,7 +233,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             <button
               type="button"
               onClick={nextMonth}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+              className="p-2 rounded-full hover:bg-gray-100"
               aria-label="Next month"
             >
               <ChevronRight size={18} />
@@ -243,7 +242,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Day names (Su, Mo, etc.) */}
-        <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2">
+        <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2 text-gray-600">
           {dayNames.map((day, index) => (
             <div
               key={index}
@@ -255,7 +254,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-2 text-gray">
+        <div className="grid grid-cols-7 gap-2 text-gray-600">
           {allDays.map((dayObj, index) => {
             const selected = isDateSelected(dayObj);
             const today = isToday(dayObj);

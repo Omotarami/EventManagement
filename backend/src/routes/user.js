@@ -13,7 +13,7 @@ class UserRoute {
   }
 
   initializeRoutes() {
-    // route for getting user profile information
+   
     this.router.get(
       `${this.path}/profile/:id`,
       isAuthenticated,
@@ -30,13 +30,7 @@ class UserRoute {
       )
     );
 
-    this.router.get(
-      `${this.path}/public`,
-      isAuthenticated,
-      useCatchErrors(
-        this.userController.getPublicUsers.bind(this.userController)
-      )
-    );
+   c
 
     // Endpoint Route to get all users
     this.router.get(
