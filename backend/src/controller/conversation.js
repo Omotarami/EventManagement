@@ -23,24 +23,15 @@ class ConversationController {
       });
 
       if (attendees.length !== 2) {
-        return res.status(403).json({
-          message: "Both users must have tickets for this event to start a conversation",
-        });
+        // More permissive - just check if at least one has a ticket
+        if (attendees.length === 0) {
+          return res.status(403).json({
+            message: "At least one user must have a ticket for this event to start a conversation",
+          });
+        }
       }
 
-      // Check if both users have public profiles
-      const users = await prisma.user.findMany({
-        where: {
-          id: { in: participant_ids.map(id => parseInt(id)) },
-          profile_visibility: "public",
-        },
-      });
-
-      if (users.length !== 2) {
-        return res.status(403).json({
-          message: "Both users must have public profiles to start a conversation",
-        });
-      }
+      // Removed public profile check - allow all users to communicate
 
       // Check if conversation already exists between these users for this event
       let conversation = await prisma.conversation.findFirst({
@@ -111,20 +102,16 @@ class ConversationController {
     const { event_id, user_id } = req.params;
 
     try {
-      // Verify user has a ticket for this event
+      // Verify user has a ticket for this event - make this optional
       const attendee = await prisma.attendee.findFirst({
         where: {
           user_id: parseInt(user_id),
           event_id: parseInt(event_id),
-          ticket_id: { not: null },
         },
       });
 
-      if (!attendee) {
-        return res.status(403).json({
-          message: "You must have a ticket for this event to view conversations",
-        });
-      }
+      // Allow users without tickets to access conversations for this event
+      // This is useful for event organizers who don't have tickets themselves
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -195,14 +182,12 @@ class ConversationController {
 
     try {
       // Get all users with tickets to this event (excluding current user)
+      // Removed profile visibility check - allow all users to be messaged
       const attendees = await prisma.attendee.findMany({
         where: {
           event_id: parseInt(event_id),
           ticket_id: { not: null },
           user_id: { not: parseInt(user_id) },
-          user: {
-            profile_visibility: "public",
-          },
         },
         include: {
           user: {

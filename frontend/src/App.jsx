@@ -26,6 +26,7 @@ import Calendar from "./pages/admin/Calendar";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardRouter from "./components/DashboardRouter";
 import Messages from "./pages/Messages";
+import { SocketProvider } from "./context/SocketContext";
 
 const App = () => {
   return (
@@ -33,53 +34,50 @@ const App = () => {
       <EventProvider>
         <ProfileProvider>
           <TicketProvider>
-            <Router>
-              <Toaster
-                position="top-center"
-                toastOptions={{ duration: 3000 }}
-              />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route
-                  path="/signup/attendee"
-                  element={<AttendeeSignupForm />}
+            <SocketProvider> {/* Add SocketProvider */}
+              <Router>
+                <Toaster
+                  position="top-center"
+                  toastOptions={{ duration: 3000 }}
                 />
-                <Route
-                  path="/signup/organizer"
-                  element={<OrganizerSignupForm />}
-                />
-                <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/categories" element={<CategorySelectionPage />} />
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route
+                    path="/signup/attendee"
+                    element={<AttendeeSignupForm />}
+                  />
+                  <Route
+                    path="/signup/organizer"
+                    element={<OrganizerSignupForm />}
+                  />
+                  <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/categories" element={<CategorySelectionPage />} />
 
-                {/* Separate login routes for different user types */}
-                <Route path="/login/attendee" element={<AttendeeLoginPage />} />
-                <Route
-                  path="/login/organizer"
-                  element={<OrganizerLoginPage />}
-                />
+                  {/* Separate login routes for different user types */}
+                  <Route path="/login/attendee" element={<AttendeeLoginPage />} />
+                  <Route
+                    path="/login/organizer"
+                    element={<OrganizerLoginPage />}
+                  />
 
-                {/* Redirect generic login to selection page */}
-                <Route path="/login" element={<LoginRedirect />} />
+                  {/* Redirect generic login to selection page */}
+                  <Route path="/login" element={<LoginRedirect />} />
 
-                <Route path="/no-access" element={<NoAccessPage />} />
+                  <Route path="/no-access" element={<NoAccessPage />} />
 
+                {/* Dashboard Router */}
                 <Route path="/dashboard" element={<DashboardRouter />} />
+                
+                {/* Calendar route - keeping it as it is in your current setup */}
+                <Route path="/calendar" element={<Calendar />} />
 
+                {/* Organizer Protected Routes */}
                 <Route
                   path="/organizer-dashboard"
                   element={
                     // <ProtectedRoute allowedRoles={["organizer"]}>
                       <Dashboard />
                     // </ProtectedRoute>
-                  }
-                />
-
-                <Route
-                  path="/attendee-dashboard"
-                  element={
-                    <ProtectedRoute allowedRoles={["attendee"]}>
-                      <AttendeeDashboard />
-                    </ProtectedRoute>
                   }
                 />
 
@@ -92,8 +90,52 @@ const App = () => {
                   }
                 />
 
-                <Route path="/calendar" element={<Calendar />} />
+                <Route
+                  path="/events/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["organizer"]}>
+                      <EventDetails userRole="organizer" />
+                    </ProtectedRoute>
+                  }
+                />
+                  <Route
+                    path="/messages"
+                    element={
+                      <ProtectedRoute>
+                        <Messages />
+                      </ProtectedRoute>
+                    }
+                  />
 
+                  <Route
+                    path="/revenue"
+                    element={
+                      <ProtectedRoute allowedRoles={["organizer"]}>
+                        <UnderConstruction />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                {/* Attendee Protected Routes */}
+                <Route
+                  path="/attendee-dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["attendee"]}>
+                      <AttendeeDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/event-details/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["attendee"]}>
+                      <EventDetails userRole="attendee" />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Routes for any authenticated user */}
                 <Route
                   path="/messages"
                   element={
@@ -104,16 +146,6 @@ const App = () => {
                 />
 
                 <Route
-                  path="/revenue"
-                  element={
-                    <ProtectedRoute allowedRoles={["organizer"]}>
-                      <UnderConstruction />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Tickets Page */}
-                <Route
                   path="/tickets"
                   element={
                     <ProtectedRoute>
@@ -122,16 +154,15 @@ const App = () => {
                   }
                 />
 
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute>
-                      <UnderConstruction />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <UnderConstruction />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Profile Page */}
                 <Route
                   path="/profile"
                   element={
@@ -141,29 +172,11 @@ const App = () => {
                   }
                 />
 
-                <Route
-                  path="/events/:eventId"
-                  element={
-                    <ProtectedRoute allowedRoles={["organizer"]}>
-                      <EventDetails userRole="organizer" />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* For attendees - to view event details and purchase */}
-                <Route
-                  path="/event-details/:eventId"
-                  element={
-                    <ProtectedRoute allowedRoles={["attendee"]}>
-                      <EventDetails userRole="attendee" />
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* 404/Under Construction page */}
-                <Route path="*" element={<UnderConstruction />} />
-              </Routes>
-            </Router>
+                  {/* 404/Under Construction page */}
+                  <Route path="*" element={<UnderConstruction />} />
+                </Routes>
+              </Router>
+            </SocketProvider>
           </TicketProvider>
         </ProfileProvider>
       </EventProvider>

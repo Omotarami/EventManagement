@@ -1,131 +1,182 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 import toast from "react-hot-toast";
 
-const AuthContext = createContext(null);
+
+const AuthContext = createContext();
+
+
+const API_URL = "http://localhost:8080/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
+
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        if (token) {
+        
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          
+       
+          const userData = JSON.parse(localStorage.getItem("user"));
+          if (userData) {
+            setUser(userData);
+          }
+        }
+      } catch (error) {
+        console.error("Authentication initialization error:", error);
+      
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+        setInitialized(true);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  // Generic login function (kept for compatibility)
-  const login = async (email, password) => {
-    // Determine which login function to use based on email
-    if (email.includes("organizer")) {
-      return loginAsOrganizer(email, password);
-    } else {
-      return loginAsAttendee(email, password);
+  const signup = async (formData, userType) => {
+    try {
+      setLoading(true);
+      const endpoint = userType === "organizer" 
+        ? `${API_URL}/auth/organizer/signup` 
+        : `${API_URL}/auth/user/signup`;
+      
+      const response = await axios.post(endpoint, formData);
+      
+      toast.success(response.data.message || "Registration successful!");
+      return response.data;
+    } catch (error) {
+      console.error("Signup error:", error);
+      const errorMessage = error.response?.data?.message || "Registration failed";
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Specific login for attendees
+
   const loginAsAttendee = async (email, password) => {
     try {
-      if (!email || !password) {
-        throw new Error("Email and password are required");
-      }
-
-      // Create attendee user data
-      const userData = {
-        id: Date.now(),
-        name: email.split('@')[0],
-        email: email,
-        role: "attendee",
-        account_type: "attendee"
-      };
-
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", "mock-auth-token-" + Date.now());
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       
-      setUser(userData);
-      toast.success("Welcome back, Attendee!");
-      return userData;
+   
+      if (response.data.user.account_type === "organizer") {
+        throw new Error("This is an organizer account. Please use organizer login.");
+      }
+      
+     
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+  
+      axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+   
+      setUser(response.data.user);
+      
+      return response.data.user;
     } catch (error) {
-      toast.error("Invalid credentials");
-      throw error;
+      console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Specific login for organizers
+
   const loginAsOrganizer = async (email, password) => {
     try {
-      if (!email || !password) {
-        throw new Error("Email and password are required");
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      
+   
+      if (response.data.user.account_type !== "organizer") {
+        throw new Error("This is not an organizer account. Please use attendee login.");
       }
-
-      // Create organizer user data
-      const userData = {
-        id: Date.now(),
-        name: email.split('@')[0],
-        email: email,
-        role: "organizer",
-        account_type: "organizer"
-      };
-
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", "mock-auth-token-" + Date.now());
       
-      setUser(userData);
-      toast.success("Welcome back, Organizer!");
-      return userData;
+      
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+   
+      axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+      
+   
+      setUser(response.data.user);
+      
+      return response.data.user;
     } catch (error) {
-      toast.error("Invalid credentials");
-      throw error;
+      console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Signup function with role passed explicitly
-  const signup = async (userData, userType) => {
-    try {
-      const newUser = {
-        ...userData,
-        id: Date.now(),
-        role: userType,
-        account_type: userType
-      };
-
-      // Use the same keys as in login
-      localStorage.setItem("user", JSON.stringify(newUser));
-      localStorage.setItem("token", "mock-auth-token-" + Date.now());
-      
-      setUser(newUser);
-      toast.success("Account created successfully!");
-      return newUser;
-    } catch (error) {
-      toast.error("Signup failed");
-      throw error;
-    }
-  };
 
   const logout = () => {
-    localStorage.removeItem("user");
+    
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    delete axios.defaults.headers.common["Authorization"];
+    
+  
     setUser(null);
+    
     toast.success("Logged out successfully");
   };
 
-  const value = {
-    user,
-    loading,
-    login,
-    loginAsAttendee,
-    loginAsOrganizer,
-    signup,
-    logout,
+  
+  const isAuthenticated = () => {
+    return !!user;
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  const isOrganizer = () => {
+    return user && user.account_type === "organizer";
+  };
+
+
+  const isAttendee = () => {
+    return user && user.account_type !== "organizer";
+  };
+
+  
+  const contextValue = {
+    user,
+    loading,
+    initialized,
+    signup,
+    loginAsAttendee,
+    loginAsOrganizer,
+    logout,
+    isAuthenticated,
+    isOrganizer,
+    isAttendee
+  };
+
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

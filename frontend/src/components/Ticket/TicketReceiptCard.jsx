@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Clock, Users, Check, Download, ArrowRight, BarChart4 } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const TicketReceiptCard = ({ ticket, showActions = true }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -81,7 +81,7 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
       const qrValue = `TICKET:${ticket.id}|EVENT:${ticket.eventId}|USER:${ticket.userId}`;
       
       return (
-        <QRCode 
+        <QRCodeSVG 
           value={qrValue} 
           size={80}
           level="H" 

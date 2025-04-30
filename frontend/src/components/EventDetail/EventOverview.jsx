@@ -1,87 +1,131 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  DollarSign, Users, Ticket, Calendar, Clock, MapPin, 
-  ChevronDown, ChevronUp, Download, ArrowRight
+import {
+  DollarSign,
+  Users,
+  Ticket,
+  Calendar,
+  Clock,
+  MapPin,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  ArrowRight,
 } from "lucide-react";
 import { useTickets } from "../../context/TicketContext";
 import PurchaseTicketButton from "../Ticket/PurchaseTicketButton";
 import { useNavigate } from "react-router-dom";
 import EventRevenueSection from "../Ticket/EventRevenueSection";
+import { useAuth } from "../../context/AuthContext";
 
 // Safe formatting utilities
 const formatDate = (dateString) => {
-  if (!dateString) return 'TBD';
+  if (!dateString) return "TBD";
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   } catch (error) {
     console.error("Error formatting date:", error);
-    return 'Invalid Date';
+    return "Invalid Date";
   }
 };
 
 // Function to safely format time objects or strings
 const formatTimeValue = (timeValue) => {
-  if (typeof timeValue === 'string') return timeValue;
-  
-  if (timeValue && typeof timeValue === 'object') {
+  if (typeof timeValue === "string") return timeValue;
+
+  if (timeValue && typeof timeValue === "object") {
     // Handle time objects with time and period properties
     if (timeValue.time && timeValue.period) {
       return `${timeValue.time} ${timeValue.period}`;
     }
-    
+
     // Try to convert the object to a string representation
     try {
       return JSON.stringify(timeValue);
     } catch (error) {
       console.error("Error stringifying time object:", error);
-      return 'Invalid Time Format';
+      return "Invalid Time Format";
     }
   }
-  
-  return 'TBD';
+
+  return "TBD";
 };
 
 /**
  * Event Overview component
- * 
+ *
  * @param {Object} props
- * @param {Object} props.event 
- * @param {string} props.userRole 
- * @param {string} props.eventId 
+ * @param {Object} props.event
+ * @param {string} props.userRole
+ * @param {string} props.eventId
  */
-const EventOverview = ({ event, userRole, eventId }) => {
+const EventOverview = ({ event, userRole: propUserRole, eventId }) => {
   const navigate = useNavigate();
   const { hasTicketForEvent, getUserTickets } = useTickets();
   const [showFullDescription, setShowFullDescription] = useState(false);
-  
+  const { user, isAuthenticated, isOrganizer, isAttendee } = useAuth(); // Get authentication info
+
+  // Use the provided userRole prop or determine from auth context
+  const userRole =
+    propUserRole ||
+    (isOrganizer && typeof isOrganizer === "function" && isOrganizer()
+      ? "organizer"
+      : isAttendee && typeof isAttendee === "function" && isAttendee()
+      ? "attendee"
+      : null);
+
   // Add safety check for missing event data
   if (!event) {
     console.error("EventOverview: event object is missing");
     return (
       <div className="p-8 text-center bg-gray-50 rounded-lg">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Event data not available</h2>
-        <p className="text-gray-600">The event information could not be loaded.</p>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Event data not available
+        </h2>
+        <p className="text-gray-600">
+          The event information could not be loaded.
+        </p>
       </div>
     );
   }
-  
-  // Check if user has a ticket for this event
-  const userHasTicket = hasTicketForEvent ? hasTicketForEvent(eventId) : false;
-  const userTicket = getUserTickets ? getUserTickets().find(
-    (ticket) => ticket.eventId === eventId
-  ) : null;
-  
+
+  // Check if user has a ticket for this event with extra safety checks
+  const userHasTicket =
+    hasTicketForEvent && typeof hasTicketForEvent === "function"
+      ? hasTicketForEvent(eventId)
+      : false;
+
+  // Get user tickets safely
+  const userTicketsArray =
+    getUserTickets && typeof getUserTickets === "function"
+      ? getUserTickets()
+      : [];
+
+  // Find the specific ticket with proper type checking
+  let userTicket = null;
+  if (Array.isArray(userTicketsArray) && userTicketsArray.length > 0) {
+    userTicket = userTicketsArray.find(
+      (ticket) =>
+        ticket && ticket.eventId && String(ticket.eventId) === String(eventId)
+    );
+  }
+
   // Calculate ticket sales percentage
   const ticketPercentage =
     event.totalTickets > 0 ? (event.soldTickets / event.totalTickets) * 100 : 0;
   const remainingTickets = event.totalTickets - event.soldTickets;
+
+  // Check if user is authenticated
+  const isUserAuthenticated =
+    isAuthenticated && typeof isAuthenticated === "function"
+      ? isAuthenticated()
+      : false;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -142,19 +186,21 @@ const EventOverview = ({ event, userRole, eventId }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Location
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Location</h2>
 
           {event.eventType === "physical" ? (
             <div>
               <div className="flex items-start">
                 <MapPin size={20} className="text-gray-500 mr-3 mt-1" />
                 <div>
-                  <p className="text-gray-800 font-medium">{event.location || "Location not specified"}</p>
+                  <p className="text-gray-800 font-medium">
+                    {event.location || "Location not specified"}
+                  </p>
                   {/* Placeholder for Google Maps embedding */}
                   <div className="mt-4 bg-gray-100 h-48 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-500">Map preview would appear here</p>
+                    <p className="text-gray-500">
+                      Map preview would appear here
+                    </p>
                   </div>
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(
@@ -249,41 +295,47 @@ const EventOverview = ({ event, userRole, eventId }) => {
                     Confirmed
                   </span>
                   <h3 className="font-medium text-gray-800">
-                    {userTicket.ticketType}
+                    {userTicket.ticketType || "Standard"}
                   </h3>
                 </div>
                 <div className="text-right">
                   <span className="text-sm text-gray-500">Order ID:</span>
-                  <div className="font-mono text-sm">{userTicket.orderId}</div>
+                  <div className="font-mono text-sm">
+                    {userTicket.orderId || "N/A"}
+                  </div>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
                 <div>
                   <span className="block text-gray-500">Purchase Date:</span>
-                  <span>{formatDate(userTicket.purchaseDate)}</span>
+                  <span>
+                    {formatDate(userTicket.purchaseDate || new Date())}
+                  </span>
                 </div>
                 <div>
                   <span className="block text-gray-500">Quantity:</span>
-                  <span>{userTicket.quantity}</span>
+                  <span>{userTicket.quantity || 1}</span>
                 </div>
                 <div>
                   <span className="block text-gray-500">Total Price:</span>
-                  <span>${userTicket.totalAmount}</span>
+                  <span>
+                    ${parseFloat(userTicket.totalAmount || 0).toFixed(2)}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="flex space-x-3">
               <button
-                onClick={() => navigate('/tickets')}
+                onClick={() => navigate("/tickets")}
                 className="flex items-center justify-center py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors flex-grow"
               >
                 <Ticket size={16} className="mr-2" />
                 View Ticket
               </button>
               <button
-                onClick={() => navigate('/tickets')}
+                onClick={() => navigate("/tickets")}
                 className="py-2 px-4 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
               >
                 <Download size={16} />
@@ -309,8 +361,10 @@ const EventOverview = ({ event, userRole, eventId }) => {
           {/* Progress bar */}
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
-              <span className="font-medium">{event.soldTickets} sold</span>
-              <span className="text-gray-500">{event.totalTickets} total</span>
+              <span className="font-medium">{event.soldTickets || 0} sold</span>
+              <span className="text-gray-500">
+                {event.totalTickets || 0} total
+              </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -338,7 +392,7 @@ const EventOverview = ({ event, userRole, eventId }) => {
                 <span>Attendees</span>
               </div>
               <span className="font-medium text-gray-800">
-                {event.soldTickets}
+                {event.soldTickets || 0}
               </span>
             </div>
 
@@ -353,11 +407,12 @@ const EventOverview = ({ event, userRole, eventId }) => {
             </div>
           </div>
 
-          {/* Purchase Ticket Button - Only for attendees who don't have tickets */}
-          {userRole === "attendee" && !userHasTicket && (
+          {/* Purchase Ticket Button - Show for attendees who don't have tickets or non-authenticated users */}
+          {((userRole === "attendee" && !userHasTicket) ||
+            !isUserAuthenticated) && (
             <div className="mt-4">
-              <PurchaseTicketButton 
-                event={event} 
+              <PurchaseTicketButton
+                event={event}
                 buttonStyle="w-full text-center py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors flex items-center justify-center"
               />
             </div>
@@ -365,65 +420,69 @@ const EventOverview = ({ event, userRole, eventId }) => {
         </motion.div>
 
         {/* Quick Actions - Different for each role */}
-        <motion.div
-          className="bg-white rounded-lg shadow-sm p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Quick Actions
-          </h2>
+        {isUserAuthenticated && (
+          <motion.div
+            className="bg-white rounded-lg shadow-sm p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              Quick Actions
+            </h2>
 
-          <div className="space-y-3">
-            {/* Organizer Actions */}
-            {userRole === "organizer" && (
-              <>
-                <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
-                  <Ticket size={18} className="mr-2" />
-                  <span>Sell Tickets</span>
-                </button>
+            <div className="space-y-3">
+              {/* Organizer Actions */}
+              {userRole === "organizer" && (
+                <>
+                  <button className="w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center">
+                    <Ticket size={18} className="mr-2" />
+                    <span>Sell Tickets</span>
+                  </button>
 
-                <button
-                  className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
-                  onClick={() => document.querySelector('[data-tab="attendees"]')?.click()}
-                >
-                  <Users size={18} className="mr-2" />
-                  <span>Manage Attendees</span>
-                </button>
-
-                <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
-                  <Download size={18} className="mr-2" />
-                  <span>Download Report</span>
-                </button>
-              </>
-            )}
-
-            {/* Attendee Actions */}
-            {userRole === "attendee" && (
-              <>
-                {/* If the user has a ticket, show attendee networking */}
-                {userHasTicket ? (
                   <button
-                    onClick={() => document.querySelector('[data-tab="chat"]')?.click()}
-                    className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    className="w-full py-2 px-4 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    onClick={() =>
+                      document.querySelector('[data-tab="attendees"]')?.click()
+                    }
                   >
                     <Users size={18} className="mr-2" />
-                    <span>Connect with Attendees</span>
+                    <span>Manage Attendees</span>
                   </button>
-                ) : (
-                  <button
-                    onClick={() => navigate('/attendee-dashboard')}
-                    className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
-                  >
-                    <ArrowRight size={18} className="mr-2" />
-                    <span>Explore Other Events</span>
+
+                  <button className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center">
+                    <Download size={18} className="mr-2" />
+                    <span>Download Report</span>
                   </button>
-                )}
-              </>
-            )}
-          </div>
-        </motion.div>
+                </>
+              )}
+
+              {/* Attendee Actions */}
+              {userRole === "attendee" && (
+                <>
+                  {/* If the user has a ticket, show attendee networking */}
+                  {userHasTicket ? (
+                    <button
+                      onClick={() => navigate(`/messages?event=${eventId}`)}
+                      className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <Users size={18} className="mr-2" />
+                      <span>Connect with Attendees</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/attendee-dashboard")}
+                      className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors flex items-center justify-center"
+                    >
+                      <ArrowRight size={18} className="mr-2" />
+                      <span>Explore Other Events</span>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Event Schedule Card (for recurring events) */}
         {event.isRecurring && event.dates && event.dates.length > 1 && (
