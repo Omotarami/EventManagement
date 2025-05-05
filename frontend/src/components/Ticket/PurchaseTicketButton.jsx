@@ -304,13 +304,13 @@ const PurchaseTicketButton = ({ event, buttonStyle }) => {
                         
                         {/* Quantity Selection */}
                         <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2 ">
                             Quantity
                           </label>
                           <select
                             value={quantity}
                             onChange={handleQuantityChange}
-                            className="block w-full p-2 border border-gray-300 rounded-md"
+                            className="block w-full p-2 border border-gray-300 rounded-md text-gray-600"
                             disabled={isSelectedTicketSoldOut()}
                           >
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
@@ -320,7 +320,7 @@ const PurchaseTicketButton = ({ event, buttonStyle }) => {
                         </div>
                         
                         {/* Order Summary */}
-                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div className="bg-gray-50 rounded-lg p-3 mb-4 text-gray-600">
                           <h5 className="font-medium text-gray-700 mb-2">Order Summary</h5>
                           <div className="flex justify-between mb-1 text-sm">
                             <span>
@@ -328,20 +328,20 @@ const PurchaseTicketButton = ({ event, buttonStyle }) => {
                             </span>
                             <span>${totalAmount.toFixed(2)}</span>
                           </div>
-                          <div className="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2">
+                          <div className="flex justify-between font-semibold pt-2 border-t border-gray-200 mt-2 text-gray-600">
                             <span>Total</span>
                             <span>${totalAmount.toFixed(2)}</span>
                           </div>
                         </div>
                         
                         {/* Payment Details */}
-                        <div className="mb-4">
+                        {/* <div className="mb-4 text-gray-600">
                           <h5 className="font-medium text-gray-700 mb-2">Payment Method</h5>
                           <div className="p-3 border border-gray-200 rounded-md bg-white flex items-center">
                             <CreditCard size={20} className="text-gray-400 mr-2" />
                             <span>Credit Card</span>
                           </div>
-                        </div>
+                        </div> */}
                       </>
                     )}
                   </div>

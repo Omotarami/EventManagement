@@ -7,7 +7,7 @@ const ScheduleRoute = require("./routes/event-schedule");
 const TicketRoute = require("./routes/TicketRoute");
 const FavouriteRoute = require("./routes/favourite");
 const ConversationRoute = require("./routes/conversation");
-const { SocketServer } = require("./socket");
+const WebSocketServer = require("./socket/webSocketServer");
 const logger = require("./config/logger");
 
 // Initialize Express app
@@ -27,11 +27,7 @@ app.initializedRoutes([
 // Create HTTP server
 const server = http.createServer(app.app);
 
-// Initialize Socket.IO
-const socketServer = new SocketServer(server);
-
-// Make Socket.IO instance available to Express controllers
-app.setSocketIO(socketServer.io);
+const webSocketServer = new WebSocketServer(server);
 
 // Start server
 const PORT = process.env.PORT || 8080;

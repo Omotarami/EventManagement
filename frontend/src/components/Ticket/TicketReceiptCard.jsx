@@ -185,20 +185,20 @@ const TicketReceiptCard = ({ ticket, showActions = true }) => {
           </div>
           
           {/* Flip instructions */}
-          <div className="absolute bottom-2 right-2 text-xs text-gray-400 flex items-center">
+          <div className="absolute bottom-2 right-2 text-xs text-gray-600 flex items-center">
             <span>Flip for details</span>
             <ArrowRight size={10} className="ml-1" />
           </div>
         </motion.div>
 
         <motion.div
-          className="absolute inset-0 backface-hidden"
+          className="absolute inset-0 backface-hidden "
           animate={{ rotateY: isFlipped ? 0 : -180 }}
           transition={{ duration: 0.5 }}
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* Back of the ticket with QR code and details */}
-          <div className="p-4 flex flex-col h-full">
+          <div className="p-4 flex flex-col h-full test-gray-600">
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h3 className="font-semibold text-gray-800">

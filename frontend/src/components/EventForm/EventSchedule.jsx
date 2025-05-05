@@ -218,7 +218,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
     return (
       <div className="mb-6">
         {/* Calendar header with month/year and nav buttons */}
-        <div className="flex justify-between items-center mb-4 px-2">
+        <div className="flex justify-between items-center mb-4 px-2 ">
           <h2 className="text-lg font-medium text-gray-800">
             {monthNames[currentMonth]} {currentYear}
           </h2>
@@ -226,7 +226,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             <button
               type="button"
               onClick={prevMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
               aria-label="Previous month"
             >
               <ChevronLeft size={18} />
@@ -234,7 +234,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
             <button
               type="button"
               onClick={nextMonth}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
               aria-label="Next month"
             >
               <ChevronRight size={18} />
@@ -243,7 +243,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Day names (Su, Mo, etc.) */}
-        <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2">
+        <div className="grid grid-cols-7 gap-1 mb-2 border-b border-gray-100 pb-2 text-gray-600">
           {dayNames.map((day, index) => (
             <div
               key={index}
@@ -255,7 +255,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         </div>
         
         {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-2 text-gray-600">
           {allDays.map((dayObj, index) => {
             const selected = isDateSelected(dayObj);
             const today = isToday(dayObj);
@@ -319,7 +319,7 @@ const EventSchedule = ({ isRecurring, dates = [], times = [], onChange }) => {
         
         {/* Selected dates summary */}
         {dates.length > 0 && (
-          <div className="mb-6 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="mb-6 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100 ">
             <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Calendar size={16} className="mr-1 text-orange-500" />
               Selected Dates:
