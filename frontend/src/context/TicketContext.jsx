@@ -11,8 +11,8 @@ export const TicketProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { user, isAuthenticated } = useAuth();
   
-  // Hardcode the API URL for now - replace with your actual backend URL
-  const API_URL = 'http://localhost:8080/api';
+  
+  const API_URL = 'https://13b6-197-227-97-128.ngrok-free.app/api';
   
   // Load user tickets when authenticated
   useEffect(() => {

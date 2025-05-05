@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 const AuthContext = createContext();
 
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://13b6-197-227-97-128.ngrok-free.app/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
