@@ -335,13 +335,13 @@ const PurchaseTicketButton = ({ event, buttonStyle }) => {
                         </div>
                         
                         {/* Payment Details */}
-                        <div className="mb-4 text-gray-600">
+                        {/* <div className="mb-4 text-gray-600">
                           <h5 className="font-medium text-gray-700 mb-2">Payment Method</h5>
                           <div className="p-3 border border-gray-200 rounded-md bg-white flex items-center">
                             <CreditCard size={20} className="text-gray-400 mr-2" />
                             <span>Credit Card</span>
                           </div>
-                        </div>
+                        </div> */}
                       </>
                     )}
                   </div>
